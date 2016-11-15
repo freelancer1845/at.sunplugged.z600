@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mbt
+Bundle-SymbolicName: at.sunplugged.z600.backend.mbt
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: at.sunplugged.z600.mbt.MbtActivator
+Bundle-Vendor: Sunplugged.at
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: net.wimpi.modbus,
+ net.wimpi.modbus.io,
+ net.wimpi.modbus.msg,
+ net.wimpi.modbus.net,
+ org.osgi.framework;version="1.3.0"
+Bundle-ActivationPolicy: lazy

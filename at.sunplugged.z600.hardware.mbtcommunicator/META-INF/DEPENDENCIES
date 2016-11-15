@@ -1,0 +1,19 @@
+// ------------------------------------------------------------------
+// Transitive dependencies of this project determined from the
+// maven pom organized by organization.
+// ------------------------------------------------------------------
+
+Apache ServiceMix :: Bundles :: jamod
+
+
+From: 'an unknown organization'
+  - jamod (http://jamod.sourceforge.net) net.wimpi:jamod:jar:1.2
+    License: Apache 2 Style License  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - jamod (http://jamod.sourceforge.net) net.wimpi:jamod:jar:1.2
+    License: Apache 2 Style License  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+  - RXTX serial and parallel I/O libraries (http://www.rxtx.org) org.rxtx:rxtx:jar:2.1.7
+    License: GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.  (http://www.fsf.org/licensing/licenses/lgpl.html)
+
+
+
+
