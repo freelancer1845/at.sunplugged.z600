@@ -46,8 +46,14 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
 
     @Override
     public double readChannel(int channel) throws IOException {
+        if (channel == 0) {
+            return random.nextDouble() * 9999.9;
+        } else if (channel == 1) {
+            return random.nextDouble() * 5000 + 2500;
+        } else {
+            return random.nextDouble() * 1000 + 3000;
+        }
 
-        return random.nextDouble() * 9999.9;
     }
 
 }

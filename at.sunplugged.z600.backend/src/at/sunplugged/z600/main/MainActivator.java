@@ -80,6 +80,7 @@ public class MainActivator implements BundleActivator {
                     case LogService.LOG_ERROR:
                         System.out.println("ERROR - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
                                 + " - " + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
+                        arg0.getException().printStackTrace();
                         break;
                     case LogService.LOG_WARNING:
                         System.out.println("WARNING - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)

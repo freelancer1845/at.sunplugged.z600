@@ -14,9 +14,10 @@ public class MainController implements Runnable {
 
     @Override
     public void run() {
-        isRunning = true;
         logService = MainActivator.getLogService();
+        isRunning = true;
 
+        logService.log(LogService.LOG_INFO, "Main Controller Thread Started");
         double lastTime = System.nanoTime();
 
         while (isRunning) {
