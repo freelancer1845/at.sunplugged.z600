@@ -10,6 +10,7 @@ import net.wimpi.modbus.msg.ReadInputDiscretesRequest;
 import net.wimpi.modbus.msg.ReadInputDiscretesResponse;
 import net.wimpi.modbus.net.TCPMasterConnection;
 
+
 public class MBTControllerImpl implements MBTController {
 
     private TCPMasterConnection con; // the connection
