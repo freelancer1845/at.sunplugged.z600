@@ -7,6 +7,7 @@ Bundle-Activator: at.sunplugged.z600.gui.Activator
 Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: at.sunplugged.z600.srm50.api,
+ gnu.io,
  org.osgi.framework;version="1.3.0",
  org.osgi.service.log;version="1.3.0",
  org.osgi.util.tracker;version="1.5.1",

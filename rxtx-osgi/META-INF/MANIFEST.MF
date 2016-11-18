@@ -20,6 +20,6 @@ Bundle-NativeCode: Linux/linux32/librxtxSerial.so ; osname=linux ; processor=x86
  Linux/mips/librxtxSerial.so ; osname=linux ; processor=mips,
  Mac/mac64/librxtxSerial.dylib ; osname=MacOSX ; processor=x86_64,
  Mac/mac64/librxtxSerial.dylib ; osname=Mac OS X ; processor=x86_64,
- Windows/win32/rxtxSerial.dll ; osname=Windows; osname=Windows 7; osname=Windows7;osname=Windows Vista; osname=Windows XP; osname=Windows NT; processor=x86,
- Windows/win64/rxtxSerial.dll ; osname=Windows; osname=Windows 7; osname=Windows7;osname=Windows Vista; osname=Windows XP; osname=Windows NT; osname=Windows Server2008 R2; processor=amd64; processor=x86_64
+ Windows/win32/rxtxSerial.dll ; osname=Windows10; osname=Windows; osname=Windows 7; osname=Windows7;osname=Windows Vista; osname=Windows XP; osname=Windows NT; processor=x86,
+ Windows/win64/rxtxSerial.dll ; osname=Windows10; osname=Windows; osname=Windows 7; osname=Windows7;osname=Windows Vista; osname=Windows XP; osname=Windows NT; osname=Windows Server2008 R2; processor=amd64; processor=x86_64
 Built-By: freeskier

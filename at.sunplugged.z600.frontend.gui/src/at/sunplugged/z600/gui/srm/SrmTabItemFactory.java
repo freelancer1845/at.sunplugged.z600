@@ -211,7 +211,10 @@ public class SrmTabItemFactory {
                                 double lastTime = System.nanoTime();
                                 while (running) {
                                     try {
-                                        chart1Vector.addElement(srmCommunicator.readChannel(0));
+//                                        chart1Vector.addElement(srmCommunicator.readChannel(0));
+                                    	if (false) {
+                                    		throw new IOException("");
+                                    	}
                                         if (chart1Vector.size() > SAVE_SIZE - 1) {
                                             chart1Vector.remove(0);
                                         }
@@ -219,7 +222,7 @@ public class SrmTabItemFactory {
                                         for (int i = 0; i < chart1Vector.size(); i++) {
                                             yArray1[i] = chart1Vector.get(i);
                                         }
-                                        chart2Vector.addElement(srmCommunicator.readChannel(1));
+//                                        chart2Vector.addElement(srmCommunicator.readChannel(1));
                                         if (chart2Vector.size() > SAVE_SIZE - 1) {
                                             chart2Vector.remove(0);
                                         }
@@ -228,7 +231,7 @@ public class SrmTabItemFactory {
                                             yArray2[i] = chart2Vector.get(i);
                                         }
 
-                                        chart3Vector.addElement(srmCommunicator.readChannel(2));
+//                                        chart3Vector.addElement(srmCommunicator.readChannel(2));
                                         if (chart3Vector.size() > SAVE_SIZE - 1) {
                                             chart3Vector.remove(0);
                                         }
