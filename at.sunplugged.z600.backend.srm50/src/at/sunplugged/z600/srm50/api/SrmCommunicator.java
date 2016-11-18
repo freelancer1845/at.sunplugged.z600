@@ -1,6 +1,8 @@
 package at.sunplugged.z600.srm50.api;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * This Interface represents a communication point for the SRM-50-3LD SN 105598.
@@ -29,14 +31,25 @@ public interface SrmCommunicator {
     public void disconnect() throws IOException;
 
     /**
-     * Reads out the specified channel.
-     * 
-     * @param channel
-     *            to be read out.
-     * @return Measured value at this channel.
+     * Reads out the all channels and returns a List of Doubles.
+     *
+     * @return {@linkplain List<Double>} of values.
      * @throws IOException
      *             if retrieving failed.
      */
-    public double readChannel(int channel) throws IOException;
-
+    public List<Double> readChannels() throws IOException;
+    
+    /**
+     * Get Available Ports.
+     * @return {@link Enumeration}.
+     */
+    public Enumeration getPortIdentifiers();
+    
+    /**
+     * Issues the given command and returns the Answer.
+     * 
+     * @param {@linkplain String} the command (A list of commands is available at {@linkplain at.sunplugged.z600.srm50.api.Commands}
+     * @return {@linkplain String} answer.
+     */
+    public String issueCommand(String string) throws IOException;
 }

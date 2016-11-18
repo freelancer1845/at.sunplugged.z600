@@ -3,6 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Serialcommunicator
 Bundle-SymbolicName: at.sunplugged.z600.hardware.serialcommunicator
 Bundle-Version: 1.0.0
+Bundle-ClassPath: at.sunplugged.z600.hardware.serialcommunicator
+Export-Package: gnu.io
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-NativeCode: Linux/linux32/librxtxSerial.so ; osname=linux ; processor=x86,
  Linux/linux64/librxtxSerial.so ; osname=linux ; processor=x86_64,
@@ -10,13 +12,7 @@ Bundle-NativeCode: Linux/linux32/librxtxSerial.so ; osname=linux ; processor=x86
  Linux/sh4/librxtxSerial.so ; osname=linux ; processor=sh4,
  Linux/mips/librxtxSerial.so ; osname=linux ; processor=mips,
  Linux/armv7l/librxtxSerial.so ; osname=Linux ; processor=armv7l,
- <!-- Note: mac driver requires the /var/lock directory to be created with rw permission -->
- Mac/mac64/librxtxSerial.jnilib ; osname=MacOSX ; processor=x86_64,
+ <!-- Note: mac driver requires the /var/lock directory to be created with rw permission -->Mac/mac64/librxtxSerial.jnilib ; osname=MacOSX ; processor=x86_64,
  Mac/mac64/librxtxSerial.jnilib ; osname=Mac OS X ; processor=x86_64,
- Windows/win32/rxtxSerial.dll ; osname=Windows; osname=Windows 8; osname=Windows 7;
- osname=Windows7; osname=Windows Vista; osname=Windows XP; osname=Windows NT;
- processor=x86,
- Windows/win64/rxtxSerial.dll ; osname=Windows; osname=Windows 8; osname=Windows 7;
- osname=Windows7; osname=Windows Vista; osname=Windows XP; osname=Windows NT;
- osname=Windows Server 2008 R2; processor=amd64; processor=x86_64
-Export-Package: gnu.io
+ Windows/win32/rxtxSerial.dll ; osname=Windows; osname=Windows 8; osname=Windows 7;osname=Windows7; osname=Windows Vista; osname=Windows XP; osname=Windows NT;processor=x86,
+ Windows/win64/rxtxSerial.dll ; osname=Windows; osname=Windows 8; osname=Windows 7;osname=Windows7; osname=Windows Vista; osname=Windows XP; osname=Windows NT;osname=Windows Server 2008 R2; processor=amd64; processor=x86_64

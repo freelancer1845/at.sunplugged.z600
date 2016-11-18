@@ -3,8 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Mbtcommunicator
 Bundle-SymbolicName: at.sunplugged.z600.hardware.mbtcommunicator
 Bundle-Version: 1.0.0
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ClassPath: at.sunplugged.z600.hardware.mbtcommunicator
 Export-Package: net.wimpi.modbus,
  net.wimpi.modbus.io,
  net.wimpi.modbus.msg,
  net.wimpi.modbus.net
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
