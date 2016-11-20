@@ -49,7 +49,6 @@ public class SrmTabItemFactory {
     public TabItem createSrmTabItem(TabFolder parent, int style) {
         TabItem tabItem = new TabItem(parent, style);
         tabItem.setText("SRM");
-
         Composite composite_1 = new Composite(parent, SWT.NONE);
         tabItem.setControl(composite_1);
         GridLayout gl_composite_1 = new GridLayout(3, false);

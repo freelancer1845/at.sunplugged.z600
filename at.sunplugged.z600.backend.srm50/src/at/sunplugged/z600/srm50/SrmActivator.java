@@ -41,7 +41,6 @@ public class SrmActivator implements BundleActivator {
         logServiceTracker = new ServiceTracker<>(bundleContext, LogService.class, null);
         logServiceTracker.open();
         logService = (LogService) logServiceTracker.getService();
-        srmCommunciator.connect("COM1");
     }
 
     /*

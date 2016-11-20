@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Rxtx Plugin
+Bundle-SymbolicName: rxtx.org
+Bundle-Version: 2.2.2
+Bundle-ClassPath: RXTXcomm.jar
+Bundle-Vendor: rxtx.org
+Export-Package: gnu.io;version="2.2.2"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-NativeCode: 
+ nativelib/win64/rxtxSerial.dll;osname=win32;processor=x64,
+ nativelib/win32/rxtxSerial.dll;osname=win32;processor=x32
