@@ -73,27 +73,27 @@ public class MainActivator implements BundleActivator {
             @Override
             public void logged(LogEntry arg0) {
                 switch (arg0.getLevel()) {
-                    case LogService.LOG_DEBUG:
-                        System.out.println("DEBUG - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-                                + " - " + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
-                        break;
-                    case LogService.LOG_ERROR:
-                        System.out.println("ERROR - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-                                + " - " + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
-                        if(arg0.getException() != null) {
-                        	arg0.getException().printStackTrace();
-                        }
-                        break;
-                    case LogService.LOG_WARNING:
-                        System.out.println("WARNING - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-                                + " - " + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
-                        break;
-                    case LogService.LOG_INFO:
-                        System.out.println("INFO - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-                                + " - " + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
-                        break;
-                    default:
-                        break;
+                case LogService.LOG_DEBUG:
+                    System.out.println("DEBUG - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + " - "
+                            + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
+                    break;
+                case LogService.LOG_ERROR:
+                    System.out.println("ERROR - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + " - "
+                            + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
+                    if (arg0.getException() != null) {
+                        arg0.getException().printStackTrace();
+                    }
+                    break;
+                case LogService.LOG_WARNING:
+                    System.out.println("WARNING - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + " - "
+                            + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
+                    break;
+                case LogService.LOG_INFO:
+                    System.out.println("INFO - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + " - "
+                            + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
+                    break;
+                default:
+                    break;
                 }
             }
 

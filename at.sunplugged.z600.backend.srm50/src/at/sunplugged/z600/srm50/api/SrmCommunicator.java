@@ -33,22 +33,26 @@ public interface SrmCommunicator {
     /**
      * Reads out the all channels and returns a List of Doubles.
      *
-     * @return {@linkplain List<Double>} of values.
+     * @return {@linkplain List\<{@linkplain Double}\>} of values.
      * @throws IOException
      *             if retrieving failed.
      */
     public List<Double> readChannels() throws IOException;
-    
+
     /**
      * Get Available Ports.
+     * 
      * @return {@link Enumeration}.
      */
     public Enumeration getPortIdentifiers();
-    
+
     /**
      * Issues the given command and returns the Answer.
      * 
-     * @param {@linkplain String} the command (A list of commands is available at {@linkplain at.sunplugged.z600.srm50.api.Commands}
+     * @param string
+     *            {@linkplain String} the command (A list of commands is
+     *            available at
+     *            {@linkplain at.sunplugged.z600.srm50.api.Commands}
      * @return {@linkplain String} answer.
      */
     public String issueCommand(String string) throws IOException;
