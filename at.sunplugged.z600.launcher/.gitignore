@@ -8,8 +8,8 @@ hs_err_pid*
 
 ## Eclipse
 .classpath
+.project
 .metadata
-.recommenders
 **/bin/
 tmp/
 *.tmp
