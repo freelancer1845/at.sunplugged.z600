@@ -40,8 +40,9 @@ public class MainApplication {
             } catch (RuntimeException e) {
                 logService.log(LogService.LOG_ERROR, e.getMessage(), e);
             }
-
         }
+        shell.dispose();
+        System.exit(0);
     }
 
     /**
