@@ -6,8 +6,10 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: at.sunplugged.z600.gui.Activator
 Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: at.sunplugged.z600.srm50.api,
+Import-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem,
+ at.sunplugged.z600.srm50.api,
  gnu.io,
+ org.eclipse.wb.swt,
  org.osgi.framework;version="1.3.0",
  org.osgi.service.log;version="1.3.0",
  org.osgi.util.tracker;version="1.5.1",

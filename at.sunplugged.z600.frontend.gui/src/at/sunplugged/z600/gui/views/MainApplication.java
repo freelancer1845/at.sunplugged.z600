@@ -13,8 +13,8 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.frontend.gui.srm50.tabItem.SrmTabItemFactory;
 import at.sunplugged.z600.gui.Activator;
-import at.sunplugged.z600.gui.srm.SrmTabItemFactory;
 
 public class MainApplication {
 
