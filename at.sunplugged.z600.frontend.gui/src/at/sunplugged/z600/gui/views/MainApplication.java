@@ -7,6 +7,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -36,6 +37,10 @@ public class MainApplication {
                     display.sleep();
                 }
             } catch (RuntimeException e) {
+                MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
+                messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
+                messageBox.setText("Unhandled Loop Exeception");
+                messageBox.open();
                 logService.log(LogService.LOG_ERROR, e.getMessage(), e);
             }
         }

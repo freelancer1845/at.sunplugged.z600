@@ -1,7 +1,9 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
@@ -40,6 +42,14 @@ public final class VariableSlot<T> {
             throw new DataServiceException("Maximum Elements reached for \"" + variableName
                     + "\"! Either clear the whole slot or following data will replace oldest.");
         }
+    }
+
+    public List<T> getData() {
+        List<T> returnList = new ArrayList<>();
+        for (T element : hashMap.values()) {
+            returnList.add(element);
+        }
+        return returnList;
     }
 
     @Override

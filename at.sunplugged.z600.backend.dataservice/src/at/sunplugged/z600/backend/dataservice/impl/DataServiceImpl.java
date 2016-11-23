@@ -2,6 +2,7 @@ package at.sunplugged.z600.backend.dataservice.impl;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
@@ -44,7 +45,7 @@ public class DataServiceImpl implements DataService {
     @Override
     public void saveData(String variableName, Date date, Object data) throws DataServiceException {
         if (!variableSlots.containsKey(variableName)) {
-            variableSlots.put(variableName, createVariableSlot(variableName, data.getClass().getName()));
+            variableSlots.put(variableName, createVariableSlot(variableName, data.getClass()));
         }
         variableSlots.get(variableName).addData(date, data);
     }
@@ -54,13 +55,27 @@ public class DataServiceImpl implements DataService {
         variableSlots.clear();
     }
 
-    private VariableSlot<?> createVariableSlot(String variableName, String typeName) throws DataServiceException {
+    private VariableSlot<?> createVariableSlot(String variableName, Class<?> type) throws DataServiceException {
 
-        switch (typeName) {
-        case "Double":
+        switch (type.getName()) {
+        case "java.lang.Double":
             return new VariableSlot<Double>(variableName);
         default:
-            throw new DataServiceException("The type of this data is not supported: \"" + typeName + "\"");
+            throw new DataServiceException("The type of this data is not supported: \"" + type.getName() + "\"");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getData(String variableName, Class<T> type) throws DataServiceException {
+        if (variableSlots.containsKey(variableName)) {
+            switch (type.getName()) {
+            case "java.lang.Double":
+                return (List<T>) variableSlots.get(variableName).getData();
+            default:
+                throw new DataServiceException("The type of this data is not supported: \"" + type.getName() + "\"");
+            }
+        } else {
+            return null;
         }
     }
 

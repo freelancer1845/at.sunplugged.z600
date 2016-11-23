@@ -1,6 +1,7 @@
 package at.sunplugged.z600.backend.dataservice.api;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * This service provides an interface to save data and retrieve it again. It also allows a
@@ -60,6 +61,16 @@ public interface DataService {
      * @throws DataServiceException if fails.
      */
     public void saveData(String variableName, Date date, Object data) throws DataServiceException;
+
+    /**
+     * Returns a list containing the current data set.
+     * 
+     * @param variableName of the data set.
+     * @param type of the data set (i. e. Double.class)
+     * @return A List of that data.
+     * @throws DataServiceException if this fails.
+     */
+    public <T> List<T> getData(String variableName, Class<T> type) throws DataServiceException;
 
     /**
      * Clears database. Only locally not the SQL Database!!

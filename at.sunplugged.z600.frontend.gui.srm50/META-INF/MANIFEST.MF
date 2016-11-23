@@ -4,12 +4,16 @@ Bundle-Name: Srm50
 Bundle-SymbolicName: at.sunplugged.z600.frontend.gui.srm50
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: at.sunplugged.z600.frontend.gui.spi,
+Import-Package: at.sunplugged.z600.backend.dataservice.api,
+ at.sunplugged.z600.frontend.gui.spi,
  org.eclipse.swt,
  org.eclipse.swt.events,
  org.eclipse.swt.graphics,
  org.eclipse.swt.layout,
  org.eclipse.swt.widgets,
  org.eclipse.wb.swt,
+ org.osgi.framework;version="1.8.0",
  org.swtchart
 Export-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: at.sunplugged.z600.frontend.gui.srm50.SrmGuiActivator

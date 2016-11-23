@@ -32,10 +32,8 @@ public class SrmTabItemFactory {
     /**
      * Creates the tab item for the srm view.
      * 
-     * @param parent
-     *            {@linkplain TabFolder}
-     * @param style
-     *            Stylee of the {@linkplain TabItem}.
+     * @param parent {@linkplain TabFolder}
+     * @param style Stylee of the {@linkplain TabItem}.
      * @return the create {@linkplain TabItem}.
      */
     public TabItem createSrmTabItem(TabFolder parent, int style) {
@@ -181,7 +179,9 @@ public class SrmTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent arg0) {
+
                 System.out.println("Button Selected");
+                throw new RuntimeException("Test");
 
             }
 
