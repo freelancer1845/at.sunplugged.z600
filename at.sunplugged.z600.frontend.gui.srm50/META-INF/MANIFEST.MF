@@ -13,6 +13,7 @@ Import-Package: at.sunplugged.z600.backend.dataservice.api,
  org.eclipse.swt.widgets,
  org.eclipse.wb.swt,
  org.osgi.framework;version="1.8.0",
+ org.osgi.service.log;version="1.3.0",
  org.swtchart
 Export-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem
 Bundle-ActivationPolicy: lazy

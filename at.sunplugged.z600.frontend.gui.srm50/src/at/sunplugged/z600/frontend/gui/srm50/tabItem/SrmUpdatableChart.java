@@ -1,6 +1,7 @@
 package at.sunplugged.z600.frontend.gui.srm50.tabItem;
 
 import org.eclipse.swt.widgets.Composite;
+import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
@@ -28,7 +29,9 @@ public class SrmUpdatableChart extends UpdatableChart {
             }
             dataList = dataService.getData(VariableIdentifiers.SRM_CHANNEL + channel, Double.class);
         } catch (DataServiceException e) {
-            e.printStackTrace();
+            SrmGuiActivator.getLogService().log(LogService.LOG_WARNING,
+                    "Updating chart " + this.title + " stopped: " + e.getMessage());
+            this.stopUpdating();
         }
     }
 

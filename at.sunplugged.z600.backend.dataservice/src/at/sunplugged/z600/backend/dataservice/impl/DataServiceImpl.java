@@ -75,7 +75,7 @@ public class DataServiceImpl implements DataService {
                 throw new DataServiceException("The type of this data is not supported: \"" + type.getName() + "\"");
             }
         } else {
-            return null;
+            throw new DataServiceException("Variable Not Registered: " + variableName);
         }
     }
 

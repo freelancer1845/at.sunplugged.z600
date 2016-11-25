@@ -6,7 +6,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -67,8 +66,8 @@ public class MainApplication {
 
         TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
         tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_CYAN));
-        GridData gdTabFolder = new GridData(SWT.LEFT, SWT.CENTER, true, true, 1, 1);
-        gdTabFolder.heightHint = 687;
+        GridData gdTabFolder = new GridData(SWT.LEFT, SWT.CENTER, true, true, 1, 2);
+        gdTabFolder.heightHint = 718;
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
 
@@ -77,7 +76,6 @@ public class MainApplication {
 
         Composite compositeOne = new Composite(shell, SWT.NONE);
         compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-        new Label(shell, SWT.NONE);
 
     }
 }

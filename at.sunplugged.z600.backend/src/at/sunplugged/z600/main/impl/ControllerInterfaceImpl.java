@@ -21,7 +21,6 @@ public class ControllerInterfaceImpl implements ControllerInterface {
 
         mainControllerThread = new Thread(new MainController());
         mainControllerThread.setName("Main Controller Thread");
-        mainControllerThread.start();
 
     }
 
@@ -40,6 +39,11 @@ public class ControllerInterfaceImpl implements ControllerInterface {
                 .getServiceReference(DataService.class);
         dataService = MainActivator.getContext().getService(dataServiceReference);
 
+    }
+
+    @Override
+    public void startMainControl() {
+        mainControllerThread.start();
     }
 
 }

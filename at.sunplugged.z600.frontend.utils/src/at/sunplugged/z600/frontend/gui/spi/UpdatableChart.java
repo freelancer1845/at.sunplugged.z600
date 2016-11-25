@@ -25,8 +25,7 @@ public abstract class UpdatableChart {
     private final static int UPDATE_TICKRATE = 10;
 
     /**
-     * The time the charts wait to set the Range to the standard values (end of
-     * chart).
+     * The time the charts wait to set the Range to the standard values (end of chart).
      */
     private final static int MOVE_TICKER_TIME = UPDATE_TICKRATE * 3;
 
@@ -34,7 +33,7 @@ public abstract class UpdatableChart {
     private final Chart chart;
 
     /** Title of the chart. */
-    private final String title;
+    protected final String title;
 
     /** Underlying DataList. */
     protected List<Double> dataList = new ArrayList<>();
@@ -65,15 +64,13 @@ public abstract class UpdatableChart {
     }
 
     /**
-     * The implementation of this method should add new data to the "dataList"
-     * variable. You may leave that empty. Then no new data is added to the
-     * chart.
+     * The implementation of this method should add new data to the "dataList" variable. You may
+     * leave that empty. Then no new data is added to the chart.
      */
     protected abstract void addNewData();
 
     /**
-     * Implement this method if you want to have more than 1000 DataPoints in
-     * one Chart.
+     * Implement this method if you want to have more than 1000 DataPoints in one Chart.
      */
     protected void removeOldData() {
         if (dataList.size() > 1000) {
