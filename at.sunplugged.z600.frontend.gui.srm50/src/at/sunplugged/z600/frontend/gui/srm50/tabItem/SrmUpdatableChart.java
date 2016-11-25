@@ -4,15 +4,19 @@ import org.eclipse.swt.widgets.Composite;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+import at.sunplugged.z600.backend.dataservice.api.VariableIdentifiers;
 import at.sunplugged.z600.frontend.gui.spi.UpdatableChart;
 import at.sunplugged.z600.frontend.gui.srm50.SrmGuiActivator;
 
 public class SrmUpdatableChart extends UpdatableChart {
 
-    DataService dataService = null;
+    private DataService dataService = null;
 
-    public SrmUpdatableChart(Composite parent, String title) {
+    private final int channel;
+
+    public SrmUpdatableChart(Composite parent, String title, int channel) {
         super(parent, title);
+        this.channel = channel;
 
     }
 
@@ -22,7 +26,7 @@ public class SrmUpdatableChart extends UpdatableChart {
             if (dataService == null) {
                 dataService = SrmGuiActivator.getDataService();
             }
-            dataList = dataService.getData("TestVariable", Double.class);
+            dataList = dataService.getData(VariableIdentifiers.SRM_CHANNEL + channel, Double.class);
         } catch (DataServiceException e) {
             e.printStackTrace();
         }

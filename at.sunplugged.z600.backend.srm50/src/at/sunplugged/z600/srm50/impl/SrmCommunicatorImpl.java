@@ -35,11 +35,7 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
 
     private InputStream inputStream;
 
-    private InputStreamReader inputStreamReader;
-
     private OutputStream outputStream;
-
-    private OutputStreamWriter outputStreamWriter;
 
     private LogService logService = SrmActivator.getLogService();
 
@@ -62,24 +58,22 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
         try {
             this.commPort = commPortIdentifier.open(this.getClass().getName(), 2000);
         } catch (PortInUseException e) {
-            throw new IOException(e.getMessage() + " - Openen Port failed.");
-        } finally {
             this.commPort = null;
+            throw new IOException(e.getMessage() + " - Openen Port failed.");
         }
         if (this.commPort instanceof SerialPort) {
             SerialPort serialPort = (SerialPort) commPort;
 
             try {
-                serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                serialPort.setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+                        SerialPort.PARITY_NONE);
             } catch (UnsupportedCommOperationException e) {
                 e.printStackTrace();
                 throw new IOException(e.getMessage() + " - failed to set Parameters.");
             }
 
             inputStream = serialPort.getInputStream();
-            inputStreamReader = new InputStreamReader(inputStream);
             outputStream = serialPort.getOutputStream();
-            outputStreamWriter = new OutputStreamWriter(outputStream);
         }
     }
 
@@ -87,16 +81,14 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
     public void disconnect() throws IOException {
         commPort.close();
         inputStream = null;
-        inputStreamReader = null;
         outputStream = null;
-        outputStreamWriter = null;
         commPort = null;
 
     }
 
     @Override
     public List<Double> readChannels() throws IOException {
-        List<Double> returnList = new ArrayList<>(3);
+        List<Double> returnList = new ArrayList<>();
 
         String answer = doCommand(Commands.MEASUREMENT, true);
         Matcher matcher = measurementPattern.matcher(answer);
@@ -117,17 +109,24 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
             logService.log(LogService.LOG_ERROR, "Command Issued when there was no Port open.");
             throw new IOException("Command Issued when there was no Port open.");
         }
-        outputStreamWriter.write(command);
+        byte[] commandArray = new String(command + (char) 13).getBytes();
+        outputStream.write(commandArray);
+        String answer = "";
         try {
-            Thread.sleep(50);
+            Thread.sleep(10);
+            while (inputStream.available() > 0) {
+                answer += (char) inputStream.read();
+            }
+            if (answer.equals("")) {
+                Thread.sleep(50);
+                while (inputStream.available() > 0) {
+                    answer += (char) inputStream.read();
+                }
+            }
         } catch (InterruptedException e) {
             logService.log(LogService.LOG_ERROR, "doCommand Interrupted during waiting for answer.", e);
         }
-        String answer = "";
-        int currentChar;
-        while ((currentChar = inputStreamReader.read()) > -1) {
-            answer += (char) currentChar;
-        }
+
         if (!answer.startsWith(command)) {
             if (repeatIfFailed) {
                 doCommand(command, false);

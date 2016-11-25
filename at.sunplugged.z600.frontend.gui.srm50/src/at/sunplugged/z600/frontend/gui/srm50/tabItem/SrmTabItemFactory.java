@@ -102,7 +102,7 @@ public class SrmTabItemFactory {
         gdCompositeChartOne.widthHint = 380;
         compositeChartOne.setLayoutData(gdCompositeChartOne);
         compositeChartOne.setLayout(new FillLayout());
-        SrmUpdatableChart chart1 = new SrmUpdatableChart(compositeChartOne, "Channel 1");
+        SrmUpdatableChart chart1 = new SrmUpdatableChart(compositeChartOne, "Channel 1", 1);
 
         Composite compositeChartTwo = new Composite(compositeOne, SWT.NONE);
         GridData gdCompositeChartTwo = new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1);
@@ -110,7 +110,7 @@ public class SrmTabItemFactory {
         gdCompositeChartTwo.widthHint = 380;
         compositeChartTwo.setLayoutData(gdCompositeChartTwo);
         compositeChartTwo.setLayout(new FillLayout());
-        SrmUpdatableChart chart2 = new SrmUpdatableChart(compositeChartTwo, "Channel 2");
+        SrmUpdatableChart chart2 = new SrmUpdatableChart(compositeChartTwo, "Channel 2", 2);
 
         Composite compositeChartThree = new Composite(compositeOne, SWT.NONE);
         GridData gdCompositeChartThree = new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1);
@@ -118,7 +118,7 @@ public class SrmTabItemFactory {
         gdCompositeChartThree.widthHint = 380;
         compositeChartThree.setLayoutData(gdCompositeChartThree);
         compositeChartThree.setLayout(new FillLayout());
-        SrmUpdatableChart chart3 = new SrmUpdatableChart(compositeChartThree, "Channel 3");
+        SrmUpdatableChart chart3 = new SrmUpdatableChart(compositeChartThree, "Channel 3", 3);
 
         new Label(compositeOne, SWT.NONE);
 

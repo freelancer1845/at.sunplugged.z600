@@ -89,6 +89,7 @@ public abstract class UpdatableChart {
 
         updaterRunnable = new UpdaterRunnable();
         updaterThread = new Thread(updaterRunnable);
+        updaterThread.setName("ChartUpdaterThread");
         updaterThread.start();
     }
 

@@ -12,7 +12,9 @@ import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 
+import at.sunplugged.z600.main.api.ControllerInterface;
 import at.sunplugged.z600.main.controlling.MainController;
+import at.sunplugged.z600.main.impl.ControllerInterfaceImpl;
 
 public class MainActivator implements BundleActivator {
 
@@ -39,6 +41,7 @@ public class MainActivator implements BundleActivator {
     public void start(BundleContext bundleContext) throws Exception {
         MainActivator.context = bundleContext;
         initilizeLogListener(bundleContext);
+        ControllerInterface controllerInterface = new ControllerInterfaceImpl();
 
     }
 
