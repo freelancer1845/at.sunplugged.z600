@@ -6,6 +6,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
+import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
 public class SrmGuiActivator implements BundleActivator {
 
@@ -14,6 +15,18 @@ public class SrmGuiActivator implements BundleActivator {
     private static DataService dataService = null;
 
     private static LogService logService = null;
+
+    private static SrmCommunicator srmCommunicator = null;
+
+    public static SrmCommunicator getSrmCommunicator() {
+        if (srmCommunicator == null) {
+            ServiceReference<SrmCommunicator> serviceReference = SrmGuiActivator.getContext()
+                    .getServiceReference(SrmCommunicator.class);
+
+            srmCommunicator = SrmGuiActivator.getContext().getService(serviceReference);
+        }
+        return srmCommunicator;
+    }
 
     public static BundleContext getContext() {
         return context;

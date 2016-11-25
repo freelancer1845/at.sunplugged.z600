@@ -1,5 +1,6 @@
 package at.sunplugged.z600.frontend.gui.srm50.tabItem;
 
+import java.io.IOException;
 import java.util.Vector;
 
 import org.eclipse.swt.SWT;
@@ -14,6 +15,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.osgi.service.log.LogService;
+
+import at.sunplugged.z600.frontend.gui.srm50.SrmGuiActivator;
 
 public class SrmTabItemFactory {
 
@@ -59,6 +63,29 @@ public class SrmTabItemFactory {
         combo.setItems(new String[] { "COM1", "COM2", "COM3", "COM4" });
         combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         combo.setText("Com Auswählen...");
+
+        btnConnect.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int selectedIndex = combo.getSelectionIndex();
+                if (selectedIndex != -1) {
+                    try {
+                        SrmGuiActivator.getSrmCommunicator().connect(combo.getItem(selectedIndex));
+                    } catch (IOException e1) {
+                        SrmGuiActivator.getLogService().log(LogService.LOG_ERROR, "Failed on user connect: ", e1);
+                    }
+                }
+
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
 
         Label lblAktuell = new Label(compositeOne, SWT.NONE);
         lblAktuell.setText("Aktuell");

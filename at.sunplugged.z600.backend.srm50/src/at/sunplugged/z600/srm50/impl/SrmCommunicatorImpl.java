@@ -41,15 +41,23 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
 
     private Pattern measurementPattern = Pattern.compile("[0-9\\.\\s]{7}");
 
+    private String commPortName;
+
     @Override
     public void connect(String comPort) throws IOException {
 
+        if (commPort != null && comPort.equals(this.commPortName)) {
+            throw new IOException("Connection to this Port is already open");
+        }
+
         CommPortIdentifier commPortIdentifier;
+
         try {
             commPortIdentifier = CommPortIdentifier.getPortIdentifier(comPort);
         } catch (NoSuchPortException e) {
             throw new IOException(e.getMessage() + " - Getting Identifer failed.");
         }
+
         if (commPortIdentifier.isCurrentlyOwned()) {
             throw new IOException("Port Is Already In Use");
         }
@@ -74,6 +82,7 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
 
             inputStream = serialPort.getInputStream();
             outputStream = serialPort.getOutputStream();
+            this.commPortName = comPort;
         }
     }
 
@@ -135,7 +144,7 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
             }
         }
 
-        return answer.substring(command.length() + 1);
+        return answer.substring(command.length());
     }
 
     @Override
