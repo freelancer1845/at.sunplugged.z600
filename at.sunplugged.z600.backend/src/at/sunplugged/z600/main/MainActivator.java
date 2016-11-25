@@ -16,8 +16,6 @@ import at.sunplugged.z600.main.controlling.MainController;
 
 public class MainActivator implements BundleActivator {
 
-    private Thread mainControllerThread;
-
     private static BundleContext context;
 
     public static BundleContext getContext() {
@@ -41,9 +39,6 @@ public class MainActivator implements BundleActivator {
     public void start(BundleContext bundleContext) throws Exception {
         MainActivator.context = bundleContext;
         initilizeLogListener(bundleContext);
-        mainControllerThread = new Thread(new MainController());
-        mainControllerThread.setName("Main Controller Thread");
-        mainControllerThread.start();
 
     }
 
@@ -55,7 +50,6 @@ public class MainActivator implements BundleActivator {
      */
     public void stop(BundleContext bundleContext) throws Exception {
         MainActivator.context = null;
-        mainControllerThread.interrupt();
 
     }
 
@@ -85,8 +79,8 @@ public class MainActivator implements BundleActivator {
                     }
                     break;
                 case LogService.LOG_WARNING:
-                    System.out.println("WARNING - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + " - "
-                            + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
+                    System.out.println("WARNING - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+                            + " - " + arg0.getBundle().getSymbolicName() + " - " + ": " + arg0.getMessage());
                     break;
                 case LogService.LOG_INFO:
                     System.out.println("INFO - " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + " - "
