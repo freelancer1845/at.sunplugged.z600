@@ -36,4 +36,5 @@ public interface ControllerInterface {
      * @param password of the accout.
      */
     public void startSrmSqlLogging(String hostname, String username, String password) throws DataServiceException;
+
 }

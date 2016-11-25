@@ -76,6 +76,5 @@ public class MainApplication {
 
         Composite compositeOne = new Composite(shell, SWT.NONE);
         compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-
     }
 }

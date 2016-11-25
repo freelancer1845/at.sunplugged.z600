@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Srm50
-Bundle-SymbolicName: at.sunplugged.z600.backend.srm50
+Bundle-SymbolicName: at.sunplugged.z600.backend.srm50;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: at.sunplugged.z600.srm50.SrmActivator
 Bundle-Vendor: Sunplugged.at

@@ -6,7 +6,11 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: at.sunplugged.z600.backend.dataservice.api,
  at.sunplugged.z600.frontend.gui.spi,
+ at.sunplugged.z600.srm50.api,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.window,
  org.eclipse.swt,
+ org.eclipse.swt.custom,
  org.eclipse.swt.events,
  org.eclipse.swt.graphics,
  org.eclipse.swt.layout,

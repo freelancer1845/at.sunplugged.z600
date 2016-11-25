@@ -187,6 +187,26 @@ public class SrmTabItemFactory {
 
         });
 
+        new Label(compositeOne, SWT.NONE);
+        Button issueCommandsButton = new Button(compositeOne, SWT.PUSH);
+        GridData gdIssueCommandsButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+        issueCommandsButton.setLayoutData(gdIssueCommandsButton);
+        issueCommandsButton.setText("SRM Interface");
+        issueCommandsButton.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                IssueCommandsDialog issueCommandsDialog = new IssueCommandsDialog(parent.getShell());
+                issueCommandsDialog.open();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+
+            }
+
+        });
+
         return tabItem;
     }
 
