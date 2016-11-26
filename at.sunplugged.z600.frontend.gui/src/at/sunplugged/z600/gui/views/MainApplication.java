@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.wb.swt.SWTResourceManager;
+import org.osgi.framework.BundleException;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.frontend.gui.srm50.tabItem.SrmTabItemFactory;
@@ -44,7 +45,11 @@ public class MainApplication {
             }
         }
         shell.dispose();
-        System.exit(0);
+        try {
+            Activator.getContext().getBundle(0).stop();
+        } catch (BundleException e) {
+            logService.log(LogService.LOG_ERROR, "BundleException while shuting down System Bundle.", e);
+        }
     }
 
     /**

@@ -16,9 +16,9 @@ public class SrmActivator implements BundleActivator {
 
     private static LogService logService;
 
-    private ServiceTracker logServiceTracker;
-
     private ServiceRegistration<SrmCommunicator> srmCommunicatorService;
+
+    private SrmCommunicator srmCommunicator;
 
     static BundleContext getContext() {
         return context;
@@ -35,25 +35,28 @@ public class SrmActivator implements BundleActivator {
     /*
      * (non-Javadoc)
      * 
-     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework. BundleContext)
+     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.
+     * BundleContext)
      */
     public void start(BundleContext bundleContext) throws Exception {
         SrmActivator.context = bundleContext;
-        SrmCommunicator srmCommunciator = new SrmCommunicatorImpl();
-        srmCommunicatorService = context.registerService(SrmCommunicator.class, srmCommunciator, null);
+        srmCommunicator = new SrmCommunicatorImpl();
+        srmCommunicatorService = context.registerService(SrmCommunicator.class, srmCommunicator, null);
 
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+     * @see
+     * org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext bundleContext) throws Exception {
         SrmActivator.context = null;
         srmCommunicatorService.unregister();
-        logServiceTracker.close();
-
+        if (srmCommunicator != null) {
+            srmCommunicator.disconnect();
+        }
     }
 
 }
