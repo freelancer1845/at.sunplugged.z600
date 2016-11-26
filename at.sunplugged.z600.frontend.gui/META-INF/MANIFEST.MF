@@ -7,6 +7,7 @@ Bundle-Activator: at.sunplugged.z600.gui.Activator
 Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem,
+ at.sunplugged.z600.gui.mbt.api,
  at.sunplugged.z600.srm50.api,
  gnu.io,
  org.eclipse.wb.swt,

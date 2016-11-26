@@ -16,6 +16,7 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.frontend.gui.srm50.tabItem.SrmTabItemFactory;
 import at.sunplugged.z600.gui.Activator;
+import at.sunplugged.z600.gui.mbt.api.TabItemFactory;
 
 public class MainApplication {
 
@@ -78,6 +79,8 @@ public class MainApplication {
 
         SrmTabItemFactory srmTabItemFactory = new SrmTabItemFactory();
         TabItem tbtmMain = srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
+
+        TabItem tbtmMbt = TabItemFactory.createMbtTabItem(tabFolder);
 
         Composite compositeOne = new Composite(shell, SWT.NONE);
         compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
