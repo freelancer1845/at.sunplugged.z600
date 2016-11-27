@@ -6,4 +6,3 @@ Bundle-Version: 0.10.0.v20160212
 Require-Bundle: org.eclipse.swt
 Bundle-ManifestVersion: 2
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-
