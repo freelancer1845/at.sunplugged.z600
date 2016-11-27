@@ -16,7 +16,15 @@ import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
  */
 public class DataServiceImpl implements DataService {
 
+    private SqlConnection sqlConnection = null;
+
     private final Map<String, VariableSlot<?>> variableSlots = new HashMap<>();
+
+    public DataServiceImpl() {
+        sqlConnection = new SqlConnection(
+                "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;", "Z600",
+                "alwhrh29035uafpue9ru3AWU");
+    }
 
     @Override
     public void connectToSqlServer(String address, String username, String password) throws DataServiceException {
@@ -81,7 +89,6 @@ public class DataServiceImpl implements DataService {
 
     @Override
     public void startAddingSrmDataToTable() {
-        // TODO Auto-generated method stub
 
     }
 

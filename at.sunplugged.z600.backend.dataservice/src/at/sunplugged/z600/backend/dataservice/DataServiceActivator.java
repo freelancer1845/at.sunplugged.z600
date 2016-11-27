@@ -37,7 +37,6 @@ public class DataServiceActivator implements BundleActivator {
         DataServiceActivator.context = bundleContext;
         DataService dataService = new DataServiceImpl();
         context.registerService(DataService.class, dataService, null);
-        new SqlConnection(null, null, null).open();
     }
 
     /*

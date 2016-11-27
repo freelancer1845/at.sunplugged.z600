@@ -11,7 +11,11 @@ import at.sunplugged.z600.backend.dataservice.DataServiceActivator;
 
 public class SqlConnection {
 
-    private final String dbUrl = "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;";
+    /**
+     * Standard:
+     * "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;".
+     */
+    private final String dbUrl;
 
     private final String username;
 
@@ -20,11 +24,9 @@ public class SqlConnection {
     private Connection conn = null;
 
     public SqlConnection(String dbUrl, String username, String password) {
-        // this.username = username;
-        // this.password = password;
-        // Test
-        this.username = "Z600";
-        this.password = "alwhrh29035uafpue9ru3AWU";
+        this.dbUrl = dbUrl;
+        this.username = username;
+        this.password = password;
     }
 
     public void open() {
@@ -47,6 +49,20 @@ public class SqlConnection {
             throw new SQLException("Connection Not Valid.");
         }
 
+    }
+
+    public boolean isOpen() {
+        if (conn == null) {
+            return false;
+        }
+        try {
+            if (!conn.isValid(5)) {
+                return false;
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+        return true;
     }
 
 }
