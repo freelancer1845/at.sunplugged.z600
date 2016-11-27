@@ -2,86 +2,51 @@ package at.sunplugged.z600.backend.dataservice.impl;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.osgi.service.log.LogService;
+
+import at.sunplugged.z600.backend.dataservice.DataServiceActivator;
+
 public class SqlConnection {
 
-    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-
-    private final String dbUrl;
+    private final String dbUrl = "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;";
 
     private final String username;
 
     private final String password;
 
+    private Connection conn = null;
+
     public SqlConnection(String dbUrl, String username, String password) {
-        this.dbUrl = "jdbc::mysql:" + dbUrl;
-        this.username = username;
-        this.password = password;
+        // this.username = username;
+        // this.password = password;
+        // Test
+        this.username = "Z600";
+        this.password = "alwhrh29035uafpue9ru3AWU";
     }
 
     public void open() {
-
-        // JDBC driver name and database URL
-
-        Connection conn = null;
-        Statement stmt = null;
         try {
-            // STEP 2: Register JDBC driver
-            Class.forName("com.mysql.jdbc.Driver");
-
-            // STEP 3: Open a connection
-            System.out.println("Connecting to database...");
+            DriverManager.registerDriver(new com.microsoft.sqlserver.jdbc.SQLServerDriver());
+            DriverManager.setLoginTimeout(5);
             conn = DriverManager.getConnection(dbUrl, username, password);
+        } catch (SQLException e) {
+            DataServiceActivator.getLogService().log(LogService.LOG_ERROR, "Failed to open connection", e);
+        }
 
-            // STEP 4: Execute a query
-            System.out.println("Creating statement...");
+    }
+
+    public Statement getStatement() throws SQLException {
+        if (conn.isValid(1)) {
+            Statement stmt;
             stmt = conn.createStatement();
-            String sql;
-            sql = "SELECT id, first, last, age FROM Employees";
-            ResultSet rs = stmt.executeQuery(sql);
+            return stmt;
+        } else {
+            throw new SQLException("Connection Not Valid.");
+        }
 
-            // STEP 5: Extract data from result set
-            while (rs.next()) {
-                // Retrieve by column name
-                int id = rs.getInt("id");
-                int age = rs.getInt("age");
-                String first = rs.getString("first");
-                String last = rs.getString("last");
-
-                // Display values
-                System.out.print("ID: " + id);
-                System.out.print(", Age: " + age);
-                System.out.print(", First: " + first);
-                System.out.println(", Last: " + last);
-            }
-            // STEP 6: Clean-up environment
-            rs.close();
-            stmt.close();
-            conn.close();
-        } catch (SQLException se) {
-            // Handle errors for JDBC
-            se.printStackTrace();
-        } catch (Exception e) {
-            // Handle errors for Class.forName
-            e.printStackTrace();
-        } finally {
-            // finally block used to close resources
-            try {
-                if (stmt != null)
-                    stmt.close();
-            } catch (SQLException se2) {
-            } // nothing we can do
-            try {
-                if (conn != null)
-                    conn.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            } // end finally try
-        } // end try
-        System.out.println("Goodbye!");
     }
 
 }
