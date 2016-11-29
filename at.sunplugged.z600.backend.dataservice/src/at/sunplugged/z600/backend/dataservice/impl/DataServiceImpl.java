@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.service.log.LogService;
+
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 
@@ -15,6 +17,8 @@ import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
  *
  */
 public class DataServiceImpl implements DataService {
+
+    private static LogService logService;
 
     private SqlConnection sqlConnection = null;
 
@@ -90,6 +94,20 @@ public class DataServiceImpl implements DataService {
     @Override
     public void startAddingSrmDataToTable() {
 
+    }
+
+    public static LogService getLogService() {
+        return DataServiceImpl.logService;
+    }
+
+    public synchronized void setLogService(LogService logService) {
+        this.logService = logService;
+    }
+
+    public synchronized void unsetLogService(LogService logService) {
+        if (this.logService == logService) {
+            this.logService = null;
+        }
     }
 
 }

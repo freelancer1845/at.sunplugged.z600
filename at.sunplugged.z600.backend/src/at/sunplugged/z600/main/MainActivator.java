@@ -12,10 +12,6 @@ import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 
-import at.sunplugged.z600.main.api.ControllerInterface;
-import at.sunplugged.z600.main.controlling.MainController;
-import at.sunplugged.z600.main.impl.ControllerInterfaceImpl;
-
 public class MainActivator implements BundleActivator {
 
     private static BundleContext context;
@@ -24,32 +20,23 @@ public class MainActivator implements BundleActivator {
         return context;
     }
 
-    private static LogService logService;
-
     private ServiceTracker logServiceTracker;
-
-    public static LogService getLogService() {
-        return logService;
-    }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.
-     * BundleContext)
+     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework. BundleContext)
      */
     public void start(BundleContext bundleContext) throws Exception {
         MainActivator.context = bundleContext;
         initilizeLogListener(bundleContext);
-        ControllerInterface controllerInterface = new ControllerInterfaceImpl();
 
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+     * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
      */
     public void stop(BundleContext bundleContext) throws Exception {
         MainActivator.context = null;
@@ -58,9 +45,6 @@ public class MainActivator implements BundleActivator {
 
     // TODO: Move to a Bundle that saves the log and displays it.
     private void initilizeLogListener(BundleContext bundleContext) {
-        logServiceTracker = new ServiceTracker<>(bundleContext, LogService.class, null);
-        logServiceTracker.open();
-        logService = (LogService) logServiceTracker.getService();
 
         ServiceReference readerServiceReference = bundleContext.getServiceReference(LogReaderService.class);
         LogReaderService readerService = (LogReaderService) bundleContext.getService(readerServiceReference);

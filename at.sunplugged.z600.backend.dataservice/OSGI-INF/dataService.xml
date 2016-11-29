@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="at.sunplugged.z600.backend.dataservice">
+   <implementation class="at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl"/>
+   <service>
+      <provide interface="at.sunplugged.z600.backend.dataservice.api.DataService"/>
+   </service>
+   <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
+</scr:component>

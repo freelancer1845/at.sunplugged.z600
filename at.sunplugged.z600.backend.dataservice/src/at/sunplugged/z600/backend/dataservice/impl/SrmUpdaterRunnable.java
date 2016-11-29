@@ -6,8 +6,6 @@ import java.sql.Statement;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.backend.dataservice.DataServiceActivator;
-
 public class SrmUpdaterRunnable implements Runnable {
 
     private final LogService logService;
@@ -16,7 +14,7 @@ public class SrmUpdaterRunnable implements Runnable {
 
     public SrmUpdaterRunnable(SqlConnection sqlConnection) {
         this.sqlConnection = sqlConnection;
-        this.logService = DataServiceActivator.getLogService();
+        this.logService = DataServiceImpl.getLogService();
     }
 
     @Override

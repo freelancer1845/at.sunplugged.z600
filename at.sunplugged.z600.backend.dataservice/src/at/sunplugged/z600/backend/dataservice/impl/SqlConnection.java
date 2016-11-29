@@ -7,8 +7,6 @@ import java.sql.Statement;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.backend.dataservice.DataServiceActivator;
-
 public class SqlConnection {
 
     /**
@@ -35,7 +33,7 @@ public class SqlConnection {
             DriverManager.setLoginTimeout(5);
             conn = DriverManager.getConnection(dbUrl, username, password);
         } catch (SQLException e) {
-            DataServiceActivator.getLogService().log(LogService.LOG_ERROR, "Failed to open connection", e);
+            DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to open connection", e);
         }
 
     }

@@ -3,10 +3,10 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Dataservice
 Bundle-SymbolicName: at.sunplugged.z600.backend.dataservice;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: at.sunplugged.z600.backend.dataservice.DataServiceActivator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.osgi.framework;version="1.3.0",
  org.osgi.service.log;version="1.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,lib/sqljdbc42.jar
 Export-Package: at.sunplugged.z600.backend.dataservice.api
+Service-Component: OSGI-INF/dataService.xml
