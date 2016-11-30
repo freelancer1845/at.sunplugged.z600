@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Mbt
 Bundle-SymbolicName: at.sunplugged.z600.gui.mbt
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: at.sunplugged.z600.gui.mbt.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.eclipse.swt,
  org.eclipse.swt.events,

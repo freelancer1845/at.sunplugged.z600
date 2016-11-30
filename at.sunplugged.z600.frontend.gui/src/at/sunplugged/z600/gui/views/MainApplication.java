@@ -22,7 +22,7 @@ public class MainApplication {
 
     protected Shell shell;
 
-    private LogService logService = Activator.getLogService();
+    private LogService logService;
 
     /**
      * Open the window.
@@ -85,4 +85,5 @@ public class MainApplication {
         Composite compositeOne = new Composite(shell, SWT.NONE);
         compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
     }
+
 }
