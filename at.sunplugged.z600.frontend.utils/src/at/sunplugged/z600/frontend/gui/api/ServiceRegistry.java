@@ -9,7 +9,7 @@ public class ServiceRegistry {
 
     private static ServiceRegistry instance = new ServiceRegistry();
 
-    private LogService logService;
+    private static LogService logService;
 
     public static ServiceRegistry getInstance() {
         return instance;
@@ -17,10 +17,15 @@ public class ServiceRegistry {
 
     private static Map<String, Object> serviceMap = new HashMap<>();
 
+    @SuppressWarnings("unchecked")
     public static <T> T getService(Class<T> clazz) {
         if (!serviceMap.containsKey(clazz.getName())) {
+            return (T) serviceMap.get(clazz.getName());
+        } else {
+            logService.log(LogService.LOG_ERROR,
+                    "No Service registered for class: " + clazz.getName() + ". Returning null.");
+            return null;
         }
-        return (T) serviceMap.get(clazz.getName());
     }
 
     public synchronized void bindService(Object service) {
@@ -28,7 +33,7 @@ public class ServiceRegistry {
             serviceMap.put(service.getClass().getName(), service);
         }
         if (service.getClass().equals(LogService.class)) {
-            this.logService = (LogService) service;
+            ServiceRegistry.logService = (LogService) service;
         }
     }
 

@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Srm50
 Bundle-SymbolicName: at.sunplugged.z600.backend.srm50;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: at.sunplugged.z600.srm50.SrmActivator
 Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: gnu.io;version="2.1.7",
@@ -12,3 +11,4 @@ Import-Package: gnu.io;version="2.1.7",
  org.osgi.util.tracker;version="1.5.1"
 Bundle-ActivationPolicy: lazy
 Export-Package: at.sunplugged.z600.srm50.api
+Service-Component: OSGI-INF/srmCommunicator.xml

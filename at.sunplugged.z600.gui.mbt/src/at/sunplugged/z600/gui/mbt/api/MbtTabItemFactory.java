@@ -12,10 +12,10 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import at.sunplugged.z600.gui.mbt.impl.MbtCheckButton;
 
-public class TabItemFactory {
+public class MbtTabItemFactory {
 
-    public static TabItem createMbtTabItem(TabFolder tabFolder) {
-        TabItem tbtmMbt = new TabItem(tabFolder, SWT.NONE);
+    public TabItem createMbtTabItem(TabFolder tabFolder, int style) {
+        TabItem tbtmMbt = new TabItem(tabFolder, style);
         tbtmMbt.setText("MBT");
 
         Composite composite_1 = new Composite(tabFolder, SWT.BORDER);
@@ -34,18 +34,10 @@ public class TabItemFactory {
         lblMbtDebugControl.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
         lblMbtDebugControl.setText("MBT Debug Control");
 
-        createButtons(composite_1);
-        new Label(composite_1, SWT.NONE);
-        new Label(composite_1, SWT.NONE);
-        new Label(composite_1, SWT.NONE);
-        new Label(composite_1, SWT.NONE);
-        new Label(composite_1, SWT.NONE);
-        new Label(composite_1, SWT.NONE);
-
         return tbtmMbt;
     }
 
-    private static void createButtons(Composite parent) {
+    private void createButtons(Composite parent) {
         for (int i = 0; i < 4; i++) {
             for (int j = 1; j < 7; j++) {
                 new MbtCheckButton(parent, "Out:" + i + ":" + j) {

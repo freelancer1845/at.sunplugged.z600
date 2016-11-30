@@ -2,9 +2,7 @@ package at.sunplugged.z600.srm50.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -13,7 +11,6 @@ import java.util.regex.Pattern;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.srm50.SrmActivator;
 import at.sunplugged.z600.srm50.api.Commands;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 import gnu.io.CommPort;
@@ -37,7 +34,7 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
 
     private OutputStream outputStream;
 
-    private LogService logService = SrmActivator.getLogService();
+    private LogService logService;
 
     private Pattern measurementPattern = Pattern.compile("[0-9\\.\\s]{7}");
 
@@ -152,4 +149,13 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
         return doCommand(string, true);
     }
 
+    public synchronized void setLogService(LogService logService) {
+        this.logService = logService;
+    }
+
+    public synchronized void unsetLogService(LogService logService) {
+        if (this.logService == logService) {
+            logService = null;
+        }
+    }
 }
