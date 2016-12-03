@@ -11,4 +11,5 @@ Import-Package: gnu.io;version="2.1.7",
  org.osgi.util.tracker;version="1.5.1"
 Bundle-ActivationPolicy: lazy
 Export-Package: at.sunplugged.z600.srm50.api
-Service-Component: OSGI-INF/srmCommunicator.xml
+Service-Component: OSGI-INF/at.sunplugged.z600.srm50.impl.SrmCommunicatorImpl.xml
+Require-Bundle: org.eclipse.osgi.services

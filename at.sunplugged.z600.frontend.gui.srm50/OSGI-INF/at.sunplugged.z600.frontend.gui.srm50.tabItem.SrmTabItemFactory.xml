@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="at.sunplugged.z600.frontend.gui.srm50.tabItem.SrmTabItemFactory">
+   <reference bind="bindDataService" cardinality="1..1" interface="at.sunplugged.z600.backend.dataservice.api.DataService" name="DataService" policy="static" unbind="unbindDataService"/>
+   <reference bind="bindLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unbindLogService"/>
+   <reference bind="bindSrmCommunicator" cardinality="1..1" interface="at.sunplugged.z600.srm50.api.SrmCommunicator" name="SrmCommunicator" policy="static" unbind="unbindSrmCommunicator"/>
+   <implementation class="at.sunplugged.z600.frontend.gui.srm50.tabItem.SrmTabItemFactory"/>
+</scr:component>

@@ -1,4 +1,4 @@
-package at.sunplugged.z600.frontend.gui.spi;
+package at.sunplugged.z600.frontend.gui.utils.spi;
 
 import java.util.ArrayList;
 import java.util.List;

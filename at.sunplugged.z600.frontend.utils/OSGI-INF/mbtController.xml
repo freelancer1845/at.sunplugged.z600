@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="at.sunplugged.z600.frontend.utils">
-   <implementation class="at.sunplugged.z600.frontend.gui.api.ServiceRegistry"/>
-   <reference bind="bindService" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MBTController" name="MBTController" policy="static" unbind="unbindService"/>
-   <reference bind="bindService" cardinality="1..1" interface="at.sunplugged.z600.srm50.api.SrmCommunicator" name="SrmCommunicator" policy="static" unbind="unbindService"/>
-   <reference bind="bindService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unbindService"/>
-   <reference bind="bindService" cardinality="1..1" interface="at.sunplugged.z600.main.api.ControllerInterface" name="ControllerInterface" policy="static" unbind="unbindService"/>
-</scr:component>

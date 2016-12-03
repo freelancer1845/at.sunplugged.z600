@@ -1,15 +1,18 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Utils
-Bundle-SymbolicName: at.sunplugged.z600.frontend.utils
+Bundle-SymbolicName: at.sunplugged.z600.frontend.utils;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: at.sunplugged.z600.frontend.gui.spi,
+Export-Package: at.sunplugged.z600.frontend.gui.utils.spi,
  org.eclipse.wb.swt
 Import-Package: org.eclipse.swt,
  org.eclipse.swt.events,
  org.eclipse.swt.graphics,
  org.eclipse.swt.widgets,
+ org.osgi.framework;version="1.8.0",
  org.osgi.service.log;version="1.3.0",
+ org.osgi.util.tracker;version="1.5.1",
  org.swtchart
-Service-Component: OSGI-INF/mbtController.xml
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: at.sunplugged.z600.frontend.gui.utils.Activator

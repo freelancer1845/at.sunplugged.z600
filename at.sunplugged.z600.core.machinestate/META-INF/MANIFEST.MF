@@ -4,8 +4,7 @@ Bundle-Name: Machinestate
 Bundle-SymbolicName: at.sunplugged.z600.core.machinestate
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Service-Component: OSGI-INF/machineState.xml,
- machineState.xml
+Service-Component: OSGI-INF/machineState.xml
 Import-Package: at.sunplugged.z600.backend.dataservice.api,
  at.sunplugged.z600.mbt.api,
  at.sunplugged.z600.srm50.api,

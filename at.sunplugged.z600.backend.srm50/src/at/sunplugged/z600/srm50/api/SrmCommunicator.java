@@ -15,18 +15,15 @@ public interface SrmCommunicator {
     /**
      * Connects to the COM Port specified.
      * 
-     * @param comPort
-     *            identifier.
-     * @throws IOException
-     *             if connections fails.
+     * @param comPort identifier.
+     * @throws IOException if connections fails.
      */
     public void connect(String comPort) throws IOException;
 
     /**
      * Disconnects from the COM Port.
      * 
-     * @throws IOException
-     *             if there is no connection or the disconnect failed.
+     * @throws IOException if there is no connection or the disconnect failed.
      */
     public void disconnect() throws IOException;
 
@@ -34,8 +31,7 @@ public interface SrmCommunicator {
      * Reads out the all channels and returns a List of Doubles.
      *
      * @return {@linkplain List\<{@linkplain Double}\>} of values.
-     * @throws IOException
-     *             if retrieving failed.
+     * @throws IOException if retrieving failed.
      */
     public List<Double> readChannels() throws IOException;
 
@@ -44,13 +40,12 @@ public interface SrmCommunicator {
      * 
      * @return {@link Enumeration}.
      */
-    public Enumeration getPortIdentifiers();
+    public String[] getPortNames();
 
     /**
      * Issues the given command and returns the Answer.
      * 
-     * @param string
-     *            {@linkplain String} the command (A list of commands is
+     * @param string {@linkplain String} the command (A list of commands is
      *            available at
      *            {@linkplain at.sunplugged.z600.srm50.api.Commands}
      * @return {@linkplain String} answer.

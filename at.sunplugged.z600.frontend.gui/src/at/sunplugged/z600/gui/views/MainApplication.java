@@ -28,6 +28,9 @@ public class MainApplication {
      * Open the window.
      */
     public void open() {
+
+        logService = Activator.getLogService();
+
         Display display = Display.getDefault();
         createContents();
         shell.open();

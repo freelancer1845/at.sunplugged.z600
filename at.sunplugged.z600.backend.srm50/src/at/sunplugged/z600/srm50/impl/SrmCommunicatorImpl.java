@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.srm50.api.Commands;
@@ -26,6 +29,7 @@ import gnu.io.UnsupportedCommOperationException;
  * @author Jascha Riedel
  *
  */
+@Component
 public class SrmCommunicatorImpl implements SrmCommunicator {
 
     private CommPort commPort;
@@ -106,8 +110,18 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
     }
 
     @Override
-    public Enumeration getPortIdentifiers() {
-        return CommPortIdentifier.getPortIdentifiers();
+    public String[] getPortNames() {
+        @SuppressWarnings("unchecked")
+        Enumeration<CommPortIdentifier> identifiers = CommPortIdentifier.getPortIdentifiers();
+
+        List<String> list = new ArrayList<>();
+        while (identifiers.hasMoreElements()) {
+            CommPortIdentifier identifier = identifiers.nextElement();
+            if (identifier.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+                list.add(identifier.getName());
+            }
+        }
+        return list.toArray(new String[] {});
     }
 
     private String doCommand(String command, boolean repeatIfFailed) throws IOException {
@@ -149,6 +163,7 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
         return doCommand(string, true);
     }
 
+    @Reference(unbind = "unsetLogService")
     public synchronized void setLogService(LogService logService) {
         this.logService = logService;
     }
@@ -156,6 +171,17 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
     public synchronized void unsetLogService(LogService logService) {
         if (this.logService == logService) {
             logService = null;
+        }
+    }
+
+    @Deactivate
+    public synchronized void deactivate() {
+        if (commPort != null) {
+            try {
+                this.disconnect();
+            } catch (IOException e) {
+                this.logService.log(LogService.LOG_WARNING, "Error disconnecting com port.");
+            }
         }
     }
 }

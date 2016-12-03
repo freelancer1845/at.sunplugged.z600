@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.frontend.gui.srm50.SrmGuiActivator;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
 public class IssueCommandsDialog extends TitleAreaDialog {
@@ -40,17 +39,20 @@ public class IssueCommandsDialog extends TitleAreaDialog {
 
     private SrmCommunicator srmCommunicator;
 
+    private LogService logService;
+
     private Shell parentShell;
 
     private Button sendButton;
 
-    protected IssueCommandsDialog(Shell parentShell) {
+    protected IssueCommandsDialog(SrmTabItemFactory srmTabItemFactory, Shell parentShell) {
         super(parentShell);
         this.parentShell = parentShell;
-        srmCommunicator = SrmGuiActivator.getSrmCommunicator();
+        srmCommunicator = srmTabItemFactory.getSrmCommunicator();
         if (srmCommunicator == null) {
             this.close();
         }
+        this.logService = srmTabItemFactory.getLogService();
     }
 
     @Override
@@ -125,7 +127,7 @@ public class IssueCommandsDialog extends TitleAreaDialog {
 
                 for (String singleCommand : commandList) {
 
-                    SrmGuiActivator.getLogService().log(LogService.LOG_DEBUG, "Issuing srm command: " + singleCommand);
+                    logService.log(LogService.LOG_DEBUG, "Issuing srm command: " + singleCommand);
                     DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
                     Date date = new Date();
                     String commandLine = singleCommand + " - " + dateFormat.format(date);
@@ -141,7 +143,7 @@ public class IssueCommandsDialog extends TitleAreaDialog {
                             commandEndString.length(), SWTResourceManager.getColor(0, 255, 55),
                             SWTResourceManager.getColor(SWT.COLOR_WHITE)));
                     styledText.setTopIndex(styledText.getLineCount() - 1);
-                    SrmGuiActivator.getLogService().log(LogService.LOG_DEBUG, "Answer: " + answer);
+                    logService.log(LogService.LOG_DEBUG, "Answer: " + answer);
 
                 }
 
@@ -150,7 +152,7 @@ public class IssueCommandsDialog extends TitleAreaDialog {
                 messageBox.setMessage("Failed to send command: " + e1.getMessage());
                 messageBox.setText("Unhandled Loop Exeception");
                 messageBox.open();
-                SrmGuiActivator.getLogService().log(LogService.LOG_ERROR, e1.getMessage(), e1);
+                logService.log(LogService.LOG_ERROR, e1.getMessage(), e1);
             }
         }
 
