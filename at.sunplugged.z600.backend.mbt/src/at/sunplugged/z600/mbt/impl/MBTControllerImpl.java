@@ -194,6 +194,9 @@ public class MBTControllerImpl implements MBTController {
 
     @Override
     public boolean isConnected() {
+        if (connection == null) {
+            return false;
+        }
         return connection.isConnected();
     }
 

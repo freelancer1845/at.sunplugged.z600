@@ -1,7 +1,5 @@
 package at.sunplugged.z600.frontend.gui.srm50.tabItem;
 
-import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Vector;
 
 import org.eclipse.swt.SWT;
@@ -16,7 +14,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;

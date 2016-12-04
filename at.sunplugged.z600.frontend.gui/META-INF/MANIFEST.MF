@@ -3,11 +3,11 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Gui
 Bundle-SymbolicName: at.sunplugged.z600.frontend.gui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: at.sunplugged.z600.gui.Activator
 Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem,
  at.sunplugged.z600.gui.mbt.api,
+ at.sunplugged.z600.mbt.api,
  at.sunplugged.z600.srm50.api,
  gnu.io,
  org.eclipse.wb.swt,
@@ -16,4 +16,7 @@ Import-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem,
  org.osgi.util.tracker;version="1.5.1",
  org.swtchart
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.swt;bundle-version="3.105.0"
+Require-Bundle: org.eclipse.swt;bundle-version="3.105.0",
+ org.eclipse.osgi.services
+Service-Component: OSGI-INF/at.sunplugged.z600.gui.views.MainApplication.xml
+Export-Package: at.sunplugged.z600.gui.views
