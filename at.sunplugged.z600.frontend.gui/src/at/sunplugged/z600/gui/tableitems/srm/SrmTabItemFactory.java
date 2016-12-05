@@ -1,4 +1,4 @@
-package at.sunplugged.z600.frontend.gui.srm50.tabItem;
+package at.sunplugged.z600.gui.tableitems.srm;
 
 import java.util.Vector;
 
@@ -14,14 +14,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
-@Component
 public class SrmTabItemFactory {
 
     private static final int SAVE_SIZE = 500;
@@ -36,13 +33,19 @@ public class SrmTabItemFactory {
 
     private boolean[] recentlyMoved = new boolean[] { false, false, false };
 
-    private static SrmCommunicator srmCommunicator = null;
+    private LogService logService;
 
-    private static LogService logService = null;
+    private SrmCommunicator srmCommunicator;
 
-    private static DataService dataService = null;
+    private DataService dataService;
 
     private IssueCommandsDialog issueCommandsDialog;
+
+    public SrmTabItemFactory(SrmCommunicator srmCommunicator, LogService logService, DataService dataService) {
+        this.srmCommunicator = srmCommunicator;
+        this.dataService = dataService;
+        this.logService = logService;
+    }
 
     /**
      * Creates the tab item for the srm view.
@@ -229,48 +232,15 @@ public class SrmTabItemFactory {
     }
 
     public LogService getLogService() {
-        return SrmTabItemFactory.logService;
+        return logService;
     }
 
     public SrmCommunicator getSrmCommunicator() {
-        return SrmTabItemFactory.srmCommunicator;
+        return srmCommunicator;
     }
 
     public DataService getDataService() {
-        return SrmTabItemFactory.dataService;
-    }
-
-    @Reference(unbind = "unbindLogService")
-    public synchronized void bindLogService(LogService logService) {
-        SrmTabItemFactory.logService = logService;
-    }
-
-    public synchronized void unbindLogService(LogService logService) {
-        if (SrmTabItemFactory.logService == logService) {
-            SrmTabItemFactory.logService = null;
-        }
-    }
-
-    @Reference(unbind = "unbindSrmCommunicator")
-    public synchronized void bindSrmCommunicator(SrmCommunicator srmCommunicator) {
-        SrmTabItemFactory.srmCommunicator = srmCommunicator;
-    }
-
-    public synchronized void unbindSrmCommunicator(SrmCommunicator srmCommunicator) {
-        if (SrmTabItemFactory.srmCommunicator == srmCommunicator) {
-            SrmTabItemFactory.srmCommunicator = null;
-        }
-    }
-
-    @Reference(unbind = "unbindDataService")
-    public synchronized void bindDataService(DataService dataService) {
-        SrmTabItemFactory.dataService = dataService;
-    }
-
-    public synchronized void unbindDataService(DataService dataService) {
-        if (SrmTabItemFactory.dataService == dataService) {
-            SrmTabItemFactory.dataService = null;
-        }
+        return dataService;
     }
 
 }

@@ -1,4 +1,4 @@
-package at.sunplugged.z600.frontend.gui.srm50.tabItem;
+package at.sunplugged.z600.gui.tableitems.srm;
 
 import org.eclipse.swt.widgets.Composite;
 import org.osgi.service.log.LogService;

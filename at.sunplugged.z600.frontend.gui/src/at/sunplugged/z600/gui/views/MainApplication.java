@@ -18,18 +18,11 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.frontend.gui.srm50.tabItem.SrmTabItemFactory;
-import at.sunplugged.z600.gui.mbt.api.MbtTabItemFactory;
+import at.sunplugged.z600.backend.dataservice.api.DataService;
+import at.sunplugged.z600.gui.tableitems.mbt.MbtTabItemFactory;
+import at.sunplugged.z600.gui.tableitems.srm.SrmTabItemFactory;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.layout.RowData;
 
 @Component
 public class MainApplication extends Thread {
@@ -41,6 +34,8 @@ public class MainApplication extends Thread {
     private SrmCommunicator srmCommunicator;
 
     private MBTController mbtController;
+
+    private DataService dataService;
 
     private static BundleContext context;
 
@@ -126,7 +121,7 @@ public class MainApplication extends Thread {
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
 
-        SrmTabItemFactory srmTabItemFactory = new SrmTabItemFactory();
+        SrmTabItemFactory srmTabItemFactory = new SrmTabItemFactory(srmCommunicator, logService, dataService);
         TabItem tabItemSrm = srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
         MbtTabItemFactory mbtTabItemFactory = new MbtTabItemFactory(mbtController, logService);
         // TabItem tbtmMbt = mbtTabItemFactory.createMbtTabItem(tabFolder,
@@ -166,6 +161,17 @@ public class MainApplication extends Thread {
     public synchronized void unbindMBTController(MBTController mbtController) {
         if (this.mbtController == mbtController) {
             this.mbtController = null;
+        }
+    }
+
+    @Reference(unbind = "unbindDataService")
+    public synchronized void bindDataService(DataService dataService) {
+        this.dataService = dataService;
+    }
+
+    public synchronized void unbindDataService(DataService dataService) {
+        if (this.dataService == dataService) {
+            this.dataService = null;
         }
     }
 }

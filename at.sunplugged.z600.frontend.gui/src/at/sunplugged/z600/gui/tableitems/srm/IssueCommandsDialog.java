@@ -1,4 +1,4 @@
-package at.sunplugged.z600.frontend.gui.srm50.tabItem;
+package at.sunplugged.z600.gui.tableitems.srm;
 
 import java.io.IOException;
 import java.text.DateFormat;

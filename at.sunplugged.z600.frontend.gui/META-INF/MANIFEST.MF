@@ -5,11 +5,13 @@ Bundle-SymbolicName: at.sunplugged.z600.frontend.gui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: at.sunplugged.z600.frontend.gui.srm50.tabItem,
- at.sunplugged.z600.gui.mbt.api,
+Import-Package: at.sunplugged.z600.backend.dataservice.api,
+ at.sunplugged.z600.frontend.gui.utils.spi,
  at.sunplugged.z600.mbt.api,
  at.sunplugged.z600.srm50.api,
  gnu.io,
+ org.eclipse.jface.dialogs,
+ org.eclipse.jface.window,
  org.eclipse.wb.swt,
  org.osgi.framework;version="1.3.0",
  org.osgi.service.log;version="1.3.0",
