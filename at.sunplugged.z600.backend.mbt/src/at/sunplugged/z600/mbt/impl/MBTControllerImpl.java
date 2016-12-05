@@ -12,6 +12,8 @@ import net.wimpi.modbus.ModbusException;
 import net.wimpi.modbus.io.ModbusTCPTransaction;
 import net.wimpi.modbus.msg.ReadCoilsRequest;
 import net.wimpi.modbus.msg.ReadCoilsResponse;
+import net.wimpi.modbus.msg.ReadInputDiscretesRequest;
+import net.wimpi.modbus.msg.ReadInputDiscretesResponse;
 import net.wimpi.modbus.msg.ReadInputRegistersRequest;
 import net.wimpi.modbus.msg.ReadInputRegistersResponse;
 import net.wimpi.modbus.msg.WriteCoilRequest;
@@ -59,7 +61,7 @@ public class MBTControllerImpl implements MBTController {
 
     @Override
     public void writeDigOut(int coil, int digOut, boolean value) throws IOException {
-        if (connection.isConnected()) {
+        if (!isConnected()) {
             throw new MBTControllerException("No MBT Connection open!");
         }
         WriteCoilRequest writeCoilRequest = new WriteCoilRequest((coil * 6) + digOut, value);
@@ -84,10 +86,10 @@ public class MBTControllerImpl implements MBTController {
 
     @Override
     public boolean readDigOut(int coil, int digOut) throws IOException {
-        if (connection.isConnected()) {
+        if (!isConnected()) {
             throw new MBTControllerException("No MBT Connection open!");
         }
-        ReadCoilsRequest readCoilsRequest = new ReadCoilsRequest(512 + coil * 6 + digOut, 1);
+        ReadCoilsRequest readCoilsRequest = new ReadCoilsRequest(coil * 6 + digOut, 1);
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
         ReadCoilsResponse readCoilsResponse;
 
@@ -106,14 +108,14 @@ public class MBTControllerImpl implements MBTController {
 
     @Override
     public boolean readDigIn(int coil, int digIn) throws IOException {
-        if (connection.isConnected()) {
+        if (!isConnected()) {
             throw new MBTControllerException("No MBT Connection open!");
         }
-        ReadCoilsRequest readCoilsRequest = new ReadCoilsRequest(coil * 6 + digIn, 1);
+        ReadInputDiscretesRequest readInputDiscretesRequest = new ReadInputDiscretesRequest(coil * 6 + digIn, 1);
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
-        ReadCoilsResponse readCoilsResponse;
+        ReadInputDiscretesResponse readInputDiscretesResponse;
 
-        modbusTransaction.setRequest(readCoilsRequest);
+        modbusTransaction.setRequest(readInputDiscretesRequest);
 
         synchronized (lock) {
             try {
@@ -123,8 +125,8 @@ public class MBTControllerImpl implements MBTController {
             }
         }
 
-        readCoilsResponse = (ReadCoilsResponse) modbusTransaction.getResponse();
-        return readCoilsResponse.getCoilStatus(0);
+        readInputDiscretesResponse = (ReadInputDiscretesResponse) modbusTransaction.getResponse();
+        return readInputDiscretesResponse.getDiscreteStatus(0);
     }
 
     /** Bind method for LogService. */
@@ -141,7 +143,7 @@ public class MBTControllerImpl implements MBTController {
 
     @Override
     public int readInputRegister(int register, int anaIn) throws IOException {
-        if (connection.isConnected()) {
+        if (!isConnected()) {
             throw new MBTControllerException("No MBT Connection open!");
         }
 
@@ -165,12 +167,12 @@ public class MBTControllerImpl implements MBTController {
 
     @Override
     public void writeOutputRegister(int register, int anaOut, int value) throws IOException {
-        if (connection.isConnected()) {
+        if (!isConnected()) {
             throw new MBTControllerException("No MBT Connection open!");
         }
 
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
-        Register registerValue = new SimpleRegister(register);
+        Register registerValue = new SimpleRegister(value);
         WriteSingleRegisterRequest writeSingleRegisterRequest = new WriteSingleRegisterRequest(register * 4 + anaOut,
                 registerValue);
         WriteSingleRegisterResponse writeSingleRegisterResponse;

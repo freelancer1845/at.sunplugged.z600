@@ -32,6 +32,8 @@ public class MbtTabItemFactory {
     private Text textReadCoilValue;
     private Text textReadRegisterAddress;
     private Text textReadRegisterValue;
+    private Text textReadDiscreteInputAddress;
+    private Text textReadDiscreteInputValue;
     private Text textWriteCoilAddress;
     private Text textWriteCoilValue;
     private Text textWriteRegisterAddress;
@@ -58,7 +60,7 @@ public class MbtTabItemFactory {
         groupConnect.setLayout(new GridLayout(3, false));
 
         textIPAddress = new Text(groupConnect, SWT.BORDER);
-        textIPAddress.setText("Host Address");
+        textIPAddress.setText("localhost");
         GridData gdTextIpAddress = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gdTextIpAddress.minimumWidth = 200;
         textIPAddress.setLayoutData(gdTextIpAddress);
@@ -121,6 +123,25 @@ public class MbtTabItemFactory {
         gd_btnReadCoil.widthHint = 75;
         btnReadCoil.setLayoutData(gd_btnReadCoil);
         btnReadCoil.setText("Read");
+        btnReadCoil.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    textReadCoilValue.setText(String
+                            .valueOf(mbtController.readDigOut(0, Integer.valueOf(textReadCoilAddress.getText()))));
+                } catch (NumberFormatException | IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Error reading dig out: " + e1.getMessage());
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
 
         textReadCoilValue = new Text(grpReadCoil, SWT.BORDER);
         textReadCoilValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_MAGENTA));
@@ -145,14 +166,76 @@ public class MbtTabItemFactory {
         gdButtonWriteCoil.widthHint = 75;
         buttonWriteCoil.setLayoutData(gdButtonWriteCoil);
         buttonWriteCoil.setText("Write");
+        buttonWriteCoil.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    mbtController.writeDigOut(0, Integer.valueOf(textWriteCoilAddress.getText()),
+                            Boolean.valueOf(textWriteCoilValue.getText()));
+                } catch (NumberFormatException | IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Error writing dig in: " + e1.getMessage());
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
 
         textWriteCoilValue = new Text(groupWriteCoil, SWT.BORDER);
         textWriteCoilValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
         textWriteCoilValue.setText("Value");
-        textWriteCoilValue.setEditable(false);
+        textWriteCoilValue.setEditable(true);
         GridData gdTextWriteCoilValue = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
         gdTextWriteCoilValue.widthHint = 75;
         textWriteCoilValue.setLayoutData(gdTextWriteCoilValue);
+
+        Group grpReadDiscreteInput = new Group(mbtDebugComposite, SWT.NONE);
+        grpReadDiscreteInput.setText("Read Discrete Input");
+        grpReadDiscreteInput.setLayout(new GridLayout(3, false));
+
+        textReadDiscreteInputAddress = new Text(grpReadDiscreteInput, SWT.BORDER);
+        textReadDiscreteInputAddress.setText("Address");
+        GridData gdTextReadDiscreteInputAddress = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdTextReadDiscreteInputAddress.minimumWidth = 200;
+        textReadDiscreteInputAddress.setLayoutData(gdTextReadDiscreteInputAddress);
+
+        Button btnReadDiscreteInput = new Button(grpReadDiscreteInput, SWT.NONE);
+        GridData gdbtnReadDiscreteInput = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdbtnReadDiscreteInput.widthHint = 75;
+        btnReadDiscreteInput.setLayoutData(gdbtnReadDiscreteInput);
+        btnReadDiscreteInput.setText("Read");
+        btnReadDiscreteInput.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    textReadDiscreteInputValue.setText(String.valueOf(
+                            mbtController.readDigIn(0, Integer.valueOf(textReadDiscreteInputAddress.getText()))));
+                } catch (NumberFormatException | IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Error reading discret input: " + e1.getMessage());
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
+
+        textReadDiscreteInputValue = new Text(grpReadDiscreteInput, SWT.BORDER);
+        textReadDiscreteInputValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_MAGENTA));
+        textReadDiscreteInputValue.setEditable(false);
+        textReadDiscreteInputValue.setText("Value");
+        GridData gdTextReadDiscreteInputValue = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdTextReadDiscreteInputValue.widthHint = 75;
+        textReadDiscreteInputValue.setLayoutData(gdTextReadDiscreteInputValue);
 
         Group groupReadRegister = new Group(mbtDebugComposite, SWT.NONE);
         groupReadRegister.setText("Read Register");
@@ -169,6 +252,25 @@ public class MbtTabItemFactory {
         gdButtonReadRegister.widthHint = 75;
         buttonReadRegister.setLayoutData(gdButtonReadRegister);
         buttonReadRegister.setText("Read");
+        buttonReadRegister.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    textReadRegisterValue.setText(String.valueOf(
+                            mbtController.readInputRegister(0, Integer.valueOf(textReadRegisterAddress.getText()))));
+                } catch (NumberFormatException | IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Error reading register: " + e1.getMessage());
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
 
         textReadRegisterValue = new Text(groupReadRegister, SWT.BORDER);
         textReadRegisterValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_MAGENTA));
@@ -193,11 +295,30 @@ public class MbtTabItemFactory {
         gd_button_1.widthHint = 75;
         buttonWriteRegisterAddress.setLayoutData(gd_button_1);
         buttonWriteRegisterAddress.setText("Write");
+        buttonWriteRegisterAddress.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    mbtController.writeOutputRegister(0, Integer.valueOf(textWriteRegisterAddress.getText()),
+                            Integer.valueOf(textWriteRegisterValue.getText()));
+                } catch (NumberFormatException | IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Error writing register: " + e1.getMessage());
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
 
         textWriteRegisterValue = new Text(groupWriteRegister, SWT.BORDER);
         textWriteRegisterValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
         textWriteRegisterValue.setText("Value");
-        textWriteRegisterValue.setEditable(false);
+        textWriteRegisterValue.setEditable(true);
         GridData gdTextWriteRegisterValue = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
         gdTextWriteRegisterValue.widthHint = 75;
         textWriteRegisterValue.setLayoutData(gdTextWriteRegisterValue);
