@@ -10,6 +10,8 @@ import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.dataservice.api.VariableIdentifiers;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.OutletControl;
+import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
@@ -22,6 +24,15 @@ public class MachineStateServiceImpl implements MachineStateService {
     private MBTController mbtController;
 
     private SrmCommunicator srmCommunicator;
+
+    private final OutletControl outletControl;
+
+    private final PumpControl pumpControl;
+
+    public MachineStateServiceImpl() {
+        this.outletControl = new OutletControlImpl(mbtController);
+        this.pumpControl = new PumpControlImpl(mbtController);
+    }
 
     @Override
     public void update(Date snapShotDate) {
@@ -88,6 +99,24 @@ public class MachineStateServiceImpl implements MachineStateService {
         if (this.srmCommunicator == srmCommunicator) {
             this.srmCommunicator = null;
         }
+    }
+
+    @Override
+    public double getPressureValue(int at) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public PumpControl getPumpControl() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public OutletControl getOutletControl() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

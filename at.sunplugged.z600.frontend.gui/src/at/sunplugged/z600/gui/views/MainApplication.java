@@ -9,7 +9,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -122,11 +121,11 @@ public class MainApplication extends Thread {
         tabFolder.setLayoutData(gdTabFolder);
 
         SrmTabItemFactory srmTabItemFactory = new SrmTabItemFactory(srmCommunicator, logService, dataService);
-        TabItem tabItemSrm = srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
+        srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
         MbtTabItemFactory mbtTabItemFactory = new MbtTabItemFactory(mbtController, logService);
         // TabItem tbtmMbt = mbtTabItemFactory.createMbtTabItem(tabFolder,
         // SWT.NONE);
-        TabItem tbtmMbtDebug = mbtTabItemFactory.createDebugMbtTabItem(tabFolder, SWT.NONE);
+        mbtTabItemFactory.createDebugMbtTabItem(tabFolder, SWT.NONE);
         Composite compositeOne = new Composite(shell, SWT.NONE);
         compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
     }

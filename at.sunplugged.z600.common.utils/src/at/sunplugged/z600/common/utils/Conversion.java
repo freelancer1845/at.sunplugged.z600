@@ -1,4 +1,4 @@
-package at.sunplugged.z600.utils;
+package at.sunplugged.z600.common.utils;
 
 /**
  * Helper class for typical conversions.
