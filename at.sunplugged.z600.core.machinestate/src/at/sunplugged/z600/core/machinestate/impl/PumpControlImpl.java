@@ -1,134 +1,95 @@
 package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
-import at.sunplugged.z600.common.execution.StandardThreadPool;
+import org.osgi.service.log.LogService;
+
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.mbt.api.MBTController;
 
 public class PumpControlImpl implements PumpControl {
 
-    private static final int PUMP_ONE_ADDRESS = 10;
-
-    private static final int PUMP_TWO_ADDRESS = 11;
-
-    private static final int PUMP_TURBO_ADDRESS = 12;
-
     private final MBTController mbtController;
 
-    private PumpState pumpOneState = PumpState.OFF;
+    private final LogService logService;
 
-    private PumpState pumpTwoState = PumpState.OFF;
+    private final StandardThreadPoolService standardThreadPoolService;
 
-    private PumpState pumpTurboState = PumpState.OFF;
-
-    private PumpStarter pumpOneStarter;
-
-    private PumpStarter pumpTwoStarter;
-
-    private PumpStarter pumpTurboStarter;
-
-    public PumpControlImpl(MBTController mbtController) {
+    public PumpControlImpl(MBTController mbtController, LogService logService,
+            StandardThreadPoolService standardThreadPoolService) {
         this.mbtController = mbtController;
+        this.logService = logService;
+        this.standardThreadPoolService = standardThreadPoolService;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Future<Boolean> startPump(Pumps pump) {
+        return (Future<Boolean>) standardThreadPoolService.submit(new StartPumpCallable(pump));
     }
 
     @Override
-    public void startPumpOne() {
-        pumpOneStarter = new PumpStarter(PUMP_ONE_ADDRESS);
-        pumpOneStarter.start();
-    }
-
-    @Override
-    public void stopPumpOne() {
+    public Future<Boolean> stopPump(Pumps pump) {
         // TODO Auto-generated method stub
-
+        return null;
     }
 
     @Override
-    public void startPumpTwo() {
+    public PumpState getState(Pumps pump) {
         // TODO Auto-generated method stub
-
+        return null;
     }
 
-    @Override
-    public void stopPumpTwo() {
-        // TODO Auto-generated method stub
+    private class StartPumpCallable implements Callable<Boolean> {
 
-    }
+        private static final int UPDATE_TIME = 100;
 
-    @Override
-    public void startTurboPump() {
-        // TODO Auto-generated method stub
+        private static final int WAIT_TIME = 60000;
 
-    }
+        private final Pumps pump;
 
-    @Override
-    public void stopTurboPump() {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void update() throws IOException {
-        // TODO Auto-generated method stub
-
-    }
-
-    private class PumpStarter implements Runnable {
-
-        private final int address;
-
-        private PumpState state = PumpState.OFF;
-
-        private boolean startPump = false;
-
-        public PumpStarter(int address) {
-            this.address = address;
+        public StartPumpCallable(Pumps pump) {
+            this.pump = pump;
         }
 
-        public void start() {
-            startPump = true;
-            StandardThreadPool.getInstance().execute(this);
+        private void startTurboPump() {
+
         }
 
-        public void stop() {
-            startPump = false;
-            StandardThreadPool.getInstance().execute(this);
+        private void startNormalPump() throws IOException {
+            mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), true);
+
+            int timeWaited = 0;
+            while (!mbtController.readDigIns(pump.getDigitalInput().getAddress(), 0)
+                    .get(pump.getDigitalInput().getAddress()) || timeWaited > WAIT_TIME) {
+                try {
+                    Thread.sleep(UPDATE_TIME);
+                    timeWaited += UPDATE_TIME;
+                } catch (InterruptedException e) {
+                    throw new IOException("Starting Pump failed. Thread Interrupted.", e);
+                }
+            }
+            if (timeWaited > WAIT_TIME) {
+                throw new IOException("Starting Pump failed. Not ok after " + WAIT_TIME / 1000 + " s.");
+            }
         }
 
         @Override
-        public void run() {
-            // Start the pump and change the state accordingly.
-            if (startPump) {
-                startPump();
-            } else if (!startPump) {
-                stopPump();
-            }
-
-        }
-
-        public PumpState getState() {
-            return state;
-        }
-
-        private void startPump() {
-            state = PumpState.STARTING;
+        public Boolean call() throws Exception {
             try {
-                mbtController.writeDigOut(0, address, true);
+                if (pump.equals(Pumps.TURBO_PUMP)) {
+                    startTurboPump();
+                } else {
+                    startNormalPump();
+                }
             } catch (IOException e) {
-                state = PumpState.FAILED;
+                logService.log(LogService.LOG_ERROR, e.getMessage());
+                return false;
             }
-            state = PumpState.ON;
-        }
-
-        private void stopPump() {
-            state = PumpState.STOPPING;
-            try {
-                mbtController.writeDigOut(0, address, false);
-            } catch (IOException e) {
-                state = PumpState.FAILED;
-            }
-            state = PumpState.OFF;
+            return true;
         }
 
     }

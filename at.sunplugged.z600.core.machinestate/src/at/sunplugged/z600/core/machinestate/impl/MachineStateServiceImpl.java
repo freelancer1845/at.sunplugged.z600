@@ -4,17 +4,21 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.dataservice.api.VariableIdentifiers;
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
+@Component
 public class MachineStateServiceImpl implements MachineStateService {
 
     private DataService dataService;
@@ -25,13 +29,15 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private SrmCommunicator srmCommunicator;
 
+    private StandardThreadPoolService standardThreadPoolService;
+
     private final OutletControl outletControl;
 
     private final PumpControl pumpControl;
 
     public MachineStateServiceImpl() {
-        this.outletControl = new OutletControlImpl(mbtController);
-        this.pumpControl = new PumpControlImpl(mbtController);
+        this.outletControl = new OutletControlImpl(mbtController, logService);
+        this.pumpControl = new PumpControlImpl(mbtController, logService, standardThreadPoolService);
     }
 
     @Override
@@ -61,6 +67,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     }
 
+    @Reference(unbind = "unsetDataService")
     public synchronized void setDataService(DataService dataService) {
         this.dataService = dataService;
     }
@@ -71,6 +78,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         }
     }
 
+    @Reference(unbind = "unsetLogService")
     public synchronized void setLogService(LogService logService) {
         this.logService = logService;
     }
@@ -81,6 +89,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         }
     }
 
+    @Reference(unbind = "unsetMBTController")
     public synchronized void setMBTController(MBTController mbtController) {
         this.mbtController = mbtController;
     }
@@ -91,6 +100,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         }
     }
 
+    @Reference(unbind = "unsetSrmCommunicator")
     public synchronized void setSrmCommunicator(SrmCommunicator srmCommunicator) {
         this.srmCommunicator = srmCommunicator;
     }
@@ -98,6 +108,17 @@ public class MachineStateServiceImpl implements MachineStateService {
     public synchronized void unsetSrmCommunicator(SrmCommunicator srmCommunicator) {
         if (this.srmCommunicator == srmCommunicator) {
             this.srmCommunicator = null;
+        }
+    }
+
+    @Reference(unbind = "unsetStandardThreadPoolService")
+    public synchronized void setStandardThreadPoolService(StandardThreadPoolService standardThreadPoolService) {
+        this.standardThreadPoolService = standardThreadPoolService;
+    }
+
+    public synchronized void unsetStandardThreadPoolService(StandardThreadPoolService standardThreadPoolService) {
+        if (this.standardThreadPoolService == standardThreadPoolService) {
+            this.standardThreadPoolService = null;
         }
     }
 
@@ -109,14 +130,12 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Override
     public PumpControl getPumpControl() {
-        // TODO Auto-generated method stub
-        return null;
+        return pumpControl;
     }
 
     @Override
     public OutletControl getOutletControl() {
-        // TODO Auto-generated method stub
-        return null;
+        return outletControl;
     }
 
 }

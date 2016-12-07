@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.mbt.api.MBTController;
 
 public class MbtTabItemFactory {
@@ -27,6 +28,8 @@ public class MbtTabItemFactory {
     private final MBTController mbtController;
 
     private final LogService logService;
+
+    private final MachineStateService machineStateService;
     // Debug TabItem
     private Text textReadCoilAddress;
     private Text textReadCoilValue;
@@ -41,9 +44,11 @@ public class MbtTabItemFactory {
     private Text textIPAddress;
     private Text textConnectionState;
 
-    public MbtTabItemFactory(MBTController mbtController, LogService logService) {
+    public MbtTabItemFactory(MBTController mbtController, LogService logService,
+            MachineStateService machineStateService) {
         this.mbtController = mbtController;
         this.logService = logService;
+        this.machineStateService = machineStateService;
     }
 
     public TabItem createDebugMbtTabItem(TabFolder parent, int style) {
@@ -128,8 +133,9 @@ public class MbtTabItemFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    textReadCoilValue.setText(String
-                            .valueOf(mbtController.readDigOut(0, Integer.valueOf(textReadCoilAddress.getText()))));
+                    int address = Integer.valueOf(textReadCoilAddress.getText());
+                    boolean answer = mbtController.readDigOuts(address, 1).get(address);
+                    textReadCoilValue.setText(String.valueOf(answer));
                 } catch (NumberFormatException | IOException e1) {
                     logService.log(LogService.LOG_ERROR, "Error reading dig out: " + e1.getMessage());
                 }
@@ -171,7 +177,7 @@ public class MbtTabItemFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    mbtController.writeDigOut(0, Integer.valueOf(textWriteCoilAddress.getText()),
+                    mbtController.writeDigOut(Integer.valueOf(textWriteCoilAddress.getText()),
                             Boolean.valueOf(textWriteCoilValue.getText()));
                 } catch (NumberFormatException | IOException e1) {
                     logService.log(LogService.LOG_ERROR, "Error writing dig in: " + e1.getMessage());
@@ -214,8 +220,10 @@ public class MbtTabItemFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    textReadDiscreteInputValue.setText(String.valueOf(
-                            mbtController.readDigIn(0, Integer.valueOf(textReadDiscreteInputAddress.getText()))));
+                    int address = Integer.valueOf(textReadDiscreteInputAddress.getText());
+                    boolean answer = mbtController.readDigIns(address, 1).get(address);
+                    textReadDiscreteInputValue.setText(String.valueOf(answer));
+
                 } catch (NumberFormatException | IOException e1) {
                     logService.log(LogService.LOG_ERROR, "Error reading discret input: " + e1.getMessage());
                 }
@@ -257,8 +265,9 @@ public class MbtTabItemFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    textReadRegisterValue.setText(String.valueOf(
-                            mbtController.readInputRegister(0, Integer.valueOf(textReadRegisterAddress.getText()))));
+                    int address = Integer.valueOf(textReadRegisterAddress.getText());
+                    int answer = mbtController.readInputRegister(address, 1).get(address);
+                    textReadRegisterValue.setText(String.valueOf(answer));
                 } catch (NumberFormatException | IOException e1) {
                     logService.log(LogService.LOG_ERROR, "Error reading register: " + e1.getMessage());
                 }
@@ -300,7 +309,7 @@ public class MbtTabItemFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    mbtController.writeOutputRegister(0, Integer.valueOf(textWriteRegisterAddress.getText()),
+                    mbtController.writeOutputRegister(Integer.valueOf(textWriteRegisterAddress.getText()),
                             Integer.valueOf(textWriteRegisterValue.getText()));
                 } catch (NumberFormatException | IOException e1) {
                     logService.log(LogService.LOG_ERROR, "Error writing register: " + e1.getMessage());

@@ -1,151 +1,101 @@
 package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.Kind;
+import at.sunplugged.z600.core.machinestate.constants.Times;
 import at.sunplugged.z600.mbt.api.MBTController;
 
 public class OutletControlImpl implements OutletControl {
 
     private Object lock = new Object();
 
-    private static final int NUMBER_OF_OUTLETS = 8;
-
-    private static final int OUTLET_ONE_ADDRESS = 0;
-
-    private static final int OUTLET_TWO_ADDRESS = 1;
-
-    private static final int OUTLET_THREE_ADDRESS = 2;
-
-    private static final int OUTLET_FOUR_ADDRESS = 3;
-
-    private static final int OUTLET_FIVE_ADDRESS = 4;
-
-    private static final int OUTLET_SIX_ADDRESS = 5;
-
-    private static final int OUTLET_SEVEN_ADDRESS = 6;
-
-    private static final int OUTLET_EIGHT_ADDRESS = 7;
-
-    private boolean[] currentState = new boolean[NUMBER_OF_OUTLETS];
-
-    private boolean[] desiredState = new boolean[NUMBER_OF_OUTLETS];
-
     private final MBTController mbtController;
 
-    public OutletControlImpl(MBTController mbtController) {
+    private final LogService logService;
+
+    private Map<DigitalOutput, Boolean> outletState = new HashMap<>();
+
+    private Long lastUpdateTime = System.currentTimeMillis() - Times.TIME_OUTDATED;
+
+    public OutletControlImpl(MBTController mbtController, LogService logService) {
         this.mbtController = mbtController;
-
-        for (int i = 0; i < NUMBER_OF_OUTLETS; i++) {
-            currentState[i] = false;
-            desiredState[i] = false;
-        }
-
+        this.logService = logService;
     }
 
     @Override
-    public boolean isOutletOpen(int number) {
-        if (number < NUMBER_OF_OUTLETS) {
-            synchronized (lock) {
-                return currentState[number];
-            }
-        } else {
-            throw new IndexOutOfBoundsException("No Outlet number: " + number);
+    public boolean isOutletOpen(DigitalOutput digitalOutput) throws IOException {
+        if (!digitalOutput.getKind().equals(Kind.OUTLET)) {
+            logService.log(LogService.LOG_DEBUG,
+                    "Used Outlet Control to ask for sth. that is not of kind Outlet. Kind: "
+                            + digitalOutput.getKind().toString());
         }
 
-    }
-
-    @Override
-    public void closeOutlet(int number) {
-        if (number < NUMBER_OF_OUTLETS) {
-            synchronized (lock) {
-                desiredState[number] = false;
-            }
-        } else {
-            throw new IndexOutOfBoundsException("No Outlet number: " + number);
-        }
-    }
-
-    @Override
-    public void openOutlet(int number) {
-        if (number < NUMBER_OF_OUTLETS) {
-            synchronized (lock) {
-                desiredState[number] = true;
-            }
-        } else {
-            throw new IndexOutOfBoundsException("No Outlet number: " + number);
-        }
-
-    }
-
-    @Override
-    public void update() throws IOException {
+        checkForUpdated(digitalOutput);
         synchronized (lock) {
-            updateOutletOne();
-            updateOutletTwo();
-            updateOutletThree();
-            updateOutletFour();
-            updateOutletFive();
-            updateOutletSix();
-            updateOutletSeven();
-            updateOutletEight();
+            return outletState.get(digitalOutput);
         }
     }
 
-    private void updateOutletEight() throws IOException {
-        if (desiredState[7] != currentState[7]) {
-            mbtController.writeDigOut(0, OUTLET_EIGHT_ADDRESS, desiredState[7]);
+    @Override
+    public void closeOutlet(DigitalOutput digitalOutput) throws IOException {
+        synchronized (lock) {
+            mbtController.writeDigOut(digitalOutput.getAddress(), false);
         }
-        currentState[7] = mbtController.readDigOut(0, OUTLET_EIGHT_ADDRESS);
+        update(digitalOutput);
     }
 
-    private void updateOutletSeven() throws IOException {
-        if (desiredState[6] != currentState[6]) {
-            mbtController.writeDigOut(0, OUTLET_SEVEN_ADDRESS, desiredState[6]);
+    @Override
+    public void openOutlet(DigitalOutput digitalOutput) throws IOException {
+        synchronized (lock) {
+            mbtController.writeDigOut(digitalOutput.getAddress(), true);
         }
-        currentState[6] = mbtController.readDigOut(0, OUTLET_SEVEN_ADDRESS);
+        update(digitalOutput);
+
     }
 
-    private void updateOutletSix() throws IOException {
-        if (desiredState[5] != currentState[5]) {
-            mbtController.writeDigOut(0, OUTLET_SIX_ADDRESS, desiredState[5]);
+    private void checkForUpdated(WagoAddresses.DigitalOutput digitalOutput) throws IOException {
+        Long now = System.currentTimeMillis();
+        if (now - lastUpdateTime > Times.TIME_OUTDATED) {
+            update(digitalOutput);
         }
-        currentState[5] = mbtController.readDigOut(0, OUTLET_SIX_ADDRESS);
     }
 
-    private void updateOutletFive() throws IOException {
-        if (desiredState[4] != currentState[3]) {
-            mbtController.writeDigOut(0, OUTLET_FIVE_ADDRESS, desiredState[4]);
+    private void update(WagoAddresses.DigitalOutput digitalOutput) throws IOException {
+        synchronized (lock) {
+            if (!outletState.containsKey(digitalOutput)) {
+                outletState.put(digitalOutput, false);
+            }
+            int[] minAndMaxAddress = findLowestAndHighestAddress();
+            List<Boolean> currentState = mbtController.readDigOuts(minAndMaxAddress[0], minAndMaxAddress[1]);
+            for (DigitalOutput output : outletState.keySet()) {
+                if (currentState.contains(output.getAddress())) {
+                    outletState.put(output, currentState.get(output.getAddress()));
+                }
+            }
         }
-        currentState[4] = mbtController.readDigOut(0, OUTLET_FIVE_ADDRESS);
     }
 
-    private void updateOutletFour() throws IOException {
-        if (desiredState[3] != currentState[3]) {
-            mbtController.writeDigOut(0, OUTLET_FOUR_ADDRESS, desiredState[3]);
+    private int[] findLowestAndHighestAddress() {
+        int lowestAddress = 10000;
+        int highestAddress = 0;
+        for (DigitalOutput output : outletState.keySet()) {
+            int address = output.getAddress();
+            if (address < lowestAddress) {
+                lowestAddress = address;
+            } else if (address > highestAddress) {
+                highestAddress = address;
+            }
         }
-        currentState[3] = mbtController.readDigOut(0, OUTLET_FOUR_ADDRESS);
-    }
-
-    private void updateOutletThree() throws IOException {
-        if (desiredState[2] != currentState[2]) {
-            mbtController.writeDigOut(0, OUTLET_THREE_ADDRESS, desiredState[2]);
-        }
-        currentState[2] = mbtController.readDigOut(0, OUTLET_THREE_ADDRESS);
-    }
-
-    private void updateOutletTwo() throws IOException {
-        if (desiredState[1] != currentState[1]) {
-            mbtController.writeDigOut(0, OUTLET_TWO_ADDRESS, desiredState[1]);
-        }
-        currentState[1] = mbtController.readDigOut(0, OUTLET_TWO_ADDRESS);
-    }
-
-    private void updateOutletOne() throws IOException {
-        if (desiredState[0] != currentState[0]) {
-            mbtController.writeDigOut(0, OUTLET_ONE_ADDRESS, desiredState[0]);
-        }
-        currentState[0] = mbtController.readDigOut(0, OUTLET_ONE_ADDRESS);
+        return new int[] { lowestAddress, highestAddress };
     }
 
 }

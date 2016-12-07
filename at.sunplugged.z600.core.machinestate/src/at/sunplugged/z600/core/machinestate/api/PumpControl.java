@@ -1,28 +1,44 @@
 package at.sunplugged.z600.core.machinestate.api;
 
-import java.io.IOException;
+import java.util.concurrent.Future;
+
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 
 public interface PumpControl {
+
+    public enum Pumps {
+        PRE_PUMP_ONE(DigitalOutput.PRE_PUMP_ONE, DigitalInput.PRE_PUMP_ONE_OK),
+        PRE_PUMP_TWO(DigitalOutput.PRE_PUMP_TWO, DigitalInput.PRE_PUMP_TWO_OK),
+        TURBO_PUMP(DigitalOutput.TUROBO_OUMP, DigitalInput.TURBO_PUMP_OK);
+
+        private final DigitalOutput digitalOutput;
+
+        private final DigitalInput digitalInput;
+
+        private Pumps(DigitalOutput digitalOutput, DigitalInput digitalInput) {
+            this.digitalOutput = digitalOutput;
+            this.digitalInput = digitalInput;
+        }
+
+        public DigitalOutput getDigitalOutput() {
+            return digitalOutput;
+        }
+
+        public DigitalInput getDigitalInput() {
+            return digitalInput;
+        }
+
+    }
 
     public enum PumpState {
         ON, OFF, STARTING, STOPPING, FAILED;
     }
 
-    /**
-     * Updates the state.
-     */
-    public void update() throws IOException;
+    public Future<Boolean> startPump(Pumps pump);
 
-    public void startPumpOne();
+    public Future<Boolean> stopPump(Pumps pump);
 
-    public void stopPumpOne();
-
-    public void startPumpTwo();
-
-    public void stopPumpTwo();
-
-    public void startTurboPump();
-
-    public void stopTurboPump();
+    public PumpState getState(Pumps pump);
 
 }

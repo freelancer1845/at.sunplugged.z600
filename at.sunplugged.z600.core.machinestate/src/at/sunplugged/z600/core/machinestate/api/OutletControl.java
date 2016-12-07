@@ -2,34 +2,35 @@ package at.sunplugged.z600.core.machinestate.api;
 
 import java.io.IOException;
 
-public interface OutletControl {
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 
-    /**
-     * Updates the state.
-     * 
-     * @throws IOException
-     */
-    public void update() throws IOException;
+public interface OutletControl {
 
     /**
      * Returns whether the outlet is open.
      * 
-     * @param number identifying the outlet.
+     * @param number
+     *            identifying the outlet.
      * @return true if open, false if closed.
+     * @throws IOException
      */
-    public boolean isOutletOpen(int number);
+    public boolean isOutletOpen(DigitalOutput digitalOutput) throws IOException;
 
     /**
      * Closes the outlet.
      * 
-     * @param number identifying the outlet.
+     * @param number
+     *            identifying the outlet.
+     * @throws IOException
      */
-    public void closeOutlet(int number);
+    public void closeOutlet(DigitalOutput digitalOutput) throws IOException;
 
     /**
      * Opens the outlet.
      * 
-     * @param number identifying the outlet.
+     * @param number
+     *            identifying the outlet.
+     * @throws IOException
      */
-    public void openOutlet(int number);
+    public void openOutlet(DigitalOutput digitalOutput) throws IOException;
 }

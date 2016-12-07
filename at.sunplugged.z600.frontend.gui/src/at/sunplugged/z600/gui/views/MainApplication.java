@@ -18,6 +18,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
+import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.gui.tableitems.mbt.MbtTabItemFactory;
 import at.sunplugged.z600.gui.tableitems.srm.SrmTabItemFactory;
 import at.sunplugged.z600.mbt.api.MBTController;
@@ -35,6 +36,8 @@ public class MainApplication extends Thread {
     private MBTController mbtController;
 
     private DataService dataService;
+
+    private MachineStateService machineStateService;
 
     private static BundleContext context;
 
@@ -122,7 +125,7 @@ public class MainApplication extends Thread {
 
         SrmTabItemFactory srmTabItemFactory = new SrmTabItemFactory(srmCommunicator, logService, dataService);
         srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
-        MbtTabItemFactory mbtTabItemFactory = new MbtTabItemFactory(mbtController, logService);
+        MbtTabItemFactory mbtTabItemFactory = new MbtTabItemFactory(mbtController, logService, machineStateService);
         // TabItem tbtmMbt = mbtTabItemFactory.createMbtTabItem(tabFolder,
         // SWT.NONE);
         mbtTabItemFactory.createDebugMbtTabItem(tabFolder, SWT.NONE);
@@ -171,6 +174,17 @@ public class MainApplication extends Thread {
     public synchronized void unbindDataService(DataService dataService) {
         if (this.dataService == dataService) {
             this.dataService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindMachineStateService")
+    public synchronized void bindMachineStateService(MachineStateService machineStateService) {
+        this.machineStateService = machineStateService;
+    }
+
+    public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
+        if (this.machineStateService == machineStateService) {
+            this.machineStateService = null;
         }
     }
 }

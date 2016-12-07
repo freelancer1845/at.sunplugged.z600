@@ -11,3 +11,4 @@ Bundle-ClassPath: .,
  lib/jamod-1.2-SNAPSHOT.jar
 Export-Package: at.sunplugged.z600.mbt.api
 Service-Component: OSGI-INF/mbtController.xml
+Bundle-ActivationPolicy: lazy
