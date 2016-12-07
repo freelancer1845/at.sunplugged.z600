@@ -34,6 +34,7 @@
 <plugin id="org.eclipse.equinox.ds.source"/>
 <plugin id="org.eclipse.equinox.launcher"/>
 <plugin id="org.eclipse.equinox.launcher.source"/>
+<plugin id="org.eclipse.equinox.launcher.win32.win32.x86"/>
 <plugin id="org.eclipse.equinox.preferences"/>
 <plugin id="org.eclipse.equinox.preferences.source"/>
 <plugin id="org.eclipse.equinox.registry"/>
