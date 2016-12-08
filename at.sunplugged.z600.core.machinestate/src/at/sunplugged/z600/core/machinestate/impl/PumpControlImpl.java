@@ -7,10 +7,13 @@ import java.util.concurrent.Future;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.mbt.api.MBTController;
 
 public class PumpControlImpl implements PumpControl {
+
+    private final MachineStateService machineStateService;
 
     private final MBTController mbtController;
 
@@ -18,8 +21,9 @@ public class PumpControlImpl implements PumpControl {
 
     private final StandardThreadPoolService standardThreadPoolService;
 
-    public PumpControlImpl(MBTController mbtController, LogService logService,
+    public PumpControlImpl(MachineStateService machineStateService, MBTController mbtController, LogService logService,
             StandardThreadPoolService standardThreadPoolService) {
+        this.machineStateService = machineStateService;
         this.mbtController = mbtController;
         this.logService = logService;
         this.standardThreadPoolService = standardThreadPoolService;
@@ -63,8 +67,8 @@ public class PumpControlImpl implements PumpControl {
             mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), true);
 
             int timeWaited = 0;
-            while (!mbtController.readDigIns(pump.getDigitalInput().getAddress(), 0)
-                    .get(pump.getDigitalInput().getAddress()) || timeWaited > WAIT_TIME) {
+            while (machineStateService.getDigitalInputState().get(pump.getDigitalInput().getAddress())
+                    || timeWaited > WAIT_TIME) {
                 try {
                     Thread.sleep(UPDATE_TIME);
                     timeWaited += UPDATE_TIME;

@@ -11,6 +11,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
@@ -21,6 +22,10 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.mbt.api.MBTController;
 
 public class MbtTabItemFactory {
@@ -31,13 +36,13 @@ public class MbtTabItemFactory {
 
     private final MachineStateService machineStateService;
     // Debug TabItem
-    private Text textReadCoilAddress;
+    private Combo comboDigitalOutput;
     private Text textReadCoilValue;
-    private Text textReadRegisterAddress;
-    private Text textReadRegisterValue;
-    private Text textReadDiscreteInputAddress;
+    private Combo comboReadAnalogInput;
+    private Text textReadAnalogInput;
+    private Combo comboReadDigitalInput;
     private Text textReadDiscreteInputValue;
-    private Text textWriteCoilAddress;
+    private Combo comboWriteDigitalOutput;
     private Text textWriteCoilValue;
     private Text textWriteRegisterAddress;
     private Text textWriteRegisterValue;
@@ -51,6 +56,9 @@ public class MbtTabItemFactory {
         this.machineStateService = machineStateService;
     }
 
+    /**
+     * @wbp.parser.entryPoint
+     */
     public TabItem createDebugMbtTabItem(TabFolder parent, int style) {
 
         TabItem tbtmMbtDebug = new TabItem(parent, SWT.NONE);
@@ -114,14 +122,20 @@ public class MbtTabItemFactory {
         textConnectionState.setLayoutData(gdTextConnectionState);
 
         Group grpReadCoil = new Group(mbtDebugComposite, SWT.NONE);
-        grpReadCoil.setText("Read Coil");
+        grpReadCoil.setText("Read Digital Output");
         grpReadCoil.setLayout(new GridLayout(3, false));
 
-        textReadCoilAddress = new Text(grpReadCoil, SWT.BORDER);
-        textReadCoilAddress.setText("Address");
-        GridData gd_textReadCoilAddress = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gd_textReadCoilAddress.minimumWidth = 200;
-        textReadCoilAddress.setLayoutData(gd_textReadCoilAddress);
+        comboDigitalOutput = new Combo(grpReadCoil, SWT.NONE);
+        DigitalOutput[] digOuts = WagoAddresses.DigitalOutput.values();
+        String[] digOutsString = new String[digOuts.length];
+        for (int i = 0; i < digOuts.length; i++) {
+            digOutsString[i] = digOuts[i].toString();
+        }
+        comboDigitalOutput.setItems(digOutsString);
+        GridData gdComboDigitalOutput = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdComboDigitalOutput.minimumWidth = 200;
+        comboDigitalOutput.setLayoutData(gdComboDigitalOutput);
+        comboDigitalOutput.setText("Choose output to check... ");
 
         Button btnReadCoil = new Button(grpReadCoil, SWT.NONE);
         GridData gd_btnReadCoil = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
@@ -132,13 +146,9 @@ public class MbtTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    int address = Integer.valueOf(textReadCoilAddress.getText());
-                    boolean answer = mbtController.readDigOuts(address, 1).get(address);
-                    textReadCoilValue.setText(String.valueOf(answer));
-                } catch (NumberFormatException | IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Error reading dig out: " + e1.getMessage());
-                }
+                boolean answer = machineStateService.getDigitalOutputState()
+                        .get(DigitalOutput.values()[comboDigitalOutput.getSelectionIndex()].getAddress());
+                textReadCoilValue.setText(String.valueOf(answer));
             }
 
             @Override
@@ -157,30 +167,31 @@ public class MbtTabItemFactory {
         gd_textReadCoilValue.widthHint = 75;
         textReadCoilValue.setLayoutData(gd_textReadCoilValue);
 
-        Group groupWriteCoil = new Group(mbtDebugComposite, SWT.NONE);
-        groupWriteCoil.setText("Write Coil");
-        groupWriteCoil.setLayout(new GridLayout(3, false));
+        Group groupWriteDigitalOutput = new Group(mbtDebugComposite, SWT.NONE);
+        groupWriteDigitalOutput.setText("Write Digital Output");
+        groupWriteDigitalOutput.setLayout(new GridLayout(3, false));
 
-        textWriteCoilAddress = new Text(groupWriteCoil, SWT.BORDER);
-        textWriteCoilAddress.setText("Address");
+        comboWriteDigitalOutput = new Combo(groupWriteDigitalOutput, SWT.NONE);
+        comboWriteDigitalOutput.setText("Choose Digital Output");
+        comboWriteDigitalOutput.setItems(digOutsString);
         GridData gdTextWriteCoilAddress = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gdTextWriteCoilAddress.minimumWidth = 200;
-        textWriteCoilAddress.setLayoutData(gdTextWriteCoilAddress);
+        comboWriteDigitalOutput.setLayoutData(gdTextWriteCoilAddress);
 
-        Button buttonWriteCoil = new Button(groupWriteCoil, SWT.NONE);
-        GridData gdButtonWriteCoil = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdButtonWriteCoil.widthHint = 75;
-        buttonWriteCoil.setLayoutData(gdButtonWriteCoil);
-        buttonWriteCoil.setText("Write");
-        buttonWriteCoil.addSelectionListener(new SelectionListener() {
+        Button buttonWriteDigitalOutput = new Button(groupWriteDigitalOutput, SWT.NONE);
+        GridData gdButtonWriteDigitalOutput = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdButtonWriteDigitalOutput.widthHint = 75;
+        buttonWriteDigitalOutput.setLayoutData(gdButtonWriteDigitalOutput);
+        buttonWriteDigitalOutput.setText("Write");
+        buttonWriteDigitalOutput.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    mbtController.writeDigOut(Integer.valueOf(textWriteCoilAddress.getText()),
+                    mbtController.writeDigOut(digOuts[comboWriteDigitalOutput.getSelectionIndex()].getAddress(),
                             Boolean.valueOf(textWriteCoilValue.getText()));
-                } catch (NumberFormatException | IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Error writing dig in: " + e1.getMessage());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
             }
 
@@ -192,7 +203,7 @@ public class MbtTabItemFactory {
 
         });
 
-        textWriteCoilValue = new Text(groupWriteCoil, SWT.BORDER);
+        textWriteCoilValue = new Text(groupWriteDigitalOutput, SWT.BORDER);
         textWriteCoilValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_RED));
         textWriteCoilValue.setText("Value");
         textWriteCoilValue.setEditable(true);
@@ -200,17 +211,23 @@ public class MbtTabItemFactory {
         gdTextWriteCoilValue.widthHint = 75;
         textWriteCoilValue.setLayoutData(gdTextWriteCoilValue);
 
-        Group grpReadDiscreteInput = new Group(mbtDebugComposite, SWT.NONE);
-        grpReadDiscreteInput.setText("Read Discrete Input");
-        grpReadDiscreteInput.setLayout(new GridLayout(3, false));
+        Group grpReadDigitalInput = new Group(mbtDebugComposite, SWT.NONE);
+        grpReadDigitalInput.setText("Read Digital Input");
+        grpReadDigitalInput.setLayout(new GridLayout(3, false));
 
-        textReadDiscreteInputAddress = new Text(grpReadDiscreteInput, SWT.BORDER);
-        textReadDiscreteInputAddress.setText("Address");
-        GridData gdTextReadDiscreteInputAddress = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gdTextReadDiscreteInputAddress.minimumWidth = 200;
-        textReadDiscreteInputAddress.setLayoutData(gdTextReadDiscreteInputAddress);
+        comboReadDigitalInput = new Combo(grpReadDigitalInput, SWT.NONE);
+        comboReadDigitalInput.setText("Choose Digital Input");
+        GridData gdComboReadDigitalInput = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdComboReadDigitalInput.minimumWidth = 200;
+        comboReadDigitalInput.setLayoutData(gdComboReadDigitalInput);
+        DigitalInput[] digIns = WagoAddresses.DigitalInput.values();
+        String[] digInsString = new String[digIns.length];
+        for (int i = 0; i < digInsString.length; i++) {
+            digInsString[i] = digIns[i].name();
+        }
+        comboReadDigitalInput.setItems(digInsString);
 
-        Button btnReadDiscreteInput = new Button(grpReadDiscreteInput, SWT.NONE);
+        Button btnReadDiscreteInput = new Button(grpReadDigitalInput, SWT.NONE);
         GridData gdbtnReadDiscreteInput = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gdbtnReadDiscreteInput.widthHint = 75;
         btnReadDiscreteInput.setLayoutData(gdbtnReadDiscreteInput);
@@ -219,14 +236,9 @@ public class MbtTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    int address = Integer.valueOf(textReadDiscreteInputAddress.getText());
-                    boolean answer = mbtController.readDigIns(address, 1).get(address);
-                    textReadDiscreteInputValue.setText(String.valueOf(answer));
-
-                } catch (NumberFormatException | IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Error reading discret input: " + e1.getMessage());
-                }
+                boolean answer = machineStateService.getDigitalInputState()
+                        .get(digIns[comboReadDigitalInput.getSelectionIndex()].getAddress());
+                textReadDiscreteInputValue.setText(String.valueOf(answer));
             }
 
             @Override
@@ -237,7 +249,7 @@ public class MbtTabItemFactory {
 
         });
 
-        textReadDiscreteInputValue = new Text(grpReadDiscreteInput, SWT.BORDER);
+        textReadDiscreteInputValue = new Text(grpReadDigitalInput, SWT.BORDER);
         textReadDiscreteInputValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_MAGENTA));
         textReadDiscreteInputValue.setEditable(false);
         textReadDiscreteInputValue.setText("Value");
@@ -245,32 +257,34 @@ public class MbtTabItemFactory {
         gdTextReadDiscreteInputValue.widthHint = 75;
         textReadDiscreteInputValue.setLayoutData(gdTextReadDiscreteInputValue);
 
-        Group groupReadRegister = new Group(mbtDebugComposite, SWT.NONE);
-        groupReadRegister.setText("Read Register");
-        groupReadRegister.setLayout(new GridLayout(3, false));
+        Group groupReadAnalogInput = new Group(mbtDebugComposite, SWT.NONE);
+        groupReadAnalogInput.setText("Read Analog Input");
+        groupReadAnalogInput.setLayout(new GridLayout(3, false));
 
-        textReadRegisterAddress = new Text(groupReadRegister, SWT.BORDER);
-        textReadRegisterAddress.setText("Address");
-        GridData gdReadRegisterAddress = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        gdReadRegisterAddress.minimumWidth = 200;
-        textReadRegisterAddress.setLayoutData(gdReadRegisterAddress);
+        comboReadAnalogInput = new Combo(groupReadAnalogInput, SWT.NONE);
+        comboReadAnalogInput.setText("Choose Analog Input...");
+        GridData gdReadAnalogInput = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gdReadAnalogInput.minimumWidth = 200;
+        comboReadAnalogInput.setLayoutData(gdReadAnalogInput);
+        AnalogInput[] anaIns = WagoAddresses.AnalogInput.values();
+        String[] anaInsString = new String[anaIns.length];
+        for (int i = 0; i < anaIns.length; i++) {
+            anaInsString[i] = anaIns[i].name();
+        }
+        comboReadAnalogInput.setItems(anaInsString);
 
-        Button buttonReadRegister = new Button(groupReadRegister, SWT.NONE);
-        GridData gdButtonReadRegister = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gdButtonReadRegister.widthHint = 75;
-        buttonReadRegister.setLayoutData(gdButtonReadRegister);
-        buttonReadRegister.setText("Read");
-        buttonReadRegister.addSelectionListener(new SelectionListener() {
+        Button buttonReadAnalogInput = new Button(groupReadAnalogInput, SWT.NONE);
+        GridData gdButtonReadAnalogInput = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdButtonReadAnalogInput.widthHint = 75;
+        buttonReadAnalogInput.setLayoutData(gdButtonReadAnalogInput);
+        buttonReadAnalogInput.setText("Read");
+        buttonReadAnalogInput.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                try {
-                    int address = Integer.valueOf(textReadRegisterAddress.getText());
-                    int answer = mbtController.readInputRegister(address, 1).get(address);
-                    textReadRegisterValue.setText(String.valueOf(answer));
-                } catch (NumberFormatException | IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Error reading register: " + e1.getMessage());
-                }
+                int answer = machineStateService.getAnalogInputState()
+                        .get(anaIns[comboReadAnalogInput.getSelectionIndex()].getAddress());
+                textReadAnalogInput.setText(String.valueOf(answer));
             }
 
             @Override
@@ -281,13 +295,13 @@ public class MbtTabItemFactory {
 
         });
 
-        textReadRegisterValue = new Text(groupReadRegister, SWT.BORDER);
-        textReadRegisterValue.setForeground(SWTResourceManager.getColor(SWT.COLOR_MAGENTA));
-        textReadRegisterValue.setText("Value");
-        textReadRegisterValue.setEditable(false);
-        GridData gdTextReadRegisterValue = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-        gdTextReadRegisterValue.widthHint = 75;
-        textReadRegisterValue.setLayoutData(gdTextReadRegisterValue);
+        textReadAnalogInput = new Text(groupReadAnalogInput, SWT.BORDER);
+        textReadAnalogInput.setForeground(SWTResourceManager.getColor(SWT.COLOR_MAGENTA));
+        textReadAnalogInput.setText("Value");
+        textReadAnalogInput.setEditable(false);
+        GridData gdTextReadAnalogInput = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
+        gdTextReadAnalogInput.widthHint = 75;
+        textReadAnalogInput.setLayoutData(gdTextReadAnalogInput);
 
         Group groupWriteRegister = new Group(mbtDebugComposite, SWT.NONE);
         groupWriteRegister.setText("Write Register");

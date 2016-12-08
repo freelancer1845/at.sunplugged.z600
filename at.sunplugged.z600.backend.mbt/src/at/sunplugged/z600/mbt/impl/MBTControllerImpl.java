@@ -18,6 +18,8 @@ import net.wimpi.modbus.msg.ReadInputDiscretesRequest;
 import net.wimpi.modbus.msg.ReadInputDiscretesResponse;
 import net.wimpi.modbus.msg.ReadInputRegistersRequest;
 import net.wimpi.modbus.msg.ReadInputRegistersResponse;
+import net.wimpi.modbus.msg.ReadMultipleRegistersRequest;
+import net.wimpi.modbus.msg.ReadMultipleRegistersResponse;
 import net.wimpi.modbus.msg.WriteCoilRequest;
 import net.wimpi.modbus.msg.WriteCoilResponse;
 import net.wimpi.modbus.msg.WriteSingleRegisterRequest;
@@ -105,7 +107,7 @@ public class MBTControllerImpl implements MBTController {
         }
         readCoilsResponse = (ReadCoilsResponse) modbusTransaction.getResponse();
 
-        List<Boolean> returnList = createDigitalReturnList(startAddress);
+        List<Boolean> returnList = createReturnList(startAddress);
         for (int i = 0; i < readCoilsResponse.getBitCount(); i++) {
             returnList.add(readCoilsResponse.getCoilStatus(i));
         }
@@ -133,7 +135,7 @@ public class MBTControllerImpl implements MBTController {
         }
 
         readInputDiscretesResponse = (ReadInputDiscretesResponse) modbusTransaction.getResponse();
-        List<Boolean> returnList = createDigitalReturnList(startAddress);
+        List<Boolean> returnList = createReturnList(startAddress);
         for (int i = 0; i < readInputDiscretesResponse.getDiscretes().size(); i++) {
             returnList.add(readInputDiscretesResponse.getDiscreteStatus(i));
         }
@@ -173,8 +175,8 @@ public class MBTControllerImpl implements MBTController {
             }
         }
         readInputRegistersResponse = (net.wimpi.modbus.msg.ReadInputRegistersResponse) modbusTransaction.getResponse();
-        List<Integer> returnList = createDigitalReturnList(startAddress);
-        for (int i = 0; i < readInputRegistersResponse.getByteCount(); i++) {
+        List<Integer> returnList = createReturnList(startAddress);
+        for (int i = 0; i < readInputRegistersResponse.getWordCount(); i++) {
             returnList.add(readInputRegistersResponse.getRegisterValue(i));
         }
         return returnList;
@@ -209,6 +211,33 @@ public class MBTControllerImpl implements MBTController {
     }
 
     @Override
+    public List<Integer> readOutputRegister(int startAddress, int outRegsToRead) throws IOException {
+        if (!isConnected()) {
+            throw new MBTControllerException("No MBT Connection open!");
+        }
+        ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
+        ReadMultipleRegistersRequest readMultipleRegistersRequest = new ReadMultipleRegistersRequest(startAddress,
+                outRegsToRead);
+        ReadMultipleRegistersResponse readMultipleRegistersResponse;
+
+        modbusTransaction.setRequest(readMultipleRegistersRequest);
+
+        synchronized (lock) {
+            try {
+                modbusTransaction.execute();
+            } catch (ModbusException e) {
+                throw new MBTControllerException("Failed to read Analog out!", e);
+            }
+        }
+        readMultipleRegistersResponse = (ReadMultipleRegistersResponse) modbusTransaction.getResponse();
+        List<Integer> returnList = createReturnList(startAddress);
+        for (int i = 0; i < readMultipleRegistersResponse.getWordCount(); i++) {
+            returnList.add(readMultipleRegistersResponse.getRegisterValue(i));
+        }
+        return returnList;
+    }
+
+    @Override
     public boolean isConnected() {
         if (connection == null) {
             return false;
@@ -216,7 +245,7 @@ public class MBTControllerImpl implements MBTController {
         return connection.isConnected();
     }
 
-    private <T> List<T> createDigitalReturnList(int startAddress) {
+    private <T> List<T> createReturnList(int startAddress) {
         List<T> returnList = new ArrayList<>();
 
         for (int i = 0; i < startAddress; i++) {

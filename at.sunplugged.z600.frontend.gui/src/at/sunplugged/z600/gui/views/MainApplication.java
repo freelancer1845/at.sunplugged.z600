@@ -20,7 +20,6 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.gui.tableitems.mbt.MbtTabItemFactory;
-import at.sunplugged.z600.gui.tableitems.srm.SrmTabItemFactory;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
@@ -123,8 +122,9 @@ public class MainApplication extends Thread {
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
 
-        SrmTabItemFactory srmTabItemFactory = new SrmTabItemFactory(srmCommunicator, logService, dataService);
-        srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
+        // SrmTabItemFactory srmTabItemFactory = new
+        // SrmTabItemFactory(srmCommunicator, logService, dataService);
+        // srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
         MbtTabItemFactory mbtTabItemFactory = new MbtTabItemFactory(mbtController, logService, machineStateService);
         // TabItem tbtmMbt = mbtTabItemFactory.createMbtTabItem(tabFolder,
         // SWT.NONE);

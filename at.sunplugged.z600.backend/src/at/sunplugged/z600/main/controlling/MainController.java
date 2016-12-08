@@ -42,7 +42,6 @@ public class MainController implements Runnable {
             try {
                 Date snapShotDate = new Date();
 
-                machineStateService.update(snapShotDate);
                 processAllData();
                 sendAllData();
 

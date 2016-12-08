@@ -73,4 +73,6 @@ public interface MBTController {
 
     public void writeOutputRegister(int address, int value) throws IOException;
 
+    public List<Integer> readOutputRegister(int startAddress, int outRegsToRead) throws IOException;
+
 }

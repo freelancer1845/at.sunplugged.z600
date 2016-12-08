@@ -2,9 +2,13 @@ package at.sunplugged.z600.core.machinestate.api;
 
 public class WagoAddresses {
 
-    public enum Kind {
-        OUTLET, PUMP, WATER_COOLING;
-    }
+    public static final int DIGITAL_OUTPUT_MAX_ADDRESS = 57;
+
+    public static final int DIGITAL_INPUT_MAX_ADDRESS = 55;
+
+    public static final int ANALOG_INPUT_MAX_ADDRESS = 11;
+
+    public static final int ANALOG_OUTPUT_MAX_ADDRESS = 6;
 
     /**
      * Keep in mind that Outlet Seven and Eight are not controlled by modbus!
@@ -13,30 +17,27 @@ public class WagoAddresses {
      *
      */
     public enum DigitalOutput {
-        OUTLET_ONE(0, Kind.OUTLET),
-        OUTLET_TWO(1, Kind.OUTLET),
-        OUTLET_THREE(2, Kind.OUTLET),
-        OUTLET_FOUR(5, Kind.OUTLET),
-        OUTLET_SIX(3, Kind.OUTLET),
-        OUTLET_SEVEN(4, Kind.OUTLET),
-        OUTLET_NINE(35, Kind.OUTLET),
-        WATER_TURBO_PUMP(31, Kind.WATER_COOLING),
-        WATER_KATH_ONE(32, Kind.WATER_COOLING),
-        WATER_KATH_TWO(33, Kind.WATER_COOLING),
-        WATER_KATH_THREE(34, Kind.WATER_COOLING),
-        WATERPUMP(37, Kind.WATER_COOLING),
-        WATER_SHIELD(36, Kind.WATER_COOLING),
-        PRE_PUMP_ONE(32, Kind.PUMP),
-        TUROBO_OUMP(34, Kind.PUMP),
-        PRE_PUMP_TWO(35, Kind.PUMP);
+        OUTLET_ONE(0),
+        OUTLET_TWO(1),
+        OUTLET_THREE(2),
+        OUTLET_FOUR(5),
+        OUTLET_FIVE(3),
+        OUTLET_SIX(4),
+        OUTLET_NINE(35),
+        WATER_TURBO_PUMP(31),
+        WATER_KATH_ONE(32),
+        WATER_KATH_TWO(33),
+        WATER_KATH_THREE(34),
+        WATERPUMP(37),
+        WATER_SHIELD(36),
+        PRE_PUMP_ONE(32),
+        TUROBO_OUMP(34),
+        PRE_PUMP_TWO(35);
 
         private final int address;
 
-        private final Kind kind;
-
-        private DigitalOutput(int address, Kind kind) {
+        private DigitalOutput(int address) {
             this.address = address;
-            this.kind = kind;
 
         }
 
@@ -44,41 +45,47 @@ public class WagoAddresses {
             return this.address;
         }
 
-        public Kind getKind() {
-            return this.kind;
-        }
     }
 
     public enum DigitalInput {
 
-        OUTLET_ONE_CLOSED(0, Kind.OUTLET),
-        OUTLET_TWO_OPEN(1, Kind.OUTLET),
-        OUTLET_TWO_CLOSED(2, Kind.OUTLET),
-        OUTLET_THREE_OPEN(3, Kind.OUTLET),
-        PRE_PUMP_ONE_OK(12, Kind.PUMP),
-        TURBO_PUMP_OK(14, Kind.PUMP),
-        TURBO_PUMP_HIGH_SPEED(15, Kind.PUMP),
-        PRE_PUMP_TWO_OK(16, Kind.PUMP),
-        WATER_KATH_ONE_ON(23, Kind.WATER_COOLING),
-        WATER_KATH_TWO_ON(24, Kind.WATER_COOLING),
-        WATER_KATH_THREE_ON(25, Kind.WATER_COOLING),
-        WATHER_KATH_FOUR_ON(26, Kind.WATER_COOLING);
+        OUTLET_ONE_CLOSED(0),
+        OUTLET_TWO_OPEN(1),
+        OUTLET_TWO_CLOSED(2),
+        OUTLET_THREE_OPEN(3),
+        PRE_PUMP_ONE_OK(12),
+        TURBO_PUMP_OK(14),
+        TURBO_PUMP_HIGH_SPEED(15),
+        PRE_PUMP_TWO_OK(16),
+        WATER_KATH_ONE_ON(23),
+        WATER_KATH_TWO_ON(24),
+        WATER_KATH_THREE_ON(25),
+        WATHER_KATH_FOUR_ON(26);
 
         private final int address;
 
-        private final Kind kind;
-
-        private DigitalInput(int address, Kind kind) {
+        private DigitalInput(int address) {
             this.address = address;
-            this.kind = kind;
         }
 
         public int getAddress() {
             return address;
         }
 
-        public Kind getKind() {
-            return kind;
+    }
+
+    public enum AnalogInput {
+
+        PREASURE_TURBO_PUMP(3), PREASURE_CRYO_ONE(5), PREASURE_CRYO_TWO(6), PREASURE_CHAMBER(9);
+
+        private final int address;
+
+        private AnalogInput(int address) {
+            this.address = address;
+        }
+
+        public int getAddress() {
+            return address;
         }
 
     }
