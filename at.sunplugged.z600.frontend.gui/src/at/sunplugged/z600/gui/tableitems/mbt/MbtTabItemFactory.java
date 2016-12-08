@@ -2,7 +2,6 @@ package at.sunplugged.z600.gui.tableitems.mbt;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -364,7 +363,7 @@ public class MbtTabItemFactory {
                 styledTextLogOutput.append(String.valueOf((char) b));
             }
         };
-        System.setOut(new PrintStream(outputStream));
+        // System.setOut(new PrintStream(outputStream));
         return tbtmMbtDebug;
     }
 

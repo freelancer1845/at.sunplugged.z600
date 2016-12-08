@@ -34,4 +34,8 @@ public interface MachineStateService {
 
     public void fireMachineStateEvent(MachineStateEvent event);
 
+    public void registerMachineEventHandler(MachineEventHandler eventHandler);
+
+    public void unregisterMachineEventHandler(MachineEventHandler eventHandler);
+
 }

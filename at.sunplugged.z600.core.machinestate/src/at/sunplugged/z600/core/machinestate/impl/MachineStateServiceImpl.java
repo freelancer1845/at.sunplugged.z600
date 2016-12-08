@@ -5,17 +5,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.impl.eventhandling.MachineStateEventHandler;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
@@ -24,6 +32,9 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     /** Value in ms. */
     private static final long UPDATE_INTERVAL_TIME = 250;
+
+    /** Input update Tickrate. */
+    private static final int INPUT_UPDATE_TICKRATE = 100;
 
     private DataService dataService;
 
@@ -35,9 +46,9 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private StandardThreadPoolService standardThreadPoolService;
 
-    private final OutletControl outletControl;
+    private OutletControl outletControl;
 
-    private final PumpControl pumpControl;
+    private PumpControl pumpControl;
 
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
@@ -55,9 +66,25 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private long lastAnalogInputUpdateTime = -UPDATE_INTERVAL_TIME;
 
-    public MachineStateServiceImpl() {
-        this.outletControl = new OutletControlImpl(this, mbtController);
-        this.pumpControl = new PumpControlImpl(this, mbtController, logService, standardThreadPoolService);
+    private MachineStateEventHandler machineStateEventHandler;
+
+    private InputUpdaterThread updaterThread;
+
+    private List<MachineEventHandler> registeredEventHandler = new ArrayList<>();
+
+    @Activate
+    protected void activateMachineStateService(BundleContext context) {
+        this.outletControl = new OutletControlImpl(this);
+        this.pumpControl = new PumpControlImpl(this, mbtController, logService);
+        this.machineStateEventHandler = new MachineStateEventHandler(this);
+        registerMachineEventHandler(machineStateEventHandler);
+        this.updaterThread = new InputUpdaterThread();
+        this.updaterThread.start();
+    }
+
+    @Deactivate
+    protected void deactiveMachineStateService() {
+        updaterThread.stop();
     }
 
     @Override
@@ -73,73 +100,129 @@ public class MachineStateServiceImpl implements MachineStateService {
     @Override
     public List<Boolean> getDigitalOutputState() {
         if (System.currentTimeMillis() - lastDigitalOutputUpdateTime > UPDATE_INTERVAL_TIME) {
-            try {
-                List<Boolean> currentState = mbtController.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
-                synchronized (digitalOutputState) {
-                    digitalOutputState = currentState;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            lastDigitalOutputUpdateTime = System.currentTimeMillis();
+            updateDigitalOutputState();
         }
         return Collections.unmodifiableList(digitalOutputState);
     }
 
     @Override
     public List<Boolean> getDigitalInputState() {
-        if (System.currentTimeMillis() - lastDigitalInputUpdateTime > UPDATE_INTERVAL_TIME) {
-            try {
-                List<Boolean> currentState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
-                synchronized (digitalInputState) {
-                    digitalInputState = currentState;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            lastDigitalInputUpdateTime = System.currentTimeMillis();
-        }
+        updateDigitalInputState();
         return Collections.unmodifiableList(digitalInputState);
     }
 
     @Override
     public List<Integer> getAnalogOutputState() {
         if (System.currentTimeMillis() - lastAnalogOutputUpdateTime > UPDATE_INTERVAL_TIME) {
-            try {
-                List<Integer> currentState = mbtController.readOutputRegister(0,
-                        WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
-                synchronized (analogOutputState) {
-                    analogOutputState = currentState;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            lastAnalogOutputUpdateTime = System.currentTimeMillis();
+            updateAnalogOutputState();
         }
         return Collections.unmodifiableList(analogOutputState);
     }
 
     @Override
     public List<Integer> getAnalogInputState() {
+        updateAnalogInputState();
+        return Collections.unmodifiableList(analogInputState);
+
+    }
+
+    @Override
+    public void fireMachineStateEvent(MachineStateEvent event) {
+        standardThreadPoolService.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                for (MachineEventHandler handler : registeredEventHandler) {
+                    handler.handleEvent(event);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void registerMachineEventHandler(MachineEventHandler eventHandler) {
+        if (!this.registeredEventHandler.contains(eventHandler)) {
+            this.registeredEventHandler.add(eventHandler);
+        }
+
+    }
+
+    @Override
+    public void unregisterMachineEventHandler(MachineEventHandler eventHandler) {
+        if (this.registeredEventHandler.contains(eventHandler)) {
+            this.registeredEventHandler.remove(eventHandler);
+        }
+    }
+
+    // #################################
+    // Non Interface Functions
+    // #################################
+
+    public void updateDigitalOutputState() {
+        try {
+            List<Boolean> currentState = mbtController.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
+            synchronized (digitalOutputState) {
+                digitalOutputState = currentState;
+            }
+            lastDigitalOutputUpdateTime = System.currentTimeMillis();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateAnalogOutputState() {
+        try {
+            List<Integer> currentState = mbtController.readOutputRegister(0,
+                    WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+            synchronized (analogOutputState) {
+                analogOutputState = currentState;
+            }
+            lastAnalogOutputUpdateTime = System.currentTimeMillis();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateDigitalInputState() {
+        if (System.currentTimeMillis() - lastDigitalInputUpdateTime > UPDATE_INTERVAL_TIME) {
+            try {
+                List<Boolean> currentState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
+                for (int i = 0; i < currentState.size(); i++) {
+                    if (currentState.get(i) != digitalInputState.get(i)) {
+                        fireMachineStateEvent(
+                                new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.getByAddress(i)));
+                    }
+                }
+                synchronized (digitalInputState) {
+                    digitalInputState = currentState;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            lastDigitalInputUpdateTime = System.currentTimeMillis();
+        }
+    }
+
+    public void updateAnalogInputState() {
         if (System.currentTimeMillis() - lastAnalogInputUpdateTime > UPDATE_INTERVAL_TIME) {
             try {
                 List<Integer> currentState = mbtController.readInputRegister(0,
                         WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+                for (int i = 0; i < currentState.size(); i++) {
+                    if (currentState.get(i) != analogInputState.get(i)) {
+                        fireMachineStateEvent(
+                                new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, AnalogInput.getByAddress(i)));
+                    }
+                }
                 synchronized (analogInputState) {
                     analogInputState = currentState;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            lastAnalogInputUpdateTime = System.currentTimeMillis();
         }
-        return Collections.unmodifiableList(analogInputState);
-    }
-
-    @Override
-    public void fireMachineStateEvent(MachineStateEvent event) {
-        // TODO Auto-generated method stub
-
+        lastAnalogInputUpdateTime = System.currentTimeMillis();
     }
 
     // #################################
@@ -199,6 +282,84 @@ public class MachineStateServiceImpl implements MachineStateService {
         if (this.standardThreadPoolService == standardThreadPoolService) {
             this.standardThreadPoolService = null;
         }
+    }
+
+    private class InputUpdaterThread {
+
+        private boolean running = false;
+
+        private Thread thread;
+
+        public InputUpdaterThread() {
+            thread = new Thread() {
+                @Override
+                public void run() {
+                    long lastTime = System.nanoTime();
+                    try {
+                        while (!mbtController.isConnected()) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        digitalInputState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
+                        digitalOutputState = mbtController.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
+                        analogInputState = mbtController.readInputRegister(0,
+                                WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+                        analogOutputState = mbtController.readOutputRegister(0,
+                                WagoAddresses.ANALOG_OUTPUT_MAX_ADDRESS + 1);
+
+                        while (running) {
+                            updateDigitalInputState();
+                            updateAnalogInputState();
+                            long now = System.nanoTime();
+                            long delta = now - lastTime;
+                            long timeToSleep = (long) (1.0 / INPUT_UPDATE_TICKRATE * 1000 - delta / 1000000.0);
+                            if (timeToSleep > 0) {
+                                try {
+                                    Thread.sleep(timeToSleep);
+                                } catch (InterruptedException e) {
+                                    logService.log(LogService.LOG_DEBUG, "Updater Thread interrupted.", e);
+                                }
+                            }
+                            lastTime = System.nanoTime();
+                        }
+                    } catch (Exception e) {
+                        logService.log(LogService.LOG_DEBUG, "Unhandle Loopexception Machine State Updater thread", e);
+                    }
+
+                }
+            };
+            thread.setName("MachineStateUpdaterThread");
+        }
+
+        public void start() {
+            running = true;
+            thread.start();
+        }
+
+        public void stop() {
+            running = false;
+        }
+
+    }
+
+    public MBTController getMbtController() {
+        return mbtController;
+    }
+
+    public DataService getDataService() {
+        return dataService;
+    }
+
+    public LogService getLogService() {
+        return logService;
+    }
+
+    public SrmCommunicator getSrmCommunicator() {
+        return srmCommunicator;
     }
 
 }

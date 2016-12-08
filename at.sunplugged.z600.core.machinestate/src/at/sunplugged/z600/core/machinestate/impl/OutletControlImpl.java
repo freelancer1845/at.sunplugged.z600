@@ -2,6 +2,8 @@ package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
 
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.mbt.api.MBTController;
@@ -10,11 +12,10 @@ public class OutletControlImpl implements OutletControl {
 
     private final MachineStateService machineStateService;
 
-    private final MBTController mbtController;
+    private MBTController mbtController;
 
-    public OutletControlImpl(MachineStateService machineStateService, MBTController mbtController) {
+    public OutletControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
-        this.mbtController = mbtController;
     }
 
     @Override
@@ -25,12 +26,13 @@ public class OutletControlImpl implements OutletControl {
     @Override
     public void closeOutlet(Outlet outlet) throws IOException {
         mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), false);
+        machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED));
     }
 
     @Override
     public void openOutlet(Outlet outlet) throws IOException {
         mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), true);
-
+        machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_OUTPUT_CHANGED));
     }
 
 }

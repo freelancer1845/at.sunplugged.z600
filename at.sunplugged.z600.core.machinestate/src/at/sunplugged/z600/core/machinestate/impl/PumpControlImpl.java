@@ -1,17 +1,18 @@
 package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.mbt.api.MBTController;
 
-public class PumpControlImpl implements PumpControl {
+public class PumpControlImpl implements PumpControl, MachineEventHandler {
 
     private final MachineStateService machineStateService;
 
@@ -19,83 +20,90 @@ public class PumpControlImpl implements PumpControl {
 
     private final LogService logService;
 
-    private final StandardThreadPoolService standardThreadPoolService;
+    private PumpState pumpOneState = PumpState.OFF;
 
-    public PumpControlImpl(MachineStateService machineStateService, MBTController mbtController, LogService logService,
-            StandardThreadPoolService standardThreadPoolService) {
+    private PumpState pumpTwoState = PumpState.OFF;
+
+    private PumpState turboPumpState = PumpState.OFF;
+
+    public PumpControlImpl(MachineStateService machineStateService, MBTController mbtController,
+            LogService logService) {
         this.machineStateService = machineStateService;
+        machineStateService.registerMachineEventHandler(this);
         this.mbtController = mbtController;
         this.logService = logService;
-        this.standardThreadPoolService = standardThreadPoolService;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public Future<Boolean> startPump(Pumps pump) {
-        return (Future<Boolean>) standardThreadPoolService.submit(new StartPumpCallable(pump));
+    public void startPump(Pumps pump) {
+        try {
+            mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), true);
+            machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED));
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to start Pump: " + pump.toString(), e);
+        }
     }
 
     @Override
-    public Future<Boolean> stopPump(Pumps pump) {
-        // TODO Auto-generated method stub
-        return null;
+    public void stopPump(Pumps pump) {
+        try {
+            mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), false);
+            machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED));
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to stop Pump: " + pump.toString(), e);
+        }
     }
 
     @Override
     public PumpState getState(Pumps pump) {
-        // TODO Auto-generated method stub
-        return null;
+        switch (pump) {
+        case PRE_PUMP_ONE:
+            return pumpOneState;
+        case PRE_PUMP_TWO:
+            return pumpTwoState;
+        case TURBO_PUMP:
+            return turboPumpState;
+        default:
+            logService.log(LogService.LOG_DEBUG, "State of unkown pump requested: " + pump.name());
+            return null;
+        }
     }
 
-    private class StartPumpCallable implements Callable<Boolean> {
-
-        private static final int UPDATE_TIME = 100;
-
-        private static final int WAIT_TIME = 60000;
-
-        private final Pumps pump;
-
-        public StartPumpCallable(Pumps pump) {
-            this.pump = pump;
-        }
-
-        private void startTurboPump() {
-
-        }
-
-        private void startNormalPump() throws IOException {
-            mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), true);
-
-            int timeWaited = 0;
-            while (machineStateService.getDigitalInputState().get(pump.getDigitalInput().getAddress())
-                    || timeWaited > WAIT_TIME) {
-                try {
-                    Thread.sleep(UPDATE_TIME);
-                    timeWaited += UPDATE_TIME;
-                } catch (InterruptedException e) {
-                    throw new IOException("Starting Pump failed. Thread Interrupted.", e);
-                }
-            }
-            if (timeWaited > WAIT_TIME) {
-                throw new IOException("Starting Pump failed. Not ok after " + WAIT_TIME / 1000 + " s.");
-            }
-        }
-
-        @Override
-        public Boolean call() throws Exception {
-            try {
-                if (pump.equals(Pumps.TURBO_PUMP)) {
-                    startTurboPump();
+    @Override
+    public void handleEvent(MachineStateEvent event) {
+        if (event.getType().equals(MachineStateEvent.Type.DIGITAL_INPUT_CHANGED)) {
+            DigitalInput digitalInput = event.getDigitalInput();
+            if (digitalInput.equals(Pumps.PRE_PUMP_ONE.getDigitalInput())) {
+                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                    pumpOneState = PumpState.ON;
                 } else {
-                    startNormalPump();
+                    pumpOneState = PumpState.OFF;
                 }
-            } catch (IOException e) {
-                logService.log(LogService.LOG_ERROR, e.getMessage());
-                return false;
-            }
-            return true;
-        }
+            } else if (digitalInput.equals(Pumps.PRE_PUMP_TWO.getDigitalInput())) {
+                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                    pumpTwoState = PumpState.ON;
+                } else {
+                    pumpTwoState = PumpState.OFF;
+                }
+            } else if (digitalInput.equals(Pumps.TURBO_PUMP.getDigitalInput())) {
+                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                    turboPumpState = PumpState.STARTING;
+                } else {
+                    turboPumpState = PumpState.OFF;
+                }
+            } else if (digitalInput.equals(DigitalInput.TURBO_PUMP_HIGH_SPEED)) {
+                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                    turboPumpState = PumpState.ON;
+                } else {
+                    if (turboPumpState == PumpState.ON) {
+                        turboPumpState = PumpState.STOPPING;
+                    }
+                }
 
+            }
+        }
+        logService.log(LogService.LOG_DEBUG, "Event catched by pump Control: " + event.getType().name());
     }
 
 }

@@ -45,6 +45,18 @@ public class WagoAddresses {
             return this.address;
         }
 
+        /** Returns null if there is no output registered under that address. */
+        public static DigitalOutput getByAddress(int address) {
+            DigitalOutput[] values = DigitalOutput.values();
+
+            for (int i = 0; i < values.length; i++) {
+                if (values[i].getAddress() == address) {
+                    return values[i];
+                }
+            }
+            return null;
+        }
+
     }
 
     public enum DigitalInput {
@@ -72,6 +84,21 @@ public class WagoAddresses {
             return address;
         }
 
+        /**
+         * Returns null if there is no DigitalInput registered under that
+         * address.
+         */
+        public static DigitalInput getByAddress(int address) {
+            DigitalInput[] digitalInputs = DigitalInput.values();
+            for (int i = 0; i < digitalInputs.length; i++) {
+                if (digitalInputs[i].getAddress() == address) {
+                    return digitalInputs[i];
+                }
+            }
+
+            return null;
+        }
+
     }
 
     public enum AnalogInput {
@@ -88,6 +115,40 @@ public class WagoAddresses {
             return address;
         }
 
+        public static AnalogInput getByAddress(int address) {
+            AnalogInput[] analogInputs = AnalogInput.values();
+            for (int i = 0; i < analogInputs.length; i++) {
+                if (analogInputs[i].getAddress() == address) {
+                    return analogInputs[i];
+                }
+            }
+            return null;
+        }
+
+    }
+
+    public enum AnalogOutput {
+        KATHODE_ONE_SETPOINT(15395);
+
+        private final int address;
+
+        private AnalogOutput(int address) {
+            this.address = address;
+        }
+
+        public int getAddress() {
+            return address;
+        }
+
+        public static AnalogOutput getByAddress(int address) {
+            AnalogOutput[] analogOutputs = AnalogOutput.values();
+            for (int i = 0; i < analogOutputs.length; i++) {
+                if (analogOutputs[i].getAddress() == address) {
+                    return analogOutputs[i];
+                }
+            }
+            return null;
+        }
     }
 
     private WagoAddresses() {

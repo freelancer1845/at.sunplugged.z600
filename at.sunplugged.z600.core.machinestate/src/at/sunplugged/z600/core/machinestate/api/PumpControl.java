@@ -1,7 +1,5 @@
 package at.sunplugged.z600.core.machinestate.api;
 
-import java.util.concurrent.Future;
-
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 
@@ -35,9 +33,9 @@ public interface PumpControl {
         ON, OFF, STARTING, STOPPING, FAILED;
     }
 
-    public Future<Boolean> startPump(Pumps pump);
+    public void startPump(Pumps pump);
 
-    public Future<Boolean> stopPump(Pumps pump);
+    public void stopPump(Pumps pump);
 
     public PumpState getState(Pumps pump);
 
