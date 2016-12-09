@@ -90,7 +90,6 @@ public class MainApplication extends Thread {
                 logService.log(LogService.LOG_ERROR, e.getMessage(), e);
             }
         }
-        shell.dispose();
         try {
             MainApplication.getContext().getBundle(0).stop();
         } catch (BundleException e) {
