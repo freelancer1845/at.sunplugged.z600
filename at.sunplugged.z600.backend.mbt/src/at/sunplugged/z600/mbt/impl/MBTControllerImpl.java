@@ -2,7 +2,6 @@ package at.sunplugged.z600.mbt.impl;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.service.log.LogService;
@@ -107,7 +106,7 @@ public class MBTControllerImpl implements MBTController {
         }
         readCoilsResponse = (ReadCoilsResponse) modbusTransaction.getResponse();
 
-        List<Boolean> returnList = createReturnList(startAddress);
+        List<Boolean> returnList = new ShiftedArrayList<>(startAddress);
         for (int i = 0; i < readCoilsResponse.getBitCount(); i++) {
             returnList.add(readCoilsResponse.getCoilStatus(i));
         }
@@ -135,23 +134,11 @@ public class MBTControllerImpl implements MBTController {
         }
 
         readInputDiscretesResponse = (ReadInputDiscretesResponse) modbusTransaction.getResponse();
-        List<Boolean> returnList = createReturnList(startAddress);
+        List<Boolean> returnList = new ShiftedArrayList<>(startAddress);
         for (int i = 0; i < readInputDiscretesResponse.getDiscretes().size(); i++) {
             returnList.add(readInputDiscretesResponse.getDiscreteStatus(i));
         }
         return returnList;
-    }
-
-    /** Bind method for LogService. */
-    public synchronized void setLogService(LogService logService) {
-        this.logService = logService;
-    }
-
-    /** Unbind method for LogService. */
-    public synchronized void unsetLogService(LogService logService) {
-        if (this.logService == logService) {
-            this.logService = null;
-        }
     }
 
     @Override
@@ -175,7 +162,7 @@ public class MBTControllerImpl implements MBTController {
             }
         }
         readInputRegistersResponse = (net.wimpi.modbus.msg.ReadInputRegistersResponse) modbusTransaction.getResponse();
-        List<Integer> returnList = createReturnList(startAddress);
+        List<Integer> returnList = new ShiftedArrayList<>(startAddress);
         for (int i = 0; i < readInputRegistersResponse.getWordCount(); i++) {
             returnList.add(readInputRegistersResponse.getRegisterValue(i));
         }
@@ -230,7 +217,7 @@ public class MBTControllerImpl implements MBTController {
             }
         }
         readMultipleRegistersResponse = (ReadMultipleRegistersResponse) modbusTransaction.getResponse();
-        List<Integer> returnList = createReturnList(startAddress);
+        List<Integer> returnList = new ShiftedArrayList<>(startAddress);
         for (int i = 0; i < readMultipleRegistersResponse.getWordCount(); i++) {
             returnList.add(readMultipleRegistersResponse.getRegisterValue(i));
         }
@@ -245,13 +232,16 @@ public class MBTControllerImpl implements MBTController {
         return connection.isConnected();
     }
 
-    private <T> List<T> createReturnList(int startAddress) {
-        List<T> returnList = new ArrayList<>();
+    /** Bind method for LogService. */
+    public synchronized void setLogService(LogService logService) {
+        this.logService = logService;
+    }
 
-        for (int i = 0; i < startAddress; i++) {
-            returnList.add(null);
+    /** Unbind method for LogService. */
+    public synchronized void unsetLogService(LogService logService) {
+        if (this.logService == logService) {
+            this.logService = null;
         }
-        return returnList;
     }
 
 }
