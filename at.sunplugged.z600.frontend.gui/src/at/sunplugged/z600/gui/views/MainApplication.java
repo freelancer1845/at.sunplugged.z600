@@ -1,14 +1,20 @@
 package at.sunplugged.z600.gui.views;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -18,8 +24,8 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.gui.tableitems.mbt.MbtTabItemFactory;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
@@ -38,7 +44,11 @@ public class MainApplication extends Thread {
 
     private MachineStateService machineStateService;
 
+    private ConveyorControlService conveyorControlService;
+
     private static BundleContext context;
+    private Text text;
+    private Text text_1;
 
     public LogService getLogService() {
         return logService;
@@ -121,13 +131,187 @@ public class MainApplication extends Thread {
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
 
+        TabItem tbtmEnginedebug = new TabItem(tabFolder, SWT.NONE);
+        tbtmEnginedebug.setText("EngineDebug");
+
+        Composite composite_1 = new Composite(tabFolder, SWT.NONE);
+        tbtmEnginedebug.setControl(composite_1);
+        GridLayout gl_composite_1 = new GridLayout(1, false);
+        gl_composite_1.marginWidth = 20;
+        gl_composite_1.marginHeight = 20;
+        composite_1.setLayout(gl_composite_1);
+
+        Group grpEngine = new Group(composite_1, SWT.NONE);
+        grpEngine.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        grpEngine.setText("Engine 1");
+        grpEngine.setLayout(new GridLayout(2, true));
+
+        Button btnStart = new Button(grpEngine, SWT.NONE);
+        btnStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStart.setText("Start");
+        btnStart.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().startEngine();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        Button btnStop = new Button(grpEngine, SWT.NONE);
+        btnStop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStop.setText("Stop");
+        btnStop.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().stopEngine();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        Button btnIncrease = new Button(grpEngine, SWT.NONE);
+        btnIncrease.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnIncrease.setText("Increase");
+        btnIncrease.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().increaseSpeed();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        Button btnDecrease = new Button(grpEngine, SWT.NONE);
+        btnDecrease.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnDecrease.setText("Decrease");
+        btnDecrease.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().decreaseSpeed();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        Button btnLeftdirection = new Button(grpEngine, SWT.NONE);
+        btnLeftdirection.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnLeftdirection.setText("LeftDirection");
+        btnLeftdirection.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().setDirection(0);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        Button btnRightdirection = new Button(grpEngine, SWT.NONE);
+        btnRightdirection.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnRightdirection.setText("RightDirection");
+        btnRightdirection.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().setDirection(1);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        Button btnSetspeed = new Button(grpEngine, SWT.NONE);
+        btnSetspeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnSetspeed.setText("SetSpeed");
+        btnSetspeed.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().setMaximumSpeed(Integer.valueOf(text.getText()));
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
+
+        text = new Text(grpEngine, SWT.BORDER);
+        text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Group grpEngine_1 = new Group(composite_1, SWT.NONE);
+        grpEngine_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        grpEngine_1.setText("Engine 2");
+        grpEngine_1.setLayout(new GridLayout(2, true));
+
+        Button button = new Button(grpEngine_1, SWT.NONE);
+        button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button.setText("Start");
+
+        Button button_1 = new Button(grpEngine_1, SWT.NONE);
+        button_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_1.setText("Stop");
+
+        Button button_2 = new Button(grpEngine_1, SWT.NONE);
+        button_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_2.setText("Increase");
+
+        Button button_3 = new Button(grpEngine_1, SWT.NONE);
+        button_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_3.setText("Decrease");
+
+        Button button_4 = new Button(grpEngine_1, SWT.NONE);
+        button_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_4.setText("LeftDirection");
+
+        Button button_5 = new Button(grpEngine_1, SWT.NONE);
+        button_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_5.setText("RightDirection");
+
+        Button button_6 = new Button(grpEngine_1, SWT.NONE);
+        button_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_6.setText("SetSpeed");
+
+        text_1 = new Text(grpEngine_1, SWT.BORDER);
+        text_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
         // SrmTabItemFactory srmTabItemFactory = new
         // SrmTabItemFactory(srmCommunicator, logService, dataService);
         // srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
-        MbtTabItemFactory mbtTabItemFactory = new MbtTabItemFactory(mbtController, logService, machineStateService);
+        // MbtTabItemFactory mbtTabItemFactory = new
+        // MbtTabItemFactory(mbtController, logService, machineStateService);
         // TabItem tbtmMbt = mbtTabItemFactory.createMbtTabItem(tabFolder,
         // SWT.NONE);
-        mbtTabItemFactory.createDebugMbtTabItem(tabFolder, SWT.NONE);
+        // mbtTabItemFactory.createDebugMbtTabItem(tabFolder, SWT.NONE);
         Composite compositeOne = new Composite(shell, SWT.NONE);
         compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
     }
@@ -184,6 +368,17 @@ public class MainApplication extends Thread {
     public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
         if (this.machineStateService == machineStateService) {
             this.machineStateService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindConveyorControlService")
+    public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
+        this.conveyorControlService = conveyorControlService;
+    }
+
+    public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
+        if (this.conveyorControlService == conveyorControlService) {
+            this.conveyorControlService = null;
         }
     }
 }
