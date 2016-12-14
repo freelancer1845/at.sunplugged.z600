@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import org.eclipse.equinox.log.ExtendedLogReaderService;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -21,11 +19,6 @@ public class ConsoleLogger implements LogListener {
     private LogReaderService logReaderService;
 
     private ExtendedLogReaderService extendedLogReaderService;
-
-    @Activate
-    protected void activate(BundleContext bundleContext) {
-        System.out.println("ConsoleLogListener Activated");
-    }
 
     @Reference(unbind = "unbindLogReaderService", cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     public synchronized void bindLogReaderService(LogReaderService logReaderService) {
