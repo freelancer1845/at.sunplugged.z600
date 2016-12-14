@@ -44,6 +44,7 @@ public class EngineSerialCom implements Engine {
         this.portName = portName;
         this.engineAddress = numberOfEngines;
         logService = ConveyorControlServiceImpl.getLogService();
+        threadPool = ConveyorControlServiceImpl.getStandardThreadPoolService();
     }
 
     public void connect() {
@@ -132,7 +133,7 @@ public class EngineSerialCom implements Engine {
     }
 
     public void setDirection(int direction) {
-        if (direction != 0 && direction != -1) {
+        if (direction != 0 && direction != 1) {
             throw new IllegalStateException("Not allowed direction change: " + direction);
         }
         sendCommand("d" + direction);
@@ -154,6 +155,10 @@ public class EngineSerialCom implements Engine {
     }
 
     private void sendCommand(String command) {
+        if (!isConnected()) {
+            logService.log(LogService.LOG_WARNING, "Engine is not conncted! Ignoring command.");
+            return;
+        }
         threadPool.execute(new Runnable() {
 
             @Override

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" immediate="true" name="at.sunplugged.z600.backend.logging.ConsoleLogger">
+   <service>
+      <provide interface="org.osgi.service.log.LogListener"/>
+   </service>
+   <reference bind="bindExtendedLogReaderService" cardinality="0..n" interface="org.eclipse.equinox.log.ExtendedLogReaderService" name="ExtendedLogReaderService" policy="dynamic" unbind="unbindExtendedLogReaderService"/>
+   <reference bind="bindLogReaderService" cardinality="0..n" interface="org.osgi.service.log.LogReaderService" name="LogReaderService" policy="dynamic" unbind="unbindLogReaderService"/>
+   <implementation class="at.sunplugged.z600.backend.logging.ConsoleLogger"/>
+</scr:component>

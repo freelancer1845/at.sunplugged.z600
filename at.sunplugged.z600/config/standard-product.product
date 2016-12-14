@@ -31,13 +31,13 @@
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</windows>
    </vm>
 
-
    <plugins>
       <plugin id="at.sunplugged.z600.backend"/>
       <plugin id="at.sunplugged.z600.backend.dataservice"/>
       <plugin id="at.sunplugged.z600.backend.mbt"/>
       <plugin id="at.sunplugged.z600.backend.srm50"/>
       <plugin id="at.sunplugged.z600.common.utils"/>
+      <plugin id="at.sunplugged.z600.core.conveyor"/>
       <plugin id="at.sunplugged.z600.core.machinestate"/>
       <plugin id="at.sunplugged.z600.frontend.gui"/>
       <plugin id="at.sunplugged.z600.frontend.utils"/>

@@ -34,7 +34,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     private static final long UPDATE_INTERVAL_TIME = 250;
 
     /** Input update Tickrate. */
-    private static final int INPUT_UPDATE_TICKRATE = 100;
+    private static final int INPUT_UPDATE_TICKRATE = 10;
 
     private DataService dataService;
 

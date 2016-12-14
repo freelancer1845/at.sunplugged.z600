@@ -21,6 +21,7 @@ import org.osgi.framework.BundleException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
@@ -327,7 +328,7 @@ public class MainApplication extends Thread {
         }
     }
 
-    @Reference(unbind = "unbindSrmCommunicator")
+    @Reference(unbind = "unbindSrmCommunicator", cardinality = ReferenceCardinality.OPTIONAL)
     public synchronized void bindSrmCommunicator(SrmCommunicator srmCommunicator) {
         this.srmCommunicator = srmCommunicator;
     }
@@ -360,7 +361,7 @@ public class MainApplication extends Thread {
         }
     }
 
-    @Reference(unbind = "unbindMachineStateService")
+    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.OPTIONAL)
     public synchronized void bindMachineStateService(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
     }
@@ -371,7 +372,7 @@ public class MainApplication extends Thread {
         }
     }
 
-    @Reference(unbind = "unbindConveyorControlService")
+    @Reference(unbind = "unbindConveyorControlService", cardinality = ReferenceCardinality.OPTIONAL)
     public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
         this.conveyorControlService = conveyorControlService;
     }
