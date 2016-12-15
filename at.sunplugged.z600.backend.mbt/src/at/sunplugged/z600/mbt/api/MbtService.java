@@ -14,26 +14,6 @@ import java.util.List;
 public interface MbtService {
 
     /**
-     * Establishes a connection to a TCP/IP Modbus controller.
-     * 
-     * @param address
-     *            of the Modbus controller (i. e. "192.168.1.219")
-     * @throws IOException
-     *             if connections fails.
-     */
-    public void connect(String address) throws IOException;
-
-    /**
-     * Disconencts the mtb.
-     * 
-     * @throws IOException
-     *             if there is no open connection.
-     */
-    public void disconnect() throws IOException;
-
-    public boolean isConnected();
-
-    /**
      * Write to a digOut.
      * 
      * @param digOut

@@ -4,4 +4,8 @@ public interface SpeedLogger {
 
     public double getCurrentSpeed();
 
+    public double getRightSpeed();
+
+    public double getLeftSpeed();
+
 }

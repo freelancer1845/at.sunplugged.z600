@@ -10,5 +10,6 @@ Import-Package: org.osgi.framework;version="1.3.0",
 Bundle-ClassPath: .,
  lib/jamod-1.2-SNAPSHOT.jar
 Export-Package: at.sunplugged.z600.mbt.api
-Service-Component: OSGI-INF/mbtController.xml
+Service-Component: OSGI-INF/at.sunplugged.z600.mbt.impl.MbtServiceImpl.xml
 Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.osgi.services

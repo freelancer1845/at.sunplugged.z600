@@ -189,8 +189,14 @@ public class MachineStateServiceImpl implements MachineStateService {
                 List<Boolean> currentState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
                 for (int i = 0; i < currentState.size(); i++) {
                     if (currentState.get(i) != digitalInputState.get(i)) {
-                        fireMachineStateEvent(
-                                new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.getByAddress(i)));
+                        DigitalInput digitalInput = DigitalInput.getByAddress(i);
+                        if (digitalInput != null) {
+                            fireMachineStateEvent(
+                                    new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.getByAddress(i)));
+                        } else {
+                            logService.log(LogService.LOG_DEBUG, "Unkown Digital Input changed: " + i);
+                        }
+
                     }
                 }
                 synchronized (digitalInputState) {
@@ -296,13 +302,6 @@ public class MachineStateServiceImpl implements MachineStateService {
                 public void run() {
                     long lastTime = System.nanoTime();
                     try {
-                        while (!mbtController.isConnected()) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
 
                         digitalInputState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
                         digitalOutputState = mbtController.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);

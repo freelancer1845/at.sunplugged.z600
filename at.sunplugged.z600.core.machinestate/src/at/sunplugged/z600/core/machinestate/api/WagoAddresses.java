@@ -72,7 +72,9 @@ public class WagoAddresses {
         WATER_KATH_ONE_ON(23),
         WATER_KATH_TWO_ON(24),
         WATER_KATH_THREE_ON(25),
-        WATHER_KATH_FOUR_ON(26);
+        WATHER_KATH_FOUR_ON(26),
+        LEFT_SPEED_TRIGGER(39),
+        RIGHT_SPEED_TRIGGER(40);
 
         private final int address;
 

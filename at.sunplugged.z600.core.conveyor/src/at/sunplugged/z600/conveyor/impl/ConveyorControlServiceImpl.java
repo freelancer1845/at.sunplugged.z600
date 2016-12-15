@@ -3,29 +3,38 @@ package at.sunplugged.z600.conveyor.impl;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.api.SpeedLogger;
 import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.engine.EngineSerialCom;
+import at.sunplugged.z600.conveyor.speedlogging.SpeedLoggerImpl;
+import at.sunplugged.z600.mbt.api.MbtService;
 
-@Component
+@Component(immediate = true)
 public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     private static StandardThreadPoolService threadPoolService;
 
     private static LogService logService;
 
+    private static MbtService mbtService;
+
     private EngineSerialCom engineOne;
 
     private EngineSerialCom engineTwo;
+
+    private SpeedLogger speedLogger;
 
     @Activate
     public synchronized void activate() {
         engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
         engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
+        speedLogger = new SpeedLoggerImpl();
     }
 
     @Override
@@ -42,8 +51,7 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Override
     public double getCurrentSpeed() {
-        // TODO Auto-generated method stub
-        return 0;
+        return speedLogger.getCurrentSpeed();
     }
 
     @Override
@@ -58,7 +66,7 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
         return null;
     }
 
-    @Reference(unbind = "unbindStandardThreadPoolService")
+    @Reference(unbind = "unbindStandardThreadPoolService", cardinality = ReferenceCardinality.MANDATORY)
     public synchronized void bindStandardThreadPoolService(StandardThreadPoolService standardThreadPoolService) {
         ConveyorControlServiceImpl.threadPoolService = standardThreadPoolService;
     }
@@ -88,6 +96,21 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
         return logService;
     }
 
+    @Reference(unbind = "unbindMbtService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindMbtService(MbtService mbtService) {
+        ConveyorControlServiceImpl.mbtService = mbtService;
+    }
+
+    public synchronized void unbindMbtService(MbtService mbtService) {
+        if (ConveyorControlServiceImpl.mbtService.equals(mbtService)) {
+            ConveyorControlServiceImpl.mbtService = null;
+        }
+    }
+
+    public static MbtService getMbtService() {
+        return mbtService;
+    }
+
     @Override
     public Engine getEngineOne() {
         return engineOne;
@@ -96,6 +119,12 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     @Override
     public Engine getEngineTwo() {
         return engineTwo;
+    }
+
+    @Override
+    public SpeedLogger getSpeedLogger() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

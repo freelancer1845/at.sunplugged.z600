@@ -12,7 +12,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -48,8 +47,7 @@ public class MbtTabItemFactory {
     private Text textIPAddress;
     private Text textConnectionState;
 
-    public MbtTabItemFactory(MbtService mbtController, LogService logService,
-            MachineStateService machineStateService) {
+    public MbtTabItemFactory(MbtService mbtController, LogService logService, MachineStateService machineStateService) {
         this.mbtController = mbtController;
         this.logService = logService;
         this.machineStateService = machineStateService;
@@ -87,23 +85,6 @@ public class MbtTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Display.getCurrent().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            mbtController.connect(textIPAddress.getText());
-                        } catch (IOException e1) {
-                            logService.log(LogService.LOG_WARNING, e1.getMessage());
-                        }
-                        if (mbtController.isConnected()) {
-                            textConnectionState.setText("Connected");
-                        } else {
-                            textConnectionState.setText("Not Connected");
-                        }
-                    }
-
-                });
 
             }
 

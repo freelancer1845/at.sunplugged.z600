@@ -1,7 +1,5 @@
 package at.sunplugged.z600.gui.views;
 
-import java.io.IOException;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -12,6 +10,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -31,7 +30,6 @@ import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
-import org.eclipse.swt.widgets.Label;
 
 @Component
 public class MainApplication extends Thread {
@@ -348,15 +346,6 @@ public class MainApplication extends Thread {
         txtValue_1.setText("Value");
         txtValue_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        try {
-            mbtController.connect("192.168.1.54");
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-
-        updateSpeedValueValue(0);
-
         // SrmTabItemFactory srmTabItemFactory = new
         // SrmTabItemFactory(srmCommunicator, logService, dataService);
         // srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
@@ -435,26 +424,4 @@ public class MainApplication extends Thread {
         }
     }
 
-    private void updateSpeedValueValue(int i) {
-
-        Display.getDefault().asyncExec(new Runnable() {
-
-            @Override
-            public void run() {
-                if (i == 100000) {
-                    try {
-                        txtValue.setText(String.valueOf(mbtController.readDigIns(39, 1).get(39)));
-                        txtValue_1.setText(String.valueOf(mbtController.readDigIns(40, 1).get(40)));
-                    } catch (IOException e) {
-                        logService.log(LogService.LOG_ERROR, e.getMessage(), e);
-                    }
-                    updateSpeedValueValue(0);
-                } else {
-                    updateSpeedValueValue(i + 1);
-                }
-            }
-
-        });
-
-    }
 }

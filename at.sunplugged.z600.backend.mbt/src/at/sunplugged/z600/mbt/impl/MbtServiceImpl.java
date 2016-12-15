@@ -4,6 +4,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.ComponentException;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -27,7 +34,11 @@ import net.wimpi.modbus.net.TCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 import net.wimpi.modbus.procimg.SimpleRegister;
 
+@Component
 public class MbtServiceImpl implements MbtService {
+
+    /** The Ip of the MBT Controller, will be moved to a config file. */
+    private static final String IP_ADDRESS = "localhost";
 
     /** The Connection. */
     private TCPMasterConnection connection;
@@ -43,9 +54,27 @@ public class MbtServiceImpl implements MbtService {
 
     private LogService logService;
 
-    @Override
-    public void connect(String address) throws IOException {
-        addr = InetAddress.getByName(address);
+    @Activate
+    protected synchronized void activate(BundleContext context) {
+        try {
+            connect();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to connect to Modbus Controller.", e);
+            throw new ComponentException("Couldnt start mbt service.", e);
+        }
+    }
+
+    @Deactivate
+    protected synchronized void deactivate() {
+        try {
+            disconnect();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to disconnect from Modbus Controller.", e);
+        }
+    }
+
+    private void connect() throws IOException {
+        addr = InetAddress.getByName(IP_ADDRESS);
         connection = new TCPMasterConnection(addr);
         connection.setPort(port);
         try {
@@ -56,8 +85,7 @@ public class MbtServiceImpl implements MbtService {
 
     }
 
-    @Override
-    public void disconnect() throws IOException {
+    private void disconnect() throws IOException {
         connection.close();
 
     }
@@ -186,8 +214,7 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MbtServiceException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value,
-                        e);
+                throw new MbtServiceException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value, e);
             }
         }
         writeSingleRegisterResponse = (WriteSingleRegisterResponse) modbusTransaction.getResponse();
@@ -224,7 +251,6 @@ public class MbtServiceImpl implements MbtService {
         return returnList;
     }
 
-    @Override
     public boolean isConnected() {
         if (connection == null) {
             return false;
@@ -233,6 +259,7 @@ public class MbtServiceImpl implements MbtService {
     }
 
     /** Bind method for LogService. */
+    @Reference(unbind = "unsetLogService", cardinality = ReferenceCardinality.MANDATORY)
     public synchronized void setLogService(LogService logService) {
         this.logService = logService;
     }

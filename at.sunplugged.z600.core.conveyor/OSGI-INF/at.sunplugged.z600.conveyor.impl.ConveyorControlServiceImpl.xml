@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" name="at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" immediate="true" name="at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl">
    <service>
       <provide interface="at.sunplugged.z600.conveyor.api.ConveyorControlService"/>
    </service>
    <reference bind="bindLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unbindLogService"/>
+   <reference bind="bindMbtService" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MbtService" policy="static" unbind="unbindMbtService"/>
    <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
    <implementation class="at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl"/>
 </scr:component>

@@ -30,4 +30,11 @@ public interface ConveyorControlService {
      */
     public Engine getEngineTwo();
 
+    /**
+     * This accesses the SpeedLogger.
+     * 
+     * @return {@linkplain SpeedLogger}
+     */
+    public SpeedLogger getSpeedLogger();
+
 }
