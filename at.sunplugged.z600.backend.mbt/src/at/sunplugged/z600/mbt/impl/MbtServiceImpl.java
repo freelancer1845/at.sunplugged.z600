@@ -7,7 +7,7 @@ import java.util.List;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.mbt.api.MbtService;
-import at.sunplugged.z600.mbt.api.MBTControllerException;
+import at.sunplugged.z600.mbt.api.MbtServiceException;
 import net.wimpi.modbus.Modbus;
 import net.wimpi.modbus.ModbusException;
 import net.wimpi.modbus.io.ModbusTCPTransaction;
@@ -51,7 +51,7 @@ public class MbtServiceImpl implements MbtService {
         try {
             connection.connect();
         } catch (Exception e) {
-            throw new MBTControllerException("Failed to connect to MBT", e);
+            throw new MbtServiceException("Failed to connect to MBT", e);
         }
 
     }
@@ -65,7 +65,7 @@ public class MbtServiceImpl implements MbtService {
     @Override
     public void writeDigOut(int digOut, boolean value) throws IOException {
         if (!isConnected()) {
-            throw new MBTControllerException("No MBT Connection open!");
+            throw new MbtServiceException("No MBT Connection open!");
         }
         WriteCoilRequest writeCoilRequest = new WriteCoilRequest(digOut, value);
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
@@ -77,12 +77,12 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MBTControllerException("Failed to write DigOut. DigOut: " + digOut, e);
+                throw new MbtServiceException("Failed to write DigOut. DigOut: " + digOut, e);
             }
         }
         writeCoilResponse = (WriteCoilResponse) modbusTransaction.getResponse();
         if (writeCoilResponse.getCoil() != value) {
-            throw new MBTControllerException(
+            throw new MbtServiceException(
                     "Failed to write DigOut. DigOut: " + digOut + ". Response does not equal desired value.");
         }
     }
@@ -90,7 +90,7 @@ public class MbtServiceImpl implements MbtService {
     @Override
     public List<Boolean> readDigOuts(int startAddress, int outsToRead) throws IOException {
         if (!isConnected()) {
-            throw new MBTControllerException("No MBT Connection open!");
+            throw new MbtServiceException("No MBT Connection open!");
         }
         ReadCoilsRequest readCoilsRequest = new ReadCoilsRequest(startAddress, outsToRead);
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
@@ -101,7 +101,7 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MBTControllerException("Failed to read DigOuts.", e);
+                throw new MbtServiceException("Failed to read DigOuts.", e);
             }
         }
         readCoilsResponse = (ReadCoilsResponse) modbusTransaction.getResponse();
@@ -117,7 +117,7 @@ public class MbtServiceImpl implements MbtService {
     @Override
     public List<Boolean> readDigIns(int startAddress, int insToRead) throws IOException {
         if (!isConnected()) {
-            throw new MBTControllerException("No MBT Connection open!");
+            throw new MbtServiceException("No MBT Connection open!");
         }
         ReadInputDiscretesRequest readInputDiscretesRequest = new ReadInputDiscretesRequest(startAddress, insToRead);
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
@@ -129,7 +129,7 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MBTControllerException("Failed to read DigIn.", e);
+                throw new MbtServiceException("Failed to read DigIn.", e);
             }
         }
 
@@ -144,7 +144,7 @@ public class MbtServiceImpl implements MbtService {
     @Override
     public List<Integer> readInputRegister(int startAddress, int insRegsToRead) throws IOException {
         if (!isConnected()) {
-            throw new MBTControllerException("No MBT Connection open!");
+            throw new MbtServiceException("No MBT Connection open!");
         }
 
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
@@ -158,7 +158,7 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MBTControllerException("Failed to read Analog In.", e);
+                throw new MbtServiceException("Failed to read Analog In.", e);
             }
         }
         readInputRegistersResponse = (net.wimpi.modbus.msg.ReadInputRegistersResponse) modbusTransaction.getResponse();
@@ -172,7 +172,7 @@ public class MbtServiceImpl implements MbtService {
     @Override
     public void writeOutputRegister(int anaOut, int value) throws IOException {
         if (!isConnected()) {
-            throw new MBTControllerException("No MBT Connection open!");
+            throw new MbtServiceException("No MBT Connection open!");
         }
 
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
@@ -186,13 +186,13 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MBTControllerException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value,
+                throw new MbtServiceException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value,
                         e);
             }
         }
         writeSingleRegisterResponse = (WriteSingleRegisterResponse) modbusTransaction.getResponse();
         if (writeSingleRegisterResponse.getRegisterValue() != value) {
-            throw new MBTControllerException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value
+            throw new MbtServiceException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value
                     + ". Repsone value is unequal desired value.");
         }
     }
@@ -200,7 +200,7 @@ public class MbtServiceImpl implements MbtService {
     @Override
     public List<Integer> readOutputRegister(int startAddress, int outRegsToRead) throws IOException {
         if (!isConnected()) {
-            throw new MBTControllerException("No MBT Connection open!");
+            throw new MbtServiceException("No MBT Connection open!");
         }
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
         ReadMultipleRegistersRequest readMultipleRegistersRequest = new ReadMultipleRegistersRequest(startAddress,
@@ -213,7 +213,7 @@ public class MbtServiceImpl implements MbtService {
             try {
                 modbusTransaction.execute();
             } catch (ModbusException e) {
-                throw new MBTControllerException("Failed to read Analog out!", e);
+                throw new MbtServiceException("Failed to read Analog out!", e);
             }
         }
         readMultipleRegistersResponse = (ReadMultipleRegistersResponse) modbusTransaction.getResponse();
