@@ -5,7 +5,7 @@
    </service>
    <reference bind="setDataService" cardinality="1..1" interface="at.sunplugged.z600.backend.dataservice.api.DataService" name="DataService" policy="static" unbind="unsetDataService"/>
    <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
-   <reference bind="setMBTController" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MBTController" name="MBTController" policy="static" unbind="unsetMBTController"/>
+   <reference bind="setMBTController" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MBTController" policy="static" unbind="unsetMBTController"/>
    <reference bind="setSrmCommunicator" cardinality="1..1" interface="at.sunplugged.z600.srm50.api.SrmCommunicator" name="SrmCommunicator" policy="static" unbind="unsetSrmCommunicator"/>
    <reference bind="setStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unsetStandardThreadPoolService"/>
    <implementation class="at.sunplugged.z600.core.machinestate.impl.MachineStateServiceImpl"/>

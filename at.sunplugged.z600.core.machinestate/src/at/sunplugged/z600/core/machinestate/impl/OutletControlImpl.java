@@ -6,13 +6,13 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
-import at.sunplugged.z600.mbt.api.MBTController;
+import at.sunplugged.z600.mbt.api.MbtService;
 
 public class OutletControlImpl implements OutletControl {
 
     private final MachineStateService machineStateService;
 
-    private MBTController mbtController;
+    private MbtService mbtController;
 
     public OutletControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;

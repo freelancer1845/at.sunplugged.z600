@@ -24,8 +24,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Activate
     public synchronized void activate() {
-        engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT);
-        engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT);
+        engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
+        engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
     }
 
     @Override

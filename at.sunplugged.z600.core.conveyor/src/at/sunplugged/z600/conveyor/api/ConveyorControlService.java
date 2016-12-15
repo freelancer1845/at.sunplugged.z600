@@ -16,8 +16,18 @@ public interface ConveyorControlService {
 
     public Mode getActiveMode();
 
+    /**
+     * This accesses the left Engine.
+     * 
+     * @return {@linkplain Engine}
+     */
     public Engine getEngineOne();
 
+    /**
+     * This accesses the right Engine.
+     * 
+     * @return {@linkplain Engine}
+     */
     public Engine getEngineTwo();
 
 }

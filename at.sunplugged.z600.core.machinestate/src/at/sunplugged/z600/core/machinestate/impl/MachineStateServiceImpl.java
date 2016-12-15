@@ -24,7 +24,7 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.impl.eventhandling.MachineStateEventHandler;
-import at.sunplugged.z600.mbt.api.MBTController;
+import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
 @Component
@@ -40,7 +40,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private LogService logService;
 
-    private MBTController mbtController;
+    private MbtService mbtController;
 
     private SrmCommunicator srmCommunicator;
 
@@ -252,11 +252,11 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Reference(unbind = "unsetMBTController")
-    public synchronized void setMBTController(MBTController mbtController) {
+    public synchronized void setMBTController(MbtService mbtController) {
         this.mbtController = mbtController;
     }
 
-    public synchronized void unsetMBTController(MBTController mbtController) {
+    public synchronized void unsetMBTController(MbtService mbtController) {
         if (this.mbtController == mbtController) {
             this.mbtController = null;
         }
@@ -346,7 +346,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     }
 
-    public MBTController getMbtController() {
+    public MbtService getMbtController() {
         return mbtController;
     }
 

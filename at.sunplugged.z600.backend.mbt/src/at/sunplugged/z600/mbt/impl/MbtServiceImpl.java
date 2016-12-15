@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.mbt.api.MBTController;
+import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.mbt.api.MBTControllerException;
 import net.wimpi.modbus.Modbus;
 import net.wimpi.modbus.ModbusException;
@@ -27,7 +27,7 @@ import net.wimpi.modbus.net.TCPMasterConnection;
 import net.wimpi.modbus.procimg.Register;
 import net.wimpi.modbus.procimg.SimpleRegister;
 
-public class MBTControllerImpl implements MBTController {
+public class MbtServiceImpl implements MbtService {
 
     /** The Connection. */
     private TCPMasterConnection connection;

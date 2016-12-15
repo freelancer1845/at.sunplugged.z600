@@ -21,8 +21,6 @@ import gnu.io.UnsupportedCommOperationException;
 
 public class EngineSerialCom implements Engine {
 
-    private static int numberOfEngines = 0;
-
     private final String portName;
 
     private final int engineAddress;
@@ -39,10 +37,9 @@ public class EngineSerialCom implements Engine {
 
     private ReentrantLock lock = new ReentrantLock(true);
 
-    public EngineSerialCom(String portName) {
-        numberOfEngines++;
+    public EngineSerialCom(String portName, int engineAddress) {
         this.portName = portName;
-        this.engineAddress = numberOfEngines;
+        this.engineAddress = engineAddress;
         logService = ConveyorControlServiceImpl.getLogService();
         threadPool = ConveyorControlServiceImpl.getStandardThreadPoolService();
     }
@@ -174,22 +171,20 @@ public class EngineSerialCom implements Engine {
                     }
                     if (timer == 1000) {
                         logService.log(LogService.LOG_ERROR, "No answer from engine on command: " + command
-                                + " - Port: " + portName + " - Address: " + engineAddress);
+                                + " - Port: \"" + portName + "\" - Address: \"" + engineAddress + "\"");
                         return;
                     }
                     String answer = "";
                     while (inputStream.available() > 0) {
                         answer += (char) inputStream.read();
                     }
-                    if (!answer.substring(1).equals(command)) {
-                        logService.log(LogService.LOG_ERROR,
-                                "Unexpected answer from engine on command: " + command + " - Answer: " + answer);
-                    }
                     if (answer.substring(answer.length() - 3).equals("?\r")) {
-                        logService.log(LogService.LOG_ERROR, "Engine did not under stand the command: " + command);
+                        logService.log(LogService.LOG_ERROR, "Engine did not understand the command: \"" + command
+                                + "\". Answer: \"" + answer + "\"");
+                    } else {
+                        logService.log(LogService.LOG_DEBUG,
+                                "Successfully issued command(" + command + ") to engine(" + portName + ")");
                     }
-                    logService.log(LogService.LOG_DEBUG,
-                            "Successfully issued command(" + command + ") to engine(" + portName + ")");
 
                 } catch (IOException e) {
                     logService.log(LogService.LOG_ERROR, "Failed to send command to Engine!! " + command, e);
@@ -203,45 +198,4 @@ public class EngineSerialCom implements Engine {
         });
     }
 
-    // private void setAddress() {
-    // String command = "m";
-    // try {
-    // String fullCommand = "#" + command + engineAddress + "\r";
-    // outputStream.write(fullCommand.getBytes(StandardCharsets.US_ASCII));
-    // int timer = 0;
-    // while (inputStream.available() < 1 && timer != 1000) {
-    // Thread.sleep(1);
-    // timer++;
-    // }
-    // if (timer == 1000) {
-    // logService.log(LogService.LOG_ERROR, "No answer from engine on command: "
-    // + command + " - Port: "
-    // + portName + " - Address: " + engineAddress);
-    // return;
-    // }
-    // String answer = "";
-    // while (inputStream.available() > 0) {
-    // answer += (char) inputStream.read();
-    // }
-    // if (!answer.substring(1).equals(command)) {
-    // logService.log(LogService.LOG_ERROR,
-    // "Unexpected answer from engine on command: " + command + " - Answer: " +
-    // answer);
-    // }
-    // if (answer.substring(answer.length() - 3).equals("?\r")) {
-    // logService.log(LogService.LOG_ERROR, "Engine did not under stand the
-    // command: " + command);
-    // }
-    // logService.log(LogService.LOG_DEBUG,
-    // "Successfully issued command(" + command + ") to engine(" + portName +
-    // ")");
-    //
-    // } catch (IOException e) {
-    // logService.log(LogService.LOG_ERROR, "Failed to send command to Engine!!
-    // " + command, e);
-    // } catch (InterruptedException e) {
-    // logService.log(LogService.LOG_ERROR, "Sending command to motor
-    // interrupted after writing to outputStream!");
-    // }
-    // }
 }

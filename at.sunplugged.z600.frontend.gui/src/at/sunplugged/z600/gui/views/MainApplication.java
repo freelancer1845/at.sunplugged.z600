@@ -29,7 +29,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.mbt.api.MBTController;
+import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 import org.eclipse.swt.widgets.Label;
 
@@ -42,7 +42,7 @@ public class MainApplication extends Thread {
 
     private SrmCommunicator srmCommunicator;
 
-    private MBTController mbtController;
+    private MbtService mbtController;
 
     private DataService dataService;
 
@@ -64,7 +64,7 @@ public class MainApplication extends Thread {
         return srmCommunicator;
     }
 
-    public MBTController getMbtController() {
+    public MbtService getMbtController() {
         return mbtController;
     }
 
@@ -392,11 +392,11 @@ public class MainApplication extends Thread {
     }
 
     @Reference(unbind = "unbindMBTController")
-    public synchronized void bindMBTController(MBTController mbtController) {
+    public synchronized void bindMBTController(MbtService mbtController) {
         this.mbtController = mbtController;
     }
 
-    public synchronized void unbindMBTController(MBTController mbtController) {
+    public synchronized void unbindMBTController(MbtService mbtController) {
         if (this.mbtController == mbtController) {
             this.mbtController = null;
         }

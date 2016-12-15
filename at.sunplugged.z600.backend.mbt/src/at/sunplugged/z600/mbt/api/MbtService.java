@@ -11,7 +11,7 @@ import java.util.List;
  * @author Jascha Riedel
  *
  */
-public interface MBTController {
+public interface MbtService {
 
     /**
      * Establishes a connection to a TCP/IP Modbus controller.

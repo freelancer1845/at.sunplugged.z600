@@ -10,13 +10,13 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
-import at.sunplugged.z600.mbt.api.MBTController;
+import at.sunplugged.z600.mbt.api.MbtService;
 
 public class PumpControlImpl implements PumpControl, MachineEventHandler {
 
     private final MachineStateService machineStateService;
 
-    private final MBTController mbtController;
+    private final MbtService mbtController;
 
     private final LogService logService;
 
@@ -26,7 +26,7 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
 
     private PumpState turboPumpState = PumpState.OFF;
 
-    public PumpControlImpl(MachineStateService machineStateService, MBTController mbtController,
+    public PumpControlImpl(MachineStateService machineStateService, MbtService mbtController,
             LogService logService) {
         this.machineStateService = machineStateService;
         machineStateService.registerMachineEventHandler(this);

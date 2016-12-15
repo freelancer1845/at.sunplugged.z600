@@ -25,11 +25,11 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
-import at.sunplugged.z600.mbt.api.MBTController;
+import at.sunplugged.z600.mbt.api.MbtService;
 
 public class MbtTabItemFactory {
 
-    private final MBTController mbtController;
+    private final MbtService mbtController;
 
     private final LogService logService;
 
@@ -48,7 +48,7 @@ public class MbtTabItemFactory {
     private Text textIPAddress;
     private Text textConnectionState;
 
-    public MbtTabItemFactory(MBTController mbtController, LogService logService,
+    public MbtTabItemFactory(MbtService mbtController, LogService logService,
             MachineStateService machineStateService) {
         this.mbtController = mbtController;
         this.logService = logService;

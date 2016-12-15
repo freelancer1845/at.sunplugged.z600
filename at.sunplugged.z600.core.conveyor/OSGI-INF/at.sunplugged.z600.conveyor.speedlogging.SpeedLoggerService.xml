@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="at.sunplugged.z600.conveyor.speedlogging.SpeedLoggerService">
+   <service>
+      <provide interface="at.sunplugged.z600.conveyor.api.SpeedLogger"/>
+   </service>
+   <reference bind="bindMbtControllerService" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MbtControllerService" policy="static" unbind="unbindMbtControllerService"/>
+   <implementation class="at.sunplugged.z600.conveyor.speedlogging.SpeedLoggerService"/>
+</scr:component>
