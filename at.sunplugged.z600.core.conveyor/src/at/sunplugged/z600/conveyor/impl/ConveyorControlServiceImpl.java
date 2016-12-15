@@ -8,6 +8,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.engine.EngineSerialCom;
 
 @Component
@@ -23,8 +24,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Activate
     public synchronized void activate() {
-        engineOne = new EngineSerialCom("COM5");
-        engineTwo = new EngineSerialCom("COM6");
+        engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT);
+        engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT);
     }
 
     @Override

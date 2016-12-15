@@ -2,9 +2,11 @@ package at.sunplugged.z600.conveyor.constants;
 
 public class EngineConstants {
 
-    public static final String ENGINE_ONE_PORT = "COM5";
+    /** This is the left Engine from view of control computer. */
+    public static final String ENGINE_ONE_PORT = "COM6";
 
-    public static final String ENGINE_TWO_PORT = "COM6";
+    /** This is the right Engine from view of control computer. */
+    public static final String ENGINE_TWO_PORT = "COM5";
 
     public static final int SERIAL_BAUDRATE = 115200;
 

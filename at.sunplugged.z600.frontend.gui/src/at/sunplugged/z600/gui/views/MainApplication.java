@@ -1,5 +1,7 @@
 package at.sunplugged.z600.gui.views;
 
+import java.io.IOException;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -29,6 +31,7 @@ import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.mbt.api.MBTController;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
+import org.eclipse.swt.widgets.Label;
 
 @Component
 public class MainApplication extends Thread {
@@ -50,6 +53,8 @@ public class MainApplication extends Thread {
     private static BundleContext context;
     private Text text;
     private Text text_1;
+    private Text txtValue;
+    private Text txtValue_1;
 
     public LogService getLogService() {
         return logService;
@@ -269,6 +274,23 @@ public class MainApplication extends Thread {
         text = new Text(grpEngine, SWT.BORDER);
         text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
+        Button buttonConnect = new Button(grpEngine, SWT.NONE);
+        buttonConnect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        buttonConnect.setText("Connected");
+        buttonConnect.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.getEngineOne().connect();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+
+            }
+
+        });
+
         Group grpEngine_1 = new Group(composite_1, SWT.NONE);
         grpEngine_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         grpEngine_1.setText("Engine 2");
@@ -304,6 +326,36 @@ public class MainApplication extends Thread {
 
         text_1 = new Text(grpEngine_1, SWT.BORDER);
         text_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Group grpVelocity = new Group(composite_1, SWT.NONE);
+        grpVelocity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        grpVelocity.setText("Velocity");
+        grpVelocity.setLayout(new GridLayout(2, true));
+
+        Label lblDigin = new Label(grpVelocity, SWT.NONE);
+        lblDigin.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblDigin.setText("DigIn4.7");
+
+        txtValue = new Text(grpVelocity, SWT.BORDER);
+        txtValue.setText("Value");
+        txtValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Label lblDigin_1 = new Label(grpVelocity, SWT.NONE);
+        lblDigin_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        lblDigin_1.setText("DigIn5.0");
+
+        txtValue_1 = new Text(grpVelocity, SWT.BORDER);
+        txtValue_1.setText("Value");
+        txtValue_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        try {
+            mbtController.connect("192.168.1.54");
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+
+        updateSpeedValueValue(0);
 
         // SrmTabItemFactory srmTabItemFactory = new
         // SrmTabItemFactory(srmCommunicator, logService, dataService);
@@ -381,5 +433,28 @@ public class MainApplication extends Thread {
         if (this.conveyorControlService == conveyorControlService) {
             this.conveyorControlService = null;
         }
+    }
+
+    private void updateSpeedValueValue(int i) {
+
+        Display.getDefault().asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                if (i == 100000) {
+                    try {
+                        txtValue.setText(String.valueOf(mbtController.readDigIns(39, 1).get(39)));
+                        txtValue_1.setText(String.valueOf(mbtController.readDigIns(40, 1).get(40)));
+                    } catch (IOException e) {
+                        logService.log(LogService.LOG_ERROR, e.getMessage(), e);
+                    }
+                    updateSpeedValueValue(0);
+                } else {
+                    updateSpeedValueValue(i + 1);
+                }
+            }
+
+        });
+
     }
 }

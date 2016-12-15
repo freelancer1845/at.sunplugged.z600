@@ -1,6 +1,9 @@
 package at.sunplugged.z600.conveyor.api;
 
 public interface Engine {
+
+    public void connect();
+
     public void setEngineMode(int mode);
 
     public void setDirection(int direction);
