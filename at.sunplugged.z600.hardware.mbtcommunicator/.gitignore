@@ -8,7 +8,6 @@ hs_err_pid*
 
 ## Eclipse
 .classpath
-.project
 .metadata
 **/bin/
 tmp/
@@ -17,7 +16,6 @@ tmp/
 *.swp
 *~.nib
 local.properties
-.settings/
 .loadpath
 .externalToolBuilders/
 *.launch
