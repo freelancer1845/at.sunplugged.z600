@@ -45,6 +45,14 @@ public class MachineStateEvent {
         this.analogOutput = null;
     }
 
+    public MachineStateEvent(Type type, DigitalOutput digitalOutput) {
+        this.type = type;
+        this.digitalInput = null;
+        this.digitalOutput = digitalOutput;
+        this.analogInput = null;
+        this.analogOutput = null;
+    }
+
     public Type getType() {
         return type;
     }

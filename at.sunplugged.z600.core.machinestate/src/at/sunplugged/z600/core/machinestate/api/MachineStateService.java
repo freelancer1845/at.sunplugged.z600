@@ -1,11 +1,14 @@
 package at.sunplugged.z600.core.machinestate.api;
 
-import java.util.List;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 
 /**
- * Contains getters and setters for all states, like V1 Open or closed and so
- * on. Also contains all measurement values. By that the interface provides
- * access to all values of the machine.
+ * 
+ * Main Interface to the Machine in reality. Everything should be accessible via
+ * this interface combined with the conveyor control.
  * 
  * @author Jascha Riedel
  *
@@ -24,13 +27,19 @@ public interface MachineStateService {
      */
     public PumpControl getPumpControl();
 
-    public List<Boolean> getDigitalOutputState();
+    /**
+     * 
+     * @return the {@linkplain WaterControl} Interface.
+     */
+    public WaterControl getWaterControl();
 
-    public List<Boolean> getDigitalInputState();
+    public boolean getDigitalOutputState(DigitalOutput digitalOutput);
 
-    public List<Integer> getAnalogOutputState();
+    public boolean getDigitalInputState(DigitalInput digitalInput);
 
-    public List<Integer> getAnalogInputState();
+    public Integer getAnalogOutputState(AnalogOutput analogOutput);
+
+    public Integer getAnalogInputState(AnalogInput analogInput);
 
     public void fireMachineStateEvent(MachineStateEvent event);
 

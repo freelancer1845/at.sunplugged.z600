@@ -54,6 +54,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         this.mbtService = ConveyorControlServiceImpl.getMbtService();
         this.logService = ConveyorControlServiceImpl.getLogService();
         running = true;
+        this.setName("Speed Logger Thread");
         this.start();
     }
 
@@ -116,11 +117,10 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
                 Thread.sleep(100);
 
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logService.log(LogService.LOG_ERROR, "SpeedLogger failed. Shutting Down.", e);
+                running = false;
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logService.log(LogService.LOG_ERROR, "Interrupted!", e);
             }
 
         }

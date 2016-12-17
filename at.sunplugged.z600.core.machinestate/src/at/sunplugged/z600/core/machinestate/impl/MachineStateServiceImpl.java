@@ -2,7 +2,6 @@ package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.osgi.framework.BundleContext;
@@ -22,7 +21,10 @@ import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.WaterControl;
 import at.sunplugged.z600.core.machinestate.impl.eventhandling.MachineStateEventHandler;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
@@ -36,19 +38,21 @@ public class MachineStateServiceImpl implements MachineStateService {
     /** Input update Tickrate. */
     private static final int INPUT_UPDATE_TICKRATE = 10;
 
-    private DataService dataService;
+    private static DataService dataService;
 
-    private LogService logService;
+    private static LogService logService;
 
-    private MbtService mbtController;
+    private static MbtService mbtService;
 
-    private SrmCommunicator srmCommunicator;
+    private static SrmCommunicator srmCommunicator;
 
-    private StandardThreadPoolService standardThreadPoolService;
+    private static StandardThreadPoolService standardThreadPoolService;
 
     private OutletControl outletControl;
 
     private PumpControl pumpControl;
+
+    private WaterControl waterControl;
 
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
@@ -75,7 +79,8 @@ public class MachineStateServiceImpl implements MachineStateService {
     @Activate
     protected void activateMachineStateService(BundleContext context) {
         this.outletControl = new OutletControlImpl(this);
-        this.pumpControl = new PumpControlImpl(this, mbtController, logService);
+        this.pumpControl = new PumpControlImpl(this, mbtService, logService);
+        this.waterControl = new WaterControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
         this.updaterThread = new InputUpdaterThread();
@@ -83,7 +88,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Deactivate
-    protected void deactiveMachineStateService() {
+    protected void deactivateMachineStateService() {
         updaterThread.stop();
     }
 
@@ -98,32 +103,36 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Override
-    public List<Boolean> getDigitalOutputState() {
+    public WaterControl getWaterControl() {
+        return waterControl;
+    }
+
+    @Override
+    public boolean getDigitalOutputState(DigitalOutput digitalOutput) {
         if (System.currentTimeMillis() - lastDigitalOutputUpdateTime > UPDATE_INTERVAL_TIME) {
             updateDigitalOutputState();
         }
-        return Collections.unmodifiableList(digitalOutputState);
+        return digitalOutputState.get(digitalOutput.getAddress());
     }
 
     @Override
-    public List<Boolean> getDigitalInputState() {
+    public boolean getDigitalInputState(DigitalInput digitalInput) {
         updateDigitalInputState();
-        return Collections.unmodifiableList(digitalInputState);
+        return digitalInputState.get(digitalInput.getAddress());
     }
 
     @Override
-    public List<Integer> getAnalogOutputState() {
+    public Integer getAnalogOutputState(AnalogOutput analogOutput) {
         if (System.currentTimeMillis() - lastAnalogOutputUpdateTime > UPDATE_INTERVAL_TIME) {
             updateAnalogOutputState();
         }
-        return Collections.unmodifiableList(analogOutputState);
+        return analogOutputState.get(analogOutput.getAddress());
     }
 
     @Override
-    public List<Integer> getAnalogInputState() {
+    public Integer getAnalogInputState(AnalogInput analogInput) {
         updateAnalogInputState();
-        return Collections.unmodifiableList(analogInputState);
-
+        return analogInputState.get(analogInput.getAddress());
     }
 
     @Override
@@ -160,7 +169,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     public void updateDigitalOutputState() {
         try {
-            List<Boolean> currentState = mbtController.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
+            List<Boolean> currentState = mbtService.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
             synchronized (digitalOutputState) {
                 digitalOutputState = currentState;
             }
@@ -172,8 +181,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     public void updateAnalogOutputState() {
         try {
-            List<Integer> currentState = mbtController.readOutputRegister(0,
-                    WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+            List<Integer> currentState = mbtService.readOutputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
             synchronized (analogOutputState) {
                 analogOutputState = currentState;
             }
@@ -186,7 +194,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     public void updateDigitalInputState() {
         if (System.currentTimeMillis() - lastDigitalInputUpdateTime > UPDATE_INTERVAL_TIME) {
             try {
-                List<Boolean> currentState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
+                List<Boolean> currentState = mbtService.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
                 for (int i = 0; i < currentState.size(); i++) {
                     if (currentState.get(i) != digitalInputState.get(i)) {
                         DigitalInput digitalInput = DigitalInput.getByAddress(i);
@@ -213,7 +221,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     public void updateAnalogInputState() {
         if (System.currentTimeMillis() - lastAnalogInputUpdateTime > UPDATE_INTERVAL_TIME) {
             try {
-                List<Integer> currentState = mbtController.readInputRegister(0,
+                List<Integer> currentState = mbtService.readInputRegister(0,
                         WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
                 for (int i = 0; i < currentState.size(); i++) {
                     if (currentState.get(i) != analogInputState.get(i)) {
@@ -237,56 +245,56 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Reference(unbind = "unsetDataService")
     public synchronized void setDataService(DataService dataService) {
-        this.dataService = dataService;
+        MachineStateServiceImpl.dataService = dataService;
     }
 
     public synchronized void unsetDataService(DataService dataService) {
-        if (this.dataService == dataService) {
-            this.dataService = null;
+        if (MachineStateServiceImpl.dataService == dataService) {
+            MachineStateServiceImpl.dataService = null;
         }
     }
 
     @Reference(unbind = "unsetLogService")
     public synchronized void setLogService(LogService logService) {
-        this.logService = logService;
+        MachineStateServiceImpl.logService = logService;
     }
 
     public synchronized void unsetLogService(LogService logService) {
-        if (this.logService == logService) {
-            this.logService = null;
+        if (MachineStateServiceImpl.logService == logService) {
+            MachineStateServiceImpl.logService = null;
         }
     }
 
-    @Reference(unbind = "unsetMBTController")
-    public synchronized void setMBTController(MbtService mbtController) {
-        this.mbtController = mbtController;
+    @Reference(unbind = "unsetMbtService")
+    public synchronized void setMbtService(MbtService mbtController) {
+        MachineStateServiceImpl.mbtService = mbtController;
     }
 
-    public synchronized void unsetMBTController(MbtService mbtController) {
-        if (this.mbtController == mbtController) {
-            this.mbtController = null;
+    public synchronized void unsetMbtService(MbtService mbtController) {
+        if (MachineStateServiceImpl.mbtService == mbtController) {
+            MachineStateServiceImpl.mbtService = null;
         }
     }
 
     @Reference(unbind = "unsetSrmCommunicator")
     public synchronized void setSrmCommunicator(SrmCommunicator srmCommunicator) {
-        this.srmCommunicator = srmCommunicator;
+        MachineStateServiceImpl.srmCommunicator = srmCommunicator;
     }
 
     public synchronized void unsetSrmCommunicator(SrmCommunicator srmCommunicator) {
-        if (this.srmCommunicator == srmCommunicator) {
-            this.srmCommunicator = null;
+        if (MachineStateServiceImpl.srmCommunicator == srmCommunicator) {
+            MachineStateServiceImpl.srmCommunicator = null;
         }
     }
 
     @Reference(unbind = "unsetStandardThreadPoolService")
     public synchronized void setStandardThreadPoolService(StandardThreadPoolService standardThreadPoolService) {
-        this.standardThreadPoolService = standardThreadPoolService;
+        MachineStateServiceImpl.standardThreadPoolService = standardThreadPoolService;
     }
 
     public synchronized void unsetStandardThreadPoolService(StandardThreadPoolService standardThreadPoolService) {
-        if (this.standardThreadPoolService == standardThreadPoolService) {
-            this.standardThreadPoolService = null;
+        if (MachineStateServiceImpl.standardThreadPoolService == standardThreadPoolService) {
+            MachineStateServiceImpl.standardThreadPoolService = null;
         }
     }
 
@@ -303,11 +311,10 @@ public class MachineStateServiceImpl implements MachineStateService {
                     long lastTime = System.nanoTime();
                     try {
 
-                        digitalInputState = mbtController.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
-                        digitalOutputState = mbtController.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
-                        analogInputState = mbtController.readInputRegister(0,
-                                WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
-                        analogOutputState = mbtController.readOutputRegister(0,
+                        digitalInputState = mbtService.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
+                        digitalOutputState = mbtService.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
+                        analogInputState = mbtService.readInputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+                        analogOutputState = mbtService.readOutputRegister(0,
                                 WagoAddresses.ANALOG_OUTPUT_MAX_ADDRESS + 1);
 
                         while (running) {
@@ -345,20 +352,24 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     }
 
-    public MbtService getMbtController() {
-        return mbtController;
-    }
-
-    public DataService getDataService() {
+    public static DataService getDataService() {
         return dataService;
     }
 
-    public LogService getLogService() {
+    public static LogService getLogService() {
         return logService;
     }
 
-    public SrmCommunicator getSrmCommunicator() {
+    public static MbtService getMbtService() {
+        return mbtService;
+    }
+
+    public static SrmCommunicator getSrmCommunicator() {
         return srmCommunicator;
+    }
+
+    public static StandardThreadPoolService getStandardThreadPoolService() {
+        return standardThreadPoolService;
     }
 
 }

@@ -79,6 +79,7 @@ public class MbtServiceImpl implements MbtService {
         connection.setPort(port);
         try {
             connection.connect();
+            logService.log(LogService.LOG_DEBUG, "Successfully conntected to MBT Controller");
         } catch (Exception e) {
             throw new MbtServiceException("Failed to connect to MBT", e);
         }
@@ -87,7 +88,7 @@ public class MbtServiceImpl implements MbtService {
 
     private void disconnect() throws IOException {
         connection.close();
-
+        logService.log(LogService.LOG_DEBUG, "Disconnected successfully from MBT Controller.");
     }
 
     @Override

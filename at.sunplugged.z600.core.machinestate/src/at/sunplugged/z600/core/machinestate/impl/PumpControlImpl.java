@@ -22,12 +22,13 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
 
     private PumpState pumpOneState = PumpState.OFF;
 
+    private PumpState pumpRootState = PumpState.OFF;
+
     private PumpState pumpTwoState = PumpState.OFF;
 
     private PumpState turboPumpState = PumpState.OFF;
 
-    public PumpControlImpl(MachineStateService machineStateService, MbtService mbtController,
-            LogService logService) {
+    public PumpControlImpl(MachineStateService machineStateService, MbtService mbtController, LogService logService) {
         this.machineStateService = machineStateService;
         machineStateService.registerMachineEventHandler(this);
         this.mbtController = mbtController;
@@ -64,6 +65,8 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
             return pumpTwoState;
         case TURBO_PUMP:
             return turboPumpState;
+        case PRE_PUMP_ROOTS:
+            return pumpRootState;
         default:
             logService.log(LogService.LOG_DEBUG, "State of unkown pump requested: " + pump.name());
             return null;
@@ -75,25 +78,25 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
         if (event.getType().equals(MachineStateEvent.Type.DIGITAL_INPUT_CHANGED)) {
             DigitalInput digitalInput = event.getDigitalInput();
             if (digitalInput.equals(Pumps.PRE_PUMP_ONE.getDigitalInput())) {
-                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                if (machineStateService.getDigitalInputState(digitalInput)) {
                     pumpOneState = PumpState.ON;
                 } else {
                     pumpOneState = PumpState.OFF;
                 }
             } else if (digitalInput.equals(Pumps.PRE_PUMP_TWO.getDigitalInput())) {
-                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                if (machineStateService.getDigitalInputState(digitalInput)) {
                     pumpTwoState = PumpState.ON;
                 } else {
                     pumpTwoState = PumpState.OFF;
                 }
             } else if (digitalInput.equals(Pumps.TURBO_PUMP.getDigitalInput())) {
-                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                if (machineStateService.getDigitalInputState(digitalInput)) {
                     turboPumpState = PumpState.STARTING;
                 } else {
                     turboPumpState = PumpState.OFF;
                 }
             } else if (digitalInput.equals(DigitalInput.TURBO_PUMP_HIGH_SPEED)) {
-                if (machineStateService.getDigitalInputState().get(digitalInput.getAddress())) {
+                if (machineStateService.getDigitalInputState(digitalInput)) {
                     turboPumpState = PumpState.ON;
                 } else {
                     if (turboPumpState == PumpState.ON) {

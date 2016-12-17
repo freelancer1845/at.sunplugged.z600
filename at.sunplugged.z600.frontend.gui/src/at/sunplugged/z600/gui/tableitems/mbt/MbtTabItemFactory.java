@@ -126,8 +126,8 @@ public class MbtTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean answer = machineStateService.getDigitalOutputState()
-                        .get(DigitalOutput.values()[comboDigitalOutput.getSelectionIndex()].getAddress());
+                boolean answer = machineStateService
+                        .getDigitalOutputState(DigitalOutput.values()[comboDigitalOutput.getSelectionIndex()]);
                 textReadCoilValue.setText(String.valueOf(answer));
             }
 
@@ -216,8 +216,8 @@ public class MbtTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean answer = machineStateService.getDigitalInputState()
-                        .get(digIns[comboReadDigitalInput.getSelectionIndex()].getAddress());
+                boolean answer = machineStateService
+                        .getDigitalInputState(digIns[comboReadDigitalInput.getSelectionIndex()]);
                 textReadDiscreteInputValue.setText(String.valueOf(answer));
             }
 
@@ -262,8 +262,7 @@ public class MbtTabItemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int answer = machineStateService.getAnalogInputState()
-                        .get(anaIns[comboReadAnalogInput.getSelectionIndex()].getAddress());
+                int answer = machineStateService.getAnalogInputState(anaIns[comboReadAnalogInput.getSelectionIndex()]);
                 textReadAnalogInput.setText(String.valueOf(answer));
             }
 

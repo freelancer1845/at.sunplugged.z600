@@ -2,6 +2,7 @@ package at.sunplugged.z600.conveyor.impl;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
@@ -31,10 +32,15 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     private SpeedLogger speedLogger;
 
     @Activate
-    public synchronized void activate() {
+    protected void activate() {
         engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
         engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
         speedLogger = new SpeedLoggerImpl();
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        ((SpeedLoggerImpl) speedLogger).stopSpeedLogger();
     }
 
     @Override

@@ -20,7 +20,7 @@ public class OutletControlImpl implements OutletControl {
 
     @Override
     public boolean isOutletOpen(Outlet outlet) {
-        return machineStateService.getDigitalOutputState().get(outlet.getDigitalOutput().getAddress());
+        return machineStateService.getDigitalOutputState(outlet.getDigitalOutput());
     }
 
     @Override

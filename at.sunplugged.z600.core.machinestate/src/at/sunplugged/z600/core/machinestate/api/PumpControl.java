@@ -7,6 +7,7 @@ public interface PumpControl {
 
     public enum Pumps {
         PRE_PUMP_ONE(DigitalOutput.PRE_PUMP_ONE, DigitalInput.PRE_PUMP_ONE_OK),
+        PRE_PUMP_ROOTS(DigitalOutput.PRE_PUMP_ROOTS, DigitalInput.PRE_PUMP_ROOTS_OK),
         PRE_PUMP_TWO(DigitalOutput.PRE_PUMP_TWO, DigitalInput.PRE_PUMP_TWO_OK),
         TURBO_PUMP(DigitalOutput.TUROBO_OUMP, DigitalInput.TURBO_PUMP_OK);
 

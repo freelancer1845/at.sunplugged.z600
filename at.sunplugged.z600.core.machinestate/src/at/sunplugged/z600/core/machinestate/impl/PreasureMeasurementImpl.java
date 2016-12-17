@@ -26,7 +26,7 @@ public class PreasureMeasurementImpl implements PreasureMeasurement {
     }
 
     private double tm201Site(PreasureMeasurementSite site) {
-        int measuredValue = machineStateService.getAnalogInputState().get(site.getAnalogInput().getAddress());
+        int measuredValue = machineStateService.getAnalogInputState(site.getAnalogInput());
 
         double value;
         if (measuredValue < 410) {
@@ -47,7 +47,7 @@ public class PreasureMeasurementImpl implements PreasureMeasurement {
     }
 
     private double mks979bSite(PreasureMeasurementSite site) {
-        int measuredValue = machineStateService.getAnalogInputState().get(site.getAnalogInput().getAddress());
+        int measuredValue = machineStateService.getAnalogInputState(site.getAnalogInput());
 
         return 1.33 * Math.pow(10, ((measuredValue * 10 / 4096.0) * 2) - 11);
     }
