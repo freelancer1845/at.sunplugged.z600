@@ -7,9 +7,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
@@ -25,17 +27,24 @@ public class SettingsServiceImpl implements SettingsService {
 
     private LogService logService;
 
-    private Properties properties;
+    private Properties userProperties;
 
     @Activate
     protected void activate() {
         loadSettings();
+    }
+
+    @Deactivate
+    protected void deactivate() {
         saveSettings();
     }
 
     @Override
     public String getProperty(String id) {
-        return null;
+        if (!userProperties.containsKey(id)) {
+            logService.log(LogService.LOG_WARNING, "Properties did not contain key: " + id);
+        }
+        return userProperties.getProperty(id);
     }
 
     @Reference(unbind = "unbindLogService", cardinality = ReferenceCardinality.MANDATORY)
@@ -55,13 +64,13 @@ public class SettingsServiceImpl implements SettingsService {
         if (!settingsFile.exists()) {
             logService.log(LogService.LOG_WARNING,
                     "No settings file found at: " + settingsFile.getAbsolutePath() + ". Loading default settings.");
-            properties = new DefaultProperties();
+            userProperties = new DefaultProperties();
         } else {
             InputStream inputStream;
-            properties = new Properties();
+            userProperties = new Properties();
             try {
                 inputStream = new FileInputStream(settingsFile);
-                properties.load(inputStream);
+                userProperties.load(inputStream);
             } catch (FileNotFoundException e) {
                 logService.log(LogService.LOG_ERROR, "Couldn't open file stream to: " + settingsFile.getAbsolutePath(),
                         e);
@@ -72,7 +81,7 @@ public class SettingsServiceImpl implements SettingsService {
                 return;
             }
         }
-        logService.log(LogService.LOG_DEBUG, "LoadedSettings: " + properties.toString());
+        logService.log(LogService.LOG_DEBUG, "LoadedSettings: " + userProperties.toString());
 
     }
 
@@ -83,7 +92,7 @@ public class SettingsServiceImpl implements SettingsService {
             try {
                 settingsFile.createNewFile();
                 FileOutputStream outputStream = new FileOutputStream(settingsFile);
-                properties.store(outputStream, "Settings File For Z600");
+                userProperties.store(outputStream, "Settings File For Z600");
                 return;
             } catch (IOException e) {
                 logService.log(LogService.LOG_ERROR,
@@ -99,7 +108,7 @@ public class SettingsServiceImpl implements SettingsService {
             settingsFile.renameTo(backupSettingsFile);
             File newSettingsFile = new File(SETTINGS_FILE_NAME);
             FileOutputStream outputStream = new FileOutputStream(newSettingsFile);
-            properties.store(outputStream, "Settings File for Z600");
+            userProperties.store(outputStream, "Settings File for Z600");
             outputStream.close();
             settingsFile.delete();
         } catch (IOException e) {

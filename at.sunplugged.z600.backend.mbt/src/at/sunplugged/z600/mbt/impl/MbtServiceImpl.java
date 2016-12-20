@@ -13,6 +13,8 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.mbt.api.MbtServiceException;
 import net.wimpi.modbus.Modbus;
@@ -37,9 +39,6 @@ import net.wimpi.modbus.procimg.SimpleRegister;
 @Component
 public class MbtServiceImpl implements MbtService {
 
-    /** The Ip of the MBT Controller, will be moved to a config file. */
-    private static final String IP_ADDRESS = "localhost";
-
     /** The Connection. */
     private TCPMasterConnection connection;
 
@@ -53,6 +52,8 @@ public class MbtServiceImpl implements MbtService {
     private int port = Modbus.DEFAULT_PORT;
 
     private LogService logService;
+
+    private SettingsService settingsService;
 
     @Activate
     protected synchronized void activate(BundleContext context) {
@@ -74,7 +75,7 @@ public class MbtServiceImpl implements MbtService {
     }
 
     private void connect() throws IOException {
-        addr = InetAddress.getByName(IP_ADDRESS);
+        addr = InetAddress.getByName(settingsService.getProperty(SettingsIds.MBT_CONTROLLER_IP));
         connection = new TCPMasterConnection(addr);
         connection.setPort(port);
         try {
@@ -269,6 +270,17 @@ public class MbtServiceImpl implements MbtService {
     public synchronized void unsetLogService(LogService logService) {
         if (this.logService == logService) {
             this.logService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindSettingsService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindSettingsService(SettingsService settingsService) {
+        this.settingsService = settingsService;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService settingsService) {
+        if (this.settingsService == settingsService) {
+            this.settingsService = null;
         }
     }
 

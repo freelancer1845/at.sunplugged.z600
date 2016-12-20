@@ -7,3 +7,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.osgi.services
 Service-Component: OSGI-INF/at.sunplugged.z600.common.settings.impl.SettingsServiceImpl.xml
 Bundle-ActivationPolicy: lazy
+Export-Package: at.sunplugged.z600.common.settings.api
