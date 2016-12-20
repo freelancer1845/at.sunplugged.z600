@@ -24,6 +24,8 @@
 <plugin id="org.eclipse.core.jobs.source"/>
 <plugin id="org.eclipse.core.runtime"/>
 <plugin id="org.eclipse.core.runtime.source"/>
+<plugin id="org.eclipse.e4.ui.workbench"/>
+<plugin id="org.eclipse.e4.ui.workbench.source"/>
 <plugin id="org.eclipse.equinox.app"/>
 <plugin id="org.eclipse.equinox.app.source"/>
 <plugin id="org.eclipse.equinox.common"/>

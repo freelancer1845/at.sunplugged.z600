@@ -25,9 +25,10 @@ public class DataServiceImpl implements DataService {
     private final Map<String, VariableSlot<?>> variableSlots = new HashMap<>();
 
     public DataServiceImpl() {
-        sqlConnection = new SqlConnection(
-                "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;", "Z600",
-                "alwhrh29035uafpue9ru3AWU");
+        // sqlConnection = new SqlConnection(
+        // "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;",
+        // "Z600",
+        // "alwhrh29035uafpue9ru3AWU");
     }
 
     @Override
