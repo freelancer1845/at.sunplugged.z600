@@ -3,17 +3,17 @@
 
 <product name="z600_x64" uid="z600_x64_product" id="at.sunplugged.z600.launcher.z600" application="at.sunplugged.z600.launcher.standardApplicationId" version="0.1.0" useFeatures="false" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
+      <programArgs>-console
+      </programArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
-
 
    <launcher>
       <solaris/>
@@ -21,7 +21,6 @@
          <bmp/>
       </win>
    </launcher>
-
 
    <vm>
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</windows>
@@ -41,14 +40,21 @@
       <plugin id="at.sunplugged.z600.hardware.mbtcommunicator"/>
       <plugin id="at.sunplugged.z600.launcher"/>
       <plugin id="javax.xml"/>
+      <plugin id="org.apache.felix.gogo.command"/>
+      <plugin id="org.apache.felix.gogo.runtime"/>
+      <plugin id="org.apache.felix.gogo.shell"/>
       <plugin id="org.eclipse.core.commands"/>
+      <plugin id="org.eclipse.core.commands.source"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
       <plugin id="org.eclipse.equinox.app"/>
       <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.common.source"/>
+      <plugin id="org.eclipse.equinox.console"/>
       <plugin id="org.eclipse.equinox.ds"/>
       <plugin id="org.eclipse.equinox.ds.source"/>
+      <plugin id="org.eclipse.equinox.event"/>
       <plugin id="org.eclipse.equinox.preferences"/>
       <plugin id="org.eclipse.equinox.registry"/>
       <plugin id="org.eclipse.equinox.util"/>
@@ -61,5 +67,20 @@
       <plugin id="rxtx.org"/>
    </plugins>
 
+   <configurations>
+      <plugin id="at.sunplugged.z600.launcher" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+   </cssInfo>
 
 </product>

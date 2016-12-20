@@ -20,10 +20,10 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="at.sunplugged.z600.launcher.standardApplicationId"
-            name="z600_x86">
+            name="z600_x64">
          <property
                name="appName"
-               value="z600_x86">
+               value="z600_x64">
          </property>
       </product>
    </extension>

@@ -3,6 +3,7 @@
    <service>
       <provide interface="at.sunplugged.z600.mbt.api.MbtService"/>
    </service>
+   <reference bind="bindEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static" unbind="unbindEventAdmin"/>
    <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
    <reference bind="bindSettingsService" cardinality="1..1" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="SettingsService" policy="static" unbind="unbindSettingsService"/>
    <implementation class="at.sunplugged.z600.mbt.impl.MbtServiceImpl"/>

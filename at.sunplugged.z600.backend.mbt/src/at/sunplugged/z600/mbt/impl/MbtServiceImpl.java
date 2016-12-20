@@ -2,6 +2,9 @@ package at.sunplugged.z600.mbt.impl;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.osgi.framework.BundleContext;
@@ -11,6 +14,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventProperties;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.settings.api.SettingsIds;
@@ -55,13 +61,22 @@ public class MbtServiceImpl implements MbtService {
 
     private SettingsService settingsService;
 
+    private EventAdmin eventAdmin;
+
     @Activate
     protected synchronized void activate(BundleContext context) {
+        Dictionary<String, Object> properties = new Hashtable<>();
+
         try {
             connect();
+            properties.put("IP", addr.getHostAddress());
+            properties.put("success", true);
+            eventAdmin.postEvent(new Event("mbtServiceConnect", properties));
         } catch (IOException e) {
+            properties.put("IP", addr.getHostAddress());
+            properties.put("success", false);
+            eventAdmin.postEvent(new Event("mbtServiceConnect", properties));
             logService.log(LogService.LOG_ERROR, "Failed to connect to Modbus Controller.", e);
-            throw new ComponentException("Couldnt start mbt service.", e);
         }
     }
 
@@ -281,6 +296,17 @@ public class MbtServiceImpl implements MbtService {
     public synchronized void unbindSettingsService(SettingsService settingsService) {
         if (this.settingsService == settingsService) {
             this.settingsService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindEventAdmin")
+    public synchronized void bindEventAdmin(EventAdmin eventAdmin) {
+        this.eventAdmin = eventAdmin;
+    }
+
+    public synchronized void unbindEventAdmin(EventAdmin eventAdmin) {
+        if (this.eventAdmin == eventAdmin) {
+            this.eventAdmin = null;
         }
     }
 
