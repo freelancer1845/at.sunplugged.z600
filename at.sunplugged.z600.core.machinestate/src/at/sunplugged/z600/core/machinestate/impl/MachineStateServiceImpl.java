@@ -32,10 +32,7 @@ import at.sunplugged.z600.srm50.api.SrmCommunicator;
 @Component
 public class MachineStateServiceImpl implements MachineStateService {
 
-    /** Value in ms. */
-    private static final long UPDATE_INTERVAL_TIME = 250;
-
-    /** Input update Tickrate. */
+    /** Update Tickrate. */
     private static final int INPUT_UPDATE_TICKRATE = 10;
 
     private static DataService dataService;
@@ -56,19 +53,11 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
-    private Long lastDigitalOutputUpdateTime = -UPDATE_INTERVAL_TIME;
-
     private List<Boolean> digitalInputState = new ArrayList<>();
-
-    private Long lastDigitalInputUpdateTime = -UPDATE_INTERVAL_TIME;
 
     private List<Integer> analogOutputState = new ArrayList<>();
 
-    private long lastAnalogOutputUpdateTime = -UPDATE_INTERVAL_TIME;
-
     private List<Integer> analogInputState = new ArrayList<>();
-
-    private long lastAnalogInputUpdateTime = -UPDATE_INTERVAL_TIME;
 
     private MachineStateEventHandler machineStateEventHandler;
 
@@ -109,9 +98,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Override
     public boolean getDigitalOutputState(DigitalOutput digitalOutput) {
-        if (System.currentTimeMillis() - lastDigitalOutputUpdateTime > UPDATE_INTERVAL_TIME) {
-            updateDigitalOutputState();
-        }
+        updateDigitalOutputState();
         return digitalOutputState.get(digitalOutput.getAddress());
     }
 
@@ -123,9 +110,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Override
     public Integer getAnalogOutputState(AnalogOutput analogOutput) {
-        if (System.currentTimeMillis() - lastAnalogOutputUpdateTime > UPDATE_INTERVAL_TIME) {
-            updateAnalogOutputState();
-        }
+        updateAnalogOutputState();
         return analogOutputState.get(analogOutput.getAddress());
     }
 
@@ -170,73 +155,87 @@ public class MachineStateServiceImpl implements MachineStateService {
     public void updateDigitalOutputState() {
         try {
             List<Boolean> currentState = mbtService.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
+            for (int i = 0; i < currentState.size() - 1; i++) {
+                if (currentState.get(i) != digitalOutputState.get(i)) {
+                    DigitalOutput digitalOutput = DigitalOutput.getByAddress(i);
+                    if (digitalOutput != null) {
+                        fireMachineStateEvent(
+                                new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED, digitalOutput, currentState.get(i)));
+                    } else {
+                        logService.log(LogService.LOG_DEBUG, "Unkown Digital Output changed: " + i);
+                    }
+                }
+            }
             synchronized (digitalOutputState) {
                 digitalOutputState = currentState;
             }
-            lastDigitalOutputUpdateTime = System.currentTimeMillis();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     public void updateAnalogOutputState() {
         try {
-            List<Integer> currentState = mbtService.readOutputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+            List<Integer> currentState = mbtService.readOutputRegister(0, WagoAddresses.ANALOG_OUTPUT_MAX_ADDRESS + 1);
+            for (int i = 0; i < currentState.size() - 1; i++) {
+                if (currentState.get(i) != analogOutputState.get(i)) {
+                    AnalogOutput analogOutput = AnalogOutput.getByAddress(i);
+                    if (analogOutput != null) {
+                        fireMachineStateEvent(
+                                new MachineStateEvent(Type.ANALOG_OUTPUT_CHANGED, analogOutput, currentState.get(i)));
+                    } else {
+                        logService.log(LogService.LOG_DEBUG, "Unkown Analog Output changed: " + i);
+                    }
+                }
+            }
             synchronized (analogOutputState) {
                 analogOutputState = currentState;
             }
-            lastAnalogOutputUpdateTime = System.currentTimeMillis();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void updateDigitalInputState() {
+        try {
+            List<Boolean> currentState = mbtService.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
+            for (int i = 0; i < currentState.size() - 1; i++) {
+                if (currentState.get(i) != digitalInputState.get(i)) {
+                    DigitalInput digitalInput = DigitalInput.getByAddress(i);
+                    if (digitalInput != null) {
+                        fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED,
+                                DigitalInput.getByAddress(i), currentState.get(i)));
+                    } else {
+                        logService.log(LogService.LOG_DEBUG, "Unkown Digital Input changed: " + i);
+                    }
+
+                }
+            }
+            synchronized (digitalInputState) {
+                digitalInputState = currentState;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void updateDigitalInputState() {
-        if (System.currentTimeMillis() - lastDigitalInputUpdateTime > UPDATE_INTERVAL_TIME) {
-            try {
-                List<Boolean> currentState = mbtService.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
-                for (int i = 0; i < currentState.size(); i++) {
-                    if (currentState.get(i) != digitalInputState.get(i)) {
-                        DigitalInput digitalInput = DigitalInput.getByAddress(i);
-                        if (digitalInput != null) {
-                            fireMachineStateEvent(
-                                    new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.getByAddress(i)));
-                        } else {
-                            logService.log(LogService.LOG_DEBUG, "Unkown Digital Input changed: " + i);
-                        }
-
-                    }
-                }
-                synchronized (digitalInputState) {
-                    digitalInputState = currentState;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            lastDigitalInputUpdateTime = System.currentTimeMillis();
-        }
-    }
-
     public void updateAnalogInputState() {
-        if (System.currentTimeMillis() - lastAnalogInputUpdateTime > UPDATE_INTERVAL_TIME) {
-            try {
-                List<Integer> currentState = mbtService.readInputRegister(0,
-                        WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
-                for (int i = 0; i < currentState.size(); i++) {
-                    if (currentState.get(i) != analogInputState.get(i)) {
-                        fireMachineStateEvent(
-                                new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, AnalogInput.getByAddress(i)));
-                    }
+        try {
+            List<Integer> currentState = mbtService.readInputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
+            for (int i = 0; i < currentState.size() - 1; i++) {
+                if (currentState.get(i) != analogInputState.get(i)) {
+                    fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_INPUT_CHANGED, AnalogInput.getByAddress(i),
+                            currentState.get(i)));
                 }
-                synchronized (analogInputState) {
-                    analogInputState = currentState;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+            synchronized (analogInputState) {
+                analogInputState = currentState;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        lastAnalogInputUpdateTime = System.currentTimeMillis();
     }
 
     // #################################
@@ -320,6 +319,8 @@ public class MachineStateServiceImpl implements MachineStateService {
                         while (running) {
                             updateDigitalInputState();
                             updateAnalogInputState();
+                            updateDigitalOutputState();
+                            updateAnalogOutputState();
                             long now = System.nanoTime();
                             long delta = now - lastTime;
                             long timeToSleep = (long) (1.0 / INPUT_UPDATE_TICKRATE * 1000 - delta / 1000000.0);

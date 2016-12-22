@@ -7,22 +7,12 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.gui.views.MainView;
 import at.sunplugged.z600.launcher.splash.SplashWindow;
 
-@Component(immediate = true)
-public class Main implements IApplication, BundleActivator {
-
-    private static BundleContext context;
-
-    private LogService logService;
+public class Main implements IApplication {
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
@@ -67,7 +57,7 @@ public class Main implements IApplication, BundleActivator {
                 messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
                 messageBox.setText("Unhandled Loop Exeception");
                 messageBox.open();
-                logService.log(LogService.LOG_ERROR, e.getMessage(), e);
+                MainView.getLogService().log(LogService.LOG_ERROR, e.getMessage(), e);
             }
 
         }
@@ -89,34 +79,9 @@ public class Main implements IApplication, BundleActivator {
                 messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
                 messageBox.setText("Unhandled Loop Exeception");
                 messageBox.open();
-                logService.log(LogService.LOG_ERROR, e.getMessage(), e);
+                MainView.getLogService().log(LogService.LOG_ERROR, e.getMessage(), e);
             }
         }
-    }
-
-    @Reference(unbind = "unbindLogService", cardinality = ReferenceCardinality.MANDATORY)
-    public synchronized void bindLogService(LogService logService) {
-        this.logService = logService;
-    }
-
-    public synchronized void unbindLogService(LogService logService) {
-        if (this.logService == logService) {
-            this.logService = null;
-        }
-    }
-
-    @Override
-    public void start(BundleContext context) throws Exception {
-        Main.context = context;
-    }
-
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        Main.context = null;
-    }
-
-    public static BundleContext getContext() {
-        return context;
     }
 
 }

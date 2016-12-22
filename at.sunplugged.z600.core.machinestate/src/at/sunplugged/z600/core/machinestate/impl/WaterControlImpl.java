@@ -23,16 +23,13 @@ public class WaterControlImpl implements WaterControl {
     @Override
     public void setOutletState(WaterOutlet outlet, boolean state) throws IOException {
         MachineStateServiceImpl.getMbtService().writeDigOut(outlet.getDigitalOutput().getAddress(), state);
-        machineStateService
-                .fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED, outlet.getDigitalOutput()));
 
     }
 
     @Override
     public void setWaterPumpState(WaterPump pump, boolean state) throws IOException {
         MachineStateServiceImpl.getMbtService().writeDigOut(pump.getDigitalOutput().getAddress(), state);
-        machineStateService
-                .fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED, pump.getDigitalOutput()));
+
     }
 
     @Override

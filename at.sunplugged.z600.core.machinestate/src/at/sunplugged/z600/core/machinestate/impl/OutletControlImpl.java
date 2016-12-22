@@ -16,6 +16,7 @@ public class OutletControlImpl implements OutletControl {
 
     public OutletControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
+        this.mbtController = MachineStateServiceImpl.getMbtService();
     }
 
     @Override
@@ -26,13 +27,11 @@ public class OutletControlImpl implements OutletControl {
     @Override
     public void closeOutlet(Outlet outlet) throws IOException {
         mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), false);
-        machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED));
     }
 
     @Override
     public void openOutlet(Outlet outlet) throws IOException {
         mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), true);
-        machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_OUTPUT_CHANGED));
     }
 
 }

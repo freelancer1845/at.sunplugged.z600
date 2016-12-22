@@ -9,6 +9,7 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
+import at.sunplugged.z600.core.machinestate.api.PumpStateEvent;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.mbt.api.MbtService;
 
@@ -35,12 +36,10 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
         this.logService = logService;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void startPump(Pumps pump) {
         try {
             mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), true);
-            machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED));
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Failed to start Pump: " + pump.toString(), e);
         }
@@ -50,7 +49,6 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
     public void stopPump(Pumps pump) {
         try {
             mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), false);
-            machineStateService.fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED));
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Failed to stop Pump: " + pump.toString(), e);
         }
@@ -78,17 +76,11 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
         if (event.getType().equals(MachineStateEvent.Type.DIGITAL_INPUT_CHANGED)) {
             DigitalInput digitalInput = event.getDigitalInput();
             if (digitalInput.equals(Pumps.PRE_PUMP_ONE.getDigitalInput())) {
-                if (machineStateService.getDigitalInputState(digitalInput)) {
-                    pumpOneState = PumpState.ON;
-                } else {
-                    pumpOneState = PumpState.OFF;
-                }
+                handleNormalPumpChange(Pumps.PRE_PUMP_ONE, (boolean) event.getValue(), pumpOneState);
             } else if (digitalInput.equals(Pumps.PRE_PUMP_TWO.getDigitalInput())) {
-                if (machineStateService.getDigitalInputState(digitalInput)) {
-                    pumpTwoState = PumpState.ON;
-                } else {
-                    pumpTwoState = PumpState.OFF;
-                }
+                handleNormalPumpChange(Pumps.PRE_PUMP_TWO, (boolean) event.getValue(), pumpTwoState);
+            } else if (digitalInput.equals(Pumps.PRE_PUMP_ROOTS.getDigitalInput())) {
+                handleNormalPumpChange(Pumps.PRE_PUMP_ROOTS, (boolean) event.getValue(), pumpRootState);
             } else if (digitalInput.equals(Pumps.TURBO_PUMP.getDigitalInput())) {
                 if (machineStateService.getDigitalInputState(digitalInput)) {
                     turboPumpState = PumpState.STARTING;
@@ -109,4 +101,12 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
         logService.log(LogService.LOG_DEBUG, "Event catched by pump Control: " + event.getType().name());
     }
 
+    private void handleNormalPumpChange(Pumps pump, boolean state, PumpState stateContainer) {
+        if (state == true) {
+            stateContainer = PumpState.ON;
+        } else {
+            stateContainer = PumpState.OFF;
+        }
+        machineStateService.fireMachineStateEvent(new PumpStateEvent(pump, stateContainer));
+    }
 }

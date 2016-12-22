@@ -1,5 +1,7 @@
 package at.sunplugged.z600.gui.views;
 
+import java.io.IOException;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -24,9 +26,14 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
 
 @Component
 public class MainView {
@@ -51,7 +58,9 @@ public class MainView {
     private static Text txtValue;
     private static Text txtValue_1;
 
-    public LogService getLogService() {
+    private static Viewer diagramViewer;
+
+    public static LogService getLogService() {
         return logService;
     }
 
@@ -89,10 +98,16 @@ public class MainView {
         shell.setText("SWT Application");
         shell.setLayout(new GridLayout(2, false));
 
-        Composite composite = new Composite(shell, SWT.NONE);
-        GridData gdComposite = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
-        gdComposite.widthHint = 550;
-        composite.setLayoutData(gdComposite);
+        Composite machineDiagramComposite = new Composite(shell, SWT.NONE);
+        machineDiagramComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
+        GridData gd_machineDiagramComposite = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        gd_machineDiagramComposite.widthHint = 550;
+        machineDiagramComposite.setLayoutData(gd_machineDiagramComposite);
+
+        Canvas canvas = new Canvas(machineDiagramComposite, SWT.NONE);
+
+        diagramViewer = new Viewer(canvas);
+        machineStateService.registerMachineEventHandler(diagramViewer);
 
         TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
         tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_CYAN));
@@ -241,6 +256,7 @@ public class MainView {
         Button buttonConnect = new Button(grpEngine, SWT.NONE);
         buttonConnect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         buttonConnect.setText("Connected");
+        new Label(grpEngine, SWT.NONE);
         buttonConnect.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -263,6 +279,31 @@ public class MainView {
         Button button = new Button(grpEngine_1, SWT.NONE);
         button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         button.setText("Start");
+        button.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (machineStateService.getOutletControl().isOutletOpen(Outlet.OUTLET_ONE)) {
+                    try {
+                        machineStateService.getOutletControl().closeOutlet(Outlet.OUTLET_ONE);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                } else {
+                    try {
+                        machineStateService.getOutletControl().openOutlet(Outlet.OUTLET_ONE);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+        });
 
         Button button_1 = new Button(grpEngine_1, SWT.NONE);
         button_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -311,17 +352,7 @@ public class MainView {
         txtValue_1 = new Text(grpVelocity, SWT.BORDER);
         txtValue_1.setText("Value");
         txtValue_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        // SrmTabItemFactory srmTabItemFactory = new
-        // SrmTabItemFactory(srmCommunicator, logService, dataService);
-        // srmTabItemFactory.createSrmTabItem(tabFolder, SWT.NONE);
-        // MbtTabItemFactory mbtTabItemFactory = new
-        // MbtTabItemFactory(mbtController, logService, machineStateService);
-        // TabItem tbtmMbt = mbtTabItemFactory.createMbtTabItem(tabFolder,
-        // SWT.NONE);
-        // mbtTabItemFactory.createDebugMbtTabItem(tabFolder, SWT.NONE);
-        Composite compositeOne = new Composite(shell, SWT.NONE);
-        compositeOne.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+        new Label(shell, SWT.NONE);
 
         return shell;
     }
@@ -391,5 +422,4 @@ public class MainView {
             MainView.conveyorControlService = null;
         }
     }
-
 }
