@@ -3,12 +3,10 @@ package at.sunplugged.z600.mbt.impl;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.service.component.ComponentException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -16,7 +14,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.EventProperties;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.settings.api.SettingsIds;
@@ -65,17 +62,9 @@ public class MbtServiceImpl implements MbtService {
 
     @Activate
     protected synchronized void activate(BundleContext context) {
-        Dictionary<String, Object> properties = new Hashtable<>();
-
         try {
             connect();
-            properties.put("IP", addr.getHostAddress());
-            properties.put("success", true);
-            eventAdmin.postEvent(new Event("mbtServiceConnect", properties));
         } catch (IOException e) {
-            properties.put("IP", addr.getHostAddress());
-            properties.put("success", false);
-            eventAdmin.postEvent(new Event("mbtServiceConnect", properties));
             logService.log(LogService.LOG_ERROR, "Failed to connect to Modbus Controller.", e);
         }
     }
@@ -96,7 +85,9 @@ public class MbtServiceImpl implements MbtService {
         try {
             connection.connect();
             logService.log(LogService.LOG_DEBUG, "Successfully conntected to MBT Controller");
+            postConnectEvent(true, null);
         } catch (Exception e) {
+            postConnectEvent(false, e);
             throw new MbtServiceException("Failed to connect to MBT", e);
         }
 
@@ -273,6 +264,16 @@ public class MbtServiceImpl implements MbtService {
             return false;
         }
         return connection.isConnected();
+    }
+
+    private void postConnectEvent(boolean successful, Throwable e) {
+        Dictionary<String, Object> properties = new Hashtable<>();
+        properties.put("IP", addr.getHostAddress());
+        properties.put("success", successful);
+        if (!successful) {
+            properties.put("Error", e);
+        }
+        eventAdmin.postEvent(new Event("at/sunplugged/z600/mbt/connect", properties));
     }
 
     /** Bind method for LogService. */

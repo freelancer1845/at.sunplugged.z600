@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="at.sunplugged.z600.launcher.Main">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="at.sunplugged.z600.launcher.Main">
    <service>
       <provide interface="org.eclipse.equinox.app.IApplication"/>
       <provide interface="org.osgi.framework.BundleActivator"/>

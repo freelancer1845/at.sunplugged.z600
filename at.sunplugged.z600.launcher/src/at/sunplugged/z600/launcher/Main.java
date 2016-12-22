@@ -9,7 +9,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -18,7 +17,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.gui.views.MainView;
 import at.sunplugged.z600.launcher.splash.SplashWindow;
 
-@Component
+@Component(immediate = true)
 public class Main implements IApplication, BundleActivator {
 
     private static BundleContext context;
@@ -27,11 +26,12 @@ public class Main implements IApplication, BundleActivator {
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
-        System.out.println("Application Started");
         context.applicationRunning();
 
         // First check for all services to run
-        splashWindowLoop();
+        if (!splashWindowLoop()) {
+            return EXIT_OK;
+        }
 
         // Main SWT Loop
         mainWindowLoop();
@@ -44,7 +44,7 @@ public class Main implements IApplication, BundleActivator {
         System.out.println("Application stopped");
     }
 
-    private void splashWindowLoop() {
+    private boolean splashWindowLoop() {
         Display display = Display.getDefault();
         Shell shell = SplashWindow.getShell();
         Rectangle splashRect = shell.getBounds();
@@ -59,6 +59,9 @@ public class Main implements IApplication, BundleActivator {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
+            } catch (ProgrammShutdownException e) {
+                shell.dispose();
+                return false;
             } catch (RuntimeException e) {
                 MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
                 messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
@@ -66,7 +69,9 @@ public class Main implements IApplication, BundleActivator {
                 messageBox.open();
                 logService.log(LogService.LOG_ERROR, e.getMessage(), e);
             }
+
         }
+        return true;
     }
 
     private void mainWindowLoop() {

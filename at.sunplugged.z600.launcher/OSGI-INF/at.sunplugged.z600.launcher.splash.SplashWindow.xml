@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="at.sunplugged.z600.launcher.splash.SplashWindow">
-   <property name="event.topics" value="mbtServiceConnect"/>
+   <property name="event.topics" value="at/sunplugged/z600/mbt/connect"/>
    <service>
       <provide interface="org.osgi.service.event.EventHandler"/>
    </service>
