@@ -33,6 +33,18 @@ public interface MachineStateService {
      */
     public WaterControl getWaterControl();
 
+    /**
+     * 
+     * @return the {@linkplain PowerControl} Interface.
+     */
+    public PowerControl getPowerControl();
+
+    /**
+     * 
+     * @return the {@linkplain KathodeControl} Interface.
+     */
+    public KathodeControl getKathodeControl();
+
     public boolean getDigitalOutputState(DigitalOutput digitalOutput);
 
     public boolean getDigitalInputState(DigitalInput digitalInput);

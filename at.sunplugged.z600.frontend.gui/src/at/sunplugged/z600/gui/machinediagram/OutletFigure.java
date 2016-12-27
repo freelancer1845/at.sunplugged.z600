@@ -11,15 +11,23 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-public class VentilFigure extends Figure {
+import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+
+public class OutletFigure extends Figure implements MachineEventHandler {
 
     private static final int WIDHT = 30;
 
     private static final int HEIGHT = 30;
 
+    private final Outlet outlet;
+
     // private final Shape shape;
 
-    public VentilFigure(String name, int x, int y) {
+    public OutletFigure(String name, int x, int y, Outlet outlet) {
+        this.outlet = outlet;
         this.setBounds(new Rectangle(x, y, WIDHT, HEIGHT));
         this.setBorder(new LineBorder());
         this.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_BLUE));
@@ -83,5 +91,14 @@ public class VentilFigure extends Figure {
         // polygonShape.setBorder(new LineBorder());
 
         return polygonShape;
+    }
+
+    @Override
+    public void handleEvent(MachineStateEvent event) {
+        if (event.getType() == Type.DIGITAL_OUTPUT_CHANGED) {
+            if (event.getDigitalOutput() == this.outlet.getDigitalOutput()) {
+                this.setState((boolean) event.getValue());
+            }
+        }
     }
 }

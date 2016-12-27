@@ -23,17 +23,25 @@ public class WagoAddresses {
         OUTLET_FOUR(5),
         OUTLET_FIVE(3),
         OUTLET_SIX(4),
-        OUTLET_NINE(35),
+        PRE_PUMP_ONE(24),
+        PRE_PUMP_ROOTS(25),
+        TUROBO_PUMP(26),
+        PRE_PUMP_TWO(27),
         WATER_TURBO_PUMP(31),
         WATER_KATH_ONE(32),
         WATER_KATH_TWO(33),
         WATER_KATH_THREE(34),
-        WATERPUMP(37),
+        OUTLET_NINE(35),
         WATER_SHIELD(36),
-        PRE_PUMP_ONE(32),
-        TUROBO_OUMP(34),
-        PRE_PUMP_TWO(35),
-        PRE_PUMP_ROOTS(33);
+        WATERPUMP(37),
+        SSV_ONE_START(39),
+        SSV_TWO_START(40),
+        PINNACLE_START(43),
+        PINNACLE_INTERLOCK(44),
+        MDX_START(45),
+        MDX_OFF(46),
+        MDX_INTERLOCK(47),
+        PINNACLE_OFF(49);
 
         private final int address;
 
@@ -74,6 +82,9 @@ public class WagoAddresses {
         WATER_KATH_TWO_ON(24),
         WATER_KATH_THREE_ON(25),
         WATER_KATH_FOUR_ON(26),
+        PINNACLE_OUT(34),
+        SSV_TWO_ERROR(42),
+        SSV_ONE_ERROR(43),
         LEFT_SPEED_TRIGGER(39),
         RIGHT_SPEED_TRIGGER(40),
         PRE_PUMP_ROOTS_OK(13);
@@ -132,7 +143,7 @@ public class WagoAddresses {
     }
 
     public enum AnalogOutput {
-        KATHODE_ONE_SETPOINT(15395);
+        KATHODE_TWO_SETPOINT(3), KATHODE_THREE_SETPOINT(4), KATHODE_ONE_SETPOINT(5);
 
         private final int address;
 

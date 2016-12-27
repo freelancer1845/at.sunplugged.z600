@@ -13,11 +13,13 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.core.machinestate.api.KathodeControl;
 import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
+import at.sunplugged.z600.core.machinestate.api.PowerControl;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
@@ -32,7 +34,7 @@ import at.sunplugged.z600.srm50.api.SrmCommunicator;
 @Component
 public class MachineStateServiceImpl implements MachineStateService {
 
-    /** Update Tickrate. */
+    /** Update tickrate. */
     private static final int INPUT_UPDATE_TICKRATE = 10;
 
     private static DataService dataService;
@@ -51,6 +53,10 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private WaterControl waterControl;
 
+    private KathodeControl kathodeControl;
+
+    private PowerControl powerControl;
+
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
     private List<Boolean> digitalInputState = new ArrayList<>();
@@ -68,8 +74,10 @@ public class MachineStateServiceImpl implements MachineStateService {
     @Activate
     protected void activateMachineStateService(BundleContext context) {
         this.outletControl = new OutletControlImpl(this);
-        this.pumpControl = new PumpControlImpl(this, mbtService, logService);
+        this.pumpControl = new PumpControlImpl(this);
         this.waterControl = new WaterControlImpl(this);
+        this.kathodeControl = new KathodeControlImpl(this);
+        this.powerControl = new PowerControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
         this.updaterThread = new InputUpdaterThread();
@@ -94,6 +102,16 @@ public class MachineStateServiceImpl implements MachineStateService {
     @Override
     public WaterControl getWaterControl() {
         return waterControl;
+    }
+
+    @Override
+    public PowerControl getPowerControl() {
+        return powerControl;
+    }
+
+    @Override
+    public KathodeControl getKathodeControl() {
+        return kathodeControl;
     }
 
     @Override

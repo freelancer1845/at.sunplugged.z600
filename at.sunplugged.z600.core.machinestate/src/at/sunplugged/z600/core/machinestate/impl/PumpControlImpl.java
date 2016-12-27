@@ -17,7 +17,7 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
 
     private final MachineStateService machineStateService;
 
-    private final MbtService mbtController;
+    private final MbtService mbtService;
 
     private final LogService logService;
 
@@ -29,17 +29,17 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
 
     private PumpState turboPumpState = PumpState.OFF;
 
-    public PumpControlImpl(MachineStateService machineStateService, MbtService mbtController, LogService logService) {
+    public PumpControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
         machineStateService.registerMachineEventHandler(this);
-        this.mbtController = mbtController;
-        this.logService = logService;
+        this.mbtService = MachineStateServiceImpl.getMbtService();
+        this.logService = MachineStateServiceImpl.getLogService();
     }
 
     @Override
     public void startPump(Pumps pump) {
         try {
-            mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), true);
+            mbtService.writeDigOut(pump.getDigitalOutput().getAddress(), true);
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Failed to start Pump: " + pump.toString(), e);
         }
@@ -48,7 +48,7 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
     @Override
     public void stopPump(Pumps pump) {
         try {
-            mbtController.writeDigOut(pump.getDigitalOutput().getAddress(), false);
+            mbtService.writeDigOut(pump.getDigitalOutput().getAddress(), false);
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Failed to stop Pump: " + pump.toString(), e);
         }
