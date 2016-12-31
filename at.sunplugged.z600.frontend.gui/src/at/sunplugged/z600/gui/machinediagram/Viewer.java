@@ -13,10 +13,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 
 public class Viewer implements MachineEventHandler {
 

@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
-import at.sunplugged.z600.core.machinestate.api.PumpStateEvent;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.mbt.api.MbtService;
 
 public class PumpControlImpl implements PumpControl, MachineEventHandler {

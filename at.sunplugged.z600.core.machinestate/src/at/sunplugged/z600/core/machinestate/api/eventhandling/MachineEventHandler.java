@@ -1,4 +1,4 @@
-package at.sunplugged.z600.core.machinestate.api;
+package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
 public interface MachineEventHandler {
 

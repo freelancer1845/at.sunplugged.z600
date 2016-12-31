@@ -2,10 +2,10 @@ package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
 
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.WaterControl;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
 public class WaterControlImpl implements WaterControl {
 

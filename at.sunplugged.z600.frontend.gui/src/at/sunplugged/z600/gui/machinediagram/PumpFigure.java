@@ -5,12 +5,12 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
-import at.sunplugged.z600.core.machinestate.api.PumpStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
 public class PumpFigure extends Figure implements MachineEventHandler {
 

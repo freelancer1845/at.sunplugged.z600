@@ -11,10 +11,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
 public class OutletFigure extends Figure implements MachineEventHandler {
 

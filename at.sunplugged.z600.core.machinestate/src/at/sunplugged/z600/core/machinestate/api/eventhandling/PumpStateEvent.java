@@ -1,7 +1,9 @@
-package at.sunplugged.z600.core.machinestate.api;
+package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
+import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
 public class PumpStateEvent extends MachineStateEvent {
 

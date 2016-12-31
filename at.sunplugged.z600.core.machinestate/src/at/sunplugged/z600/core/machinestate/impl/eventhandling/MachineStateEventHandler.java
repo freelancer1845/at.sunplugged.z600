@@ -1,7 +1,7 @@
 package at.sunplugged.z600.core.machinestate.impl.eventhandling;
 
-import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.impl.MachineStateServiceImpl;
 
 public class MachineStateEventHandler implements MachineEventHandler {

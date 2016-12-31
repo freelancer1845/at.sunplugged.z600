@@ -4,6 +4,8 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 
 /**
  * 
@@ -44,6 +46,12 @@ public interface MachineStateService {
      * @return the {@linkplain KathodeControl} Interface.
      */
     public KathodeControl getKathodeControl();
+
+    /**
+     * 
+     * @return the {@linkplain PreasureMeasurement} Interace.
+     */
+    public PreasureMeasurement getPreasureMesaurmentContro();
 
     public boolean getDigitalOutputState(DigitalOutput digitalOutput);
 

@@ -14,18 +14,19 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.core.machinestate.api.KathodeControl;
-import at.sunplugged.z600.core.machinestate.api.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PowerControl;
+import at.sunplugged.z600.core.machinestate.api.PreasureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.WaterControl;
 import at.sunplugged.z600.core.machinestate.impl.eventhandling.MachineStateEventHandler;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -57,6 +58,8 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private PowerControl powerControl;
 
+    private PreasureMeasurement preasureMeasurement;
+
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
     private List<Boolean> digitalInputState = new ArrayList<>();
@@ -78,6 +81,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         this.waterControl = new WaterControlImpl(this);
         this.kathodeControl = new KathodeControlImpl(this);
         this.powerControl = new PowerControlImpl(this);
+        this.preasureMeasurement = new PreasureMeasurementImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
         this.updaterThread = new InputUpdaterThread();
@@ -112,6 +116,11 @@ public class MachineStateServiceImpl implements MachineStateService {
     @Override
     public KathodeControl getKathodeControl() {
         return kathodeControl;
+    }
+
+    @Override
+    public PreasureMeasurement getPreasureMesaurmentContro() {
+        return preasureMeasurement;
     }
 
     @Override
