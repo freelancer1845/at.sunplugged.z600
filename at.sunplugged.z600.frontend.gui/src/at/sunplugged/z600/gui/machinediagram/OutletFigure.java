@@ -16,9 +16,9 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.
 
 public class OutletFigure extends Figure implements MachineEventHandler {
 
-    private static final int WIDTH = 80;
+    private static final int WIDTH = 60;
 
-    private static final int HEIGHT = 30;
+    private static final int HEIGHT = 20;
 
     private final Outlet outlet;
 

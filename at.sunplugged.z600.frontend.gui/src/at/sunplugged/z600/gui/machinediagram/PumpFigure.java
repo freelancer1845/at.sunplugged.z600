@@ -6,6 +6,7 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.Shape;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
@@ -18,9 +19,9 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.
 
 public class PumpFigure extends Figure implements MachineEventHandler {
 
-    private static final int WIDTH = 80;
+    private static final int WIDTH = 50;
 
-    private static final int HEIGHT = 80;
+    private static final int HEIGHT = 50;
 
     private static final double INNER_CIRCLE_SCALE = 4;
 
@@ -40,8 +41,9 @@ public class PumpFigure extends Figure implements MachineEventHandler {
     private void createLabel(String name) {
         Label label = new Label();
         Rectangle bounds = getBounds().getCopy();
-        label.setBounds(new Rectangle(bounds.x + WIDTH / 2 - 20, bounds.y + (int) (HEIGHT / 1.5), 40, 20));
+        label.setBounds(new Rectangle(bounds.x + WIDTH / 2 - 20, bounds.y + (int) (HEIGHT / 1.7), 40, 20));
         label.setText(name);
+        label.setFont(SWTResourceManager.getFont("tahoma", 8, SWT.NONE));
         this.add(label);
 
     }
