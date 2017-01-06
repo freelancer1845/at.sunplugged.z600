@@ -28,6 +28,9 @@ import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
+import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
@@ -137,7 +140,9 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().startEngine();
+                // conveyorControlService.getEngineOne().startEngine();
+
+                machineStateService.fireMachineStateEvent(new PumpStateEvent(Pumps.PRE_PUMP_ONE, PumpState.ON));
             }
 
             @Override

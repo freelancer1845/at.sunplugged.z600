@@ -2,9 +2,7 @@ package at.sunplugged.z600.gui.machinediagram;
 
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.Polygon;
-import org.eclipse.draw2d.Shape;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
@@ -18,86 +16,113 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.
 
 public class OutletFigure extends Figure implements MachineEventHandler {
 
-    private static final int WIDHT = 30;
+    private static final int WIDTH = 80;
 
     private static final int HEIGHT = 30;
 
     private final Outlet outlet;
 
+    private Label label;
+
+    private Polygon polygonShape;
+
     // private final Shape shape;
 
-    public OutletFigure(String name, int x, int y, Outlet outlet) {
+    public OutletFigure(String name, int x, int y, Outlet outlet, boolean vertical) {
         this.outlet = outlet;
-        this.setBounds(new Rectangle(x, y, WIDHT, HEIGHT));
-        this.setBorder(new LineBorder());
-        this.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_BLUE));
-        this.setOpaque(false);
-        this.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_BLUE));
-        this.add(createLabel(name));
-        // shape = createShape();
+        if (vertical) {
+            this.setBounds(new Rectangle(x, y, HEIGHT, WIDTH));
+        } else {
+            this.setBounds(new Rectangle(x, y, WIDTH, HEIGHT));
+        }
+        createShape(vertical);
+        createLabel(name, vertical);
 
     }
 
-    public void setState(boolean state) {
+    private void setState(boolean state) {
         if (state == true) {
-            Display.getDefault().asyncExec(new Runnable() {
-
-                @Override
-                public void run() {
-                    setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
-                }
-
-            });
+            polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
         } else {
-            Display.getDefault().asyncExec(new Runnable() {
-
-                @Override
-                public void run() {
-                    setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
-                }
-
-            });
+            polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
         }
 
     }
 
-    private Label createLabel(String name) {
-        Label label = new Label();
+    private void createLabel(String name, boolean vertical) {
+        label = new Label();
         Rectangle r = getBounds().getCopy();
-        label.setBounds(new Rectangle(r.x + 2, r.y + 2, r.width, r.height));
+        label.setBounds(new Rectangle(r.x, r.y, r.width, r.height));
         label.setText(name);
         label.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_BLACK));
-        return label;
+        if (vertical) {
+            label.setLabelAlignment(Label.TOP);
+            label.setTextAlignment(Label.TOP);
+        } else {
+            label.setTextAlignment(Label.LEFT);
+            label.setLabelAlignment(Label.LEFT);
+        }
+        this.add(label);
     }
 
-    private Shape createShape() {
-        Polygon polygonShape = new Polygon();
+    private void createShape(boolean vertical) {
+        Point upperLeftCorner;
+        Point lowerLeftCorner;
+        Point middlePoint;
+        Point lowerRightCorner;
+        Point upperRightCorner;
         Rectangle bounds = this.getBounds().getCopy();
-        Point upperLeftCorner = new Point(bounds.x + 1, bounds.y + 1);
-        Point upperRightCorner = new Point(bounds.x + bounds.width - 1, bounds.y + 1);
-        Point middlePointLeft = new Point(bounds.x + bounds.width / 2 - 2, bounds.y + bounds.height * 2 / 3);
-        Point middlePointRight = new Point(bounds.x + bounds.width / 2 + 2, bounds.y + bounds.height * 2 / 3);
-        Point lowerLeftCorner = new Point(bounds.x + 1, bounds.y + bounds.height - 1);
-        Point lowerRightCorner = new Point(bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
-        polygonShape.addPoint(upperLeftCorner);
+        bounds.width -= 1;
+        bounds.height -= 1;
+        if (!vertical) {
 
-        polygonShape.addPoint(middlePointLeft);
+            bounds.x += 15;
+            bounds.width -= 30;
 
-        polygonShape.addPoint(lowerLeftCorner);
-        polygonShape.addPoint(lowerRightCorner);
+        } else {
+            bounds.y += 15;
+            bounds.height -= 30;
+        }
+        upperLeftCorner = new Point(bounds.x, bounds.y);
+        lowerLeftCorner = new Point(bounds.x, bounds.y + bounds.height);
+        middlePoint = new Point(bounds.x + bounds.width / 2, +bounds.y + bounds.height / 2);
+        lowerRightCorner = new Point(bounds.x + bounds.width, bounds.y + bounds.height);
+        upperRightCorner = new Point(bounds.x + bounds.width, bounds.y);
+        polygonShape = new Polygon();
+        if (!vertical) {
 
-        polygonShape.addPoint(middlePointRight);
-        polygonShape.addPoint(upperRightCorner);
-        // polygonShape.setBorder(new LineBorder());
-
-        return polygonShape;
+            polygonShape.addPoint(upperLeftCorner);
+            polygonShape.addPoint(lowerLeftCorner);
+            polygonShape.addPoint(middlePoint);
+            polygonShape.addPoint(lowerRightCorner);
+            polygonShape.addPoint(upperRightCorner);
+            polygonShape.addPoint(middlePoint);
+        } else {
+            polygonShape.addPoint(upperLeftCorner);
+            polygonShape.addPoint(middlePoint);
+            polygonShape.addPoint(lowerLeftCorner);
+            polygonShape.addPoint(lowerRightCorner);
+            polygonShape.addPoint(middlePoint);
+            polygonShape.addPoint(upperRightCorner);
+        }
+        polygonShape.setFill(true);
+        polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
+        this.add(polygonShape);
     }
 
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType() == Type.DIGITAL_OUTPUT_CHANGED) {
             if (event.getDigitalOutput() == this.outlet.getDigitalOutput()) {
-                this.setState((boolean) event.getValue());
+                Display.getDefault().asyncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        setState((boolean) event.getValue());
+                    }
+
+                });
+
             }
         }
     }

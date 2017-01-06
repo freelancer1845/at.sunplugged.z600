@@ -29,10 +29,11 @@ public class Viewer implements MachineEventHandler {
         Figure contents = new Figure();
         XYLayout contentsLayout = new XYLayout();
         contents.setLayoutManager(contentsLayout);
-        ventilOne = new OutletFigure("V1", 10, 10, Outlet.OUTLET_ONE);
+        ventilOne = new OutletFigure("V1", 10, 10, Outlet.OUTLET_ONE, false);
+        IFigure v2 = new OutletFigure("V2", 60, 10, Outlet.OUTLET_TWO, true);
         eventHandlingFigures.add(ventilOne);
+        eventHandlingFigures.add((MachineEventHandler) v2);
 
-        IFigure v2 = new OutletFigure("V2", 60, 10, Outlet.OUTLET_TWO);
         IFigure pumpFigure = new PumpFigure("M1P1", 30, 100, Pumps.PRE_PUMP_ONE);
         eventHandlingFigures.add((MachineEventHandler) pumpFigure);
         contents.add(ventilOne);
