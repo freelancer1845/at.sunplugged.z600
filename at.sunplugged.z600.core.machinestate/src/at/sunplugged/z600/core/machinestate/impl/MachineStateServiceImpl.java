@@ -17,7 +17,7 @@ import at.sunplugged.z600.core.machinestate.api.KathodeControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PowerControl;
-import at.sunplugged.z600.core.machinestate.api.PreasureMeasurement;
+import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PumpControl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
@@ -58,7 +58,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private PowerControl powerControl;
 
-    private PreasureMeasurement preasureMeasurement;
+    private PressureMeasurement preasureMeasurement;
 
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
@@ -119,7 +119,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Override
-    public PreasureMeasurement getPreasureMesaurmentContro() {
+    public PressureMeasurement getPressureMeasurmentContro() {
         return preasureMeasurement;
     }
 

@@ -2,9 +2,9 @@ package at.sunplugged.z600.core.machinestate.api;
 
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 
-public interface PreasureMeasurement {
+public interface PressureMeasurement {
 
-    public enum PreasureMeasurementSite {
+    public enum PressureMeasurementSite {
         TURBO_PUMP(AnalogInput.PREASURE_TURBO_PUMP),
         CRYO_PUMP_ONE(AnalogInput.PREASURE_CRYO_ONE),
         CRYO_PUMP_TWO(AnalogInput.PREASURE_CRYO_TWO),
@@ -12,7 +12,7 @@ public interface PreasureMeasurement {
 
         private final AnalogInput analogInput;
 
-        private PreasureMeasurementSite(AnalogInput analogInput) {
+        private PressureMeasurementSite(AnalogInput analogInput) {
             this.analogInput = analogInput;
         }
 
@@ -21,6 +21,6 @@ public interface PreasureMeasurement {
         }
     }
 
-    public double getCurrentValue(PreasureMeasurementSite site);
+    public double getCurrentValue(PressureMeasurementSite site);
 
 }

@@ -49,9 +49,9 @@ public interface MachineStateService {
 
     /**
      * 
-     * @return the {@linkplain PreasureMeasurement} Interace.
+     * @return the {@linkplain PressureMeasurement} Interface.
      */
-    public PreasureMeasurement getPreasureMesaurmentContro();
+    public PressureMeasurement getPressureMeasurmentContro();
 
     public boolean getDigitalOutputState(DigitalOutput digitalOutput);
 

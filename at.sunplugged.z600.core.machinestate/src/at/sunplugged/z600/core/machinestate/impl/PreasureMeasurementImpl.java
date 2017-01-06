@@ -1,9 +1,9 @@
 package at.sunplugged.z600.core.machinestate.impl;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.PreasureMeasurement;
+import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 
-public class PreasureMeasurementImpl implements PreasureMeasurement {
+public class PreasureMeasurementImpl implements PressureMeasurement {
 
     private final MachineStateService machineStateService;
 
@@ -12,7 +12,7 @@ public class PreasureMeasurementImpl implements PreasureMeasurement {
     }
 
     @Override
-    public double getCurrentValue(PreasureMeasurementSite site) {
+    public double getCurrentValue(PressureMeasurementSite site) {
         switch (site) {
         case TURBO_PUMP:
         case CRYO_PUMP_ONE:
@@ -25,7 +25,7 @@ public class PreasureMeasurementImpl implements PreasureMeasurement {
         }
     }
 
-    private double tm201Site(PreasureMeasurementSite site) {
+    private double tm201Site(PressureMeasurementSite site) {
         int measuredValue = machineStateService.getAnalogInputState(site.getAnalogInput());
 
         double value;
@@ -46,7 +46,7 @@ public class PreasureMeasurementImpl implements PreasureMeasurement {
         return value;
     }
 
-    private double mks979bSite(PreasureMeasurementSite site) {
+    private double mks979bSite(PressureMeasurementSite site) {
         int measuredValue = machineStateService.getAnalogInputState(site.getAnalogInput());
 
         return 1.33 * Math.pow(10, ((measuredValue * 10 / 4096.0) * 2) - 11);
