@@ -6,9 +6,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -34,8 +36,6 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Canvas;
 
 @Component
 public class MainView {
@@ -405,7 +405,7 @@ public class MainView {
         }
     }
 
-    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.OPTIONAL)
+    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.MANDATORY)
     public synchronized void bindMachineStateService(MachineStateService machineStateService) {
         MainView.machineStateService = machineStateService;
     }
@@ -416,7 +416,7 @@ public class MainView {
         }
     }
 
-    @Reference(unbind = "unbindConveyorControlService", cardinality = ReferenceCardinality.OPTIONAL)
+    @Reference(unbind = "unbindConveyorControlService", cardinality = ReferenceCardinality.MANDATORY)
     public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
         MainView.conveyorControlService = conveyorControlService;
     }

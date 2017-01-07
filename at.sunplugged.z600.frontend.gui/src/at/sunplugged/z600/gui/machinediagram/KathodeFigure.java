@@ -13,9 +13,9 @@ import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
 
 public class KathodeFigure extends Figure {
 
-    private static final int WIDTH = 80;
+    private static final int WIDTH = 65;
 
-    private static final int HEIGHT = 30;
+    private static final int HEIGHT = 22;
 
     private final Kathode kathode;
 
@@ -60,6 +60,7 @@ public class KathodeFigure extends Figure {
         label.setBounds(bounds);
         label.setText(name);
         label.setTextAlignment(Label.TOP);
+        label.setFont(SWTResourceManager.getFont("tahoma", 7, SWT.NONE));
         this.add(label);
     }
 

@@ -13,7 +13,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 
 public class PressureSiteFigure extends Figure implements MachineEventHandler {
 
-    private static final int WIDTH = 50;
+    private static final int WIDTH = 40;
 
     private static final int HEIGHT = 15;
 
@@ -35,6 +35,9 @@ public class PressureSiteFigure extends Figure implements MachineEventHandler {
         label.setFont(SWTResourceManager.getFont("tahoma", 7, SWT.NONE));
         label.setTextAlignment(Label.RIGHT);
         label.setLabelAlignment(Label.RIGHT);
+
+        label.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+        label.setOpaque(true);
 
         this.add(label);
     }

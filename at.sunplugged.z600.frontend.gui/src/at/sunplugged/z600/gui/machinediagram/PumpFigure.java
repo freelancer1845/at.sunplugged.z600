@@ -6,7 +6,6 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.Shape;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
@@ -14,14 +13,14 @@ import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 
 public class PumpFigure extends Figure implements MachineEventHandler {
 
-    private static final int WIDTH = 50;
+    private static final int WIDTH = 60;
 
-    private static final int HEIGHT = 50;
+    private static final int HEIGHT = 60;
 
     private static final double INNER_CIRCLE_SCALE = 4;
 
@@ -67,7 +66,7 @@ public class PumpFigure extends Figure implements MachineEventHandler {
 
     }
 
-    private void setState(PumpState state) {
+    protected void setState(PumpState state) {
         switch (state) {
         case ON:
             innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));

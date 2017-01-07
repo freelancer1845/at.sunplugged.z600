@@ -112,6 +112,9 @@ public class OutletFigure extends Figure implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
+        if (this.outlet == null) {
+            return;
+        }
         if (event.getType() == Type.DIGITAL_OUTPUT_CHANGED) {
             if (event.getDigitalOutput() == this.outlet.getDigitalOutput()) {
                 Display.getDefault().asyncExec(new Runnable() {
