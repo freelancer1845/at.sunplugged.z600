@@ -1,6 +1,5 @@
 package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
@@ -14,7 +13,8 @@ public class MachineStateEvent {
         DIGITAL_INPUT_CHANGED,
         ANALOG_INPUT_CHANGED,
         PUMP_STATUS_CHANGED,
-        KATHODE_STATUS_CHANGED;
+        KATHODE_STATUS_CHANGED,
+        PRESSURE_CHANGED_EVENT;
     }
 
     private final Type type;
@@ -36,6 +36,15 @@ public class MachineStateEvent {
         this.analogInput = null;
         this.analogOutput = null;
         this.value = null;
+    }
+
+    public MachineStateEvent(Type type, Object value) {
+        this.type = type;
+        this.digitalInput = null;
+        this.digitalOutput = null;
+        this.analogInput = null;
+        this.analogOutput = null;
+        this.value = value;
     }
 
     public MachineStateEvent(Type type, DigitalInput digitalInput, boolean value) {

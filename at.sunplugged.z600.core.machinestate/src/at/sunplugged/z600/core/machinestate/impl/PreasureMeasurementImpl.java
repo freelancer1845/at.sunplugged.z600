@@ -2,8 +2,12 @@ package at.sunplugged.z600.core.machinestate.impl;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PressureChangedEvent;
 
-public class PreasureMeasurementImpl implements PressureMeasurement {
+public class PreasureMeasurementImpl implements PressureMeasurement, MachineEventHandler {
 
     private final MachineStateService machineStateService;
 
@@ -17,16 +21,15 @@ public class PreasureMeasurementImpl implements PressureMeasurement {
         case TURBO_PUMP:
         case CRYO_PUMP_ONE:
         case CRYO_PUMP_TWO:
-            return tm201Site(site);
+            return tm201Site(site, machineStateService.getAnalogInputState(site.getAnalogInput()));
         case CHAMBER:
-            return mks979bSite(site);
+            return mks979bSite(site, machineStateService.getAnalogInputState(site.getAnalogInput()));
         default:
             return -1;
         }
     }
 
-    private double tm201Site(PressureMeasurementSite site) {
-        int measuredValue = machineStateService.getAnalogInputState(site.getAnalogInput());
+    private double tm201Site(PressureMeasurementSite site, int measuredValue) {
 
         double value;
         if (measuredValue < 410) {
@@ -46,10 +49,34 @@ public class PreasureMeasurementImpl implements PressureMeasurement {
         return value;
     }
 
-    private double mks979bSite(PressureMeasurementSite site) {
-        int measuredValue = machineStateService.getAnalogInputState(site.getAnalogInput());
-
+    private double mks979bSite(PressureMeasurementSite site, int measuredValue) {
         return 1.33 * Math.pow(10, ((measuredValue * 10 / 4096.0) * 2) - 11);
+    }
+
+    @Override
+    public void handleEvent(MachineStateEvent event) {
+        if (event.getType() == Type.ANALOG_INPUT_CHANGED) {
+            switch (event.getAnalogInput()) {
+            case PREASURE_CHAMBER:
+                machineStateService.fireMachineStateEvent(new PressureChangedEvent(PressureMeasurementSite.CHAMBER,
+                        mks979bSite(PressureMeasurementSite.CHAMBER, (int) event.getValue())));
+                break;
+            case PREASURE_TURBO_PUMP:
+                machineStateService.fireMachineStateEvent(new PressureChangedEvent(PressureMeasurementSite.TURBO_PUMP,
+                        tm201Site(PressureMeasurementSite.TURBO_PUMP, (int) event.getValue())));
+                break;
+            case PREASURE_CRYO_ONE:
+                machineStateService
+                        .fireMachineStateEvent(new PressureChangedEvent(PressureMeasurementSite.CRYO_PUMP_ONE,
+                                tm201Site(PressureMeasurementSite.CRYO_PUMP_ONE, (int) event.getValue())));
+                break;
+            case PREASURE_CRYO_TWO:
+                machineStateService
+                        .fireMachineStateEvent(new PressureChangedEvent(PressureMeasurementSite.CRYO_PUMP_TWO,
+                                tm201Site(PressureMeasurementSite.CRYO_PUMP_TWO, (int) event.getValue())));
+                break;
+            }
+        }
     }
 
 }
