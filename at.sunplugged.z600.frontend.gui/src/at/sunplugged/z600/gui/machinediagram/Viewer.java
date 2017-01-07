@@ -23,7 +23,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.
 
 public class Viewer implements MachineEventHandler {
 
-    private static final boolean DEBUG_MODE = true;
+    private static final boolean DEBUG_MODE = false;
 
     private ScalableLayeredPane contents;
 
@@ -200,7 +200,7 @@ public class Viewer implements MachineEventHandler {
 
                     @Override
                     public void run() {
-                        System.out.println(contents.getSize().toString());
+                        // System.out.println(contents.getSize().toString());
                         contents.removeAll();
                         createConnections();
                         createOutletFigures();

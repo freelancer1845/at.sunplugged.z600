@@ -1,21 +1,28 @@
 package at.sunplugged.z600.gui.machinediagram;
 
+import java.text.DecimalFormat;
+
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PressureChangedEvent;
 
 public class PressureSiteFigure extends Figure implements MachineEventHandler {
 
-    private static final int WIDTH = 40;
+    private static final int WIDTH = 50;
 
     private static final int HEIGHT = 15;
+
+    private static final DecimalFormat FORMAT = new DecimalFormat("0.###E0");
 
     private final PressureMeasurementSite site;
 
@@ -44,8 +51,23 @@ public class PressureSiteFigure extends Figure implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
-        // TODO Auto-generated method stub
+        if (event.getType() == Type.PRESSURE_CHANGED_EVENT) {
+            if (((PressureChangedEvent) event).getSite() == site) {
+                Display.getDefault().asyncExec(new Runnable() {
 
+                    @Override
+                    public void run() {
+                        updateValue((double) event.getValue());
+                    }
+
+                });
+
+            }
+        }
+    }
+
+    private void updateValue(double value) {
+        label.setText(FORMAT.format(value) + " ");
     }
 
 }

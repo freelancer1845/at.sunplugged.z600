@@ -24,10 +24,10 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.WaterControl;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
-import at.sunplugged.z600.core.machinestate.api.WaterControl;
 import at.sunplugged.z600.core.machinestate.impl.eventhandling.MachineStateEventHandler;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
@@ -252,9 +252,15 @@ public class MachineStateServiceImpl implements MachineStateService {
         try {
             List<Integer> currentState = mbtService.readInputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
             for (int i = 0; i < currentState.size() - 1; i++) {
-                if (currentState.get(i) != analogInputState.get(i)) {
-                    fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_INPUT_CHANGED, AnalogInput.getByAddress(i),
-                            currentState.get(i)));
+                if (!currentState.get(i).equals(analogInputState.get(i))) {
+                    AnalogInput analogInput = AnalogInput.getByAddress(i);
+                    if (analogInput != null) {
+                        fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_INPUT_CHANGED,
+                                AnalogInput.getByAddress(i), currentState.get(i)));
+                    } else {
+                        logService.log(LogService.LOG_DEBUG, "Unkown Analog Input changed: " + i);
+                    }
+
                 }
             }
             synchronized (analogInputState) {

@@ -13,6 +13,7 @@ public class PreasureMeasurementImpl implements PressureMeasurement, MachineEven
 
     public PreasureMeasurementImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
+        machineStateService.registerMachineEventHandler(this);
     }
 
     @Override
