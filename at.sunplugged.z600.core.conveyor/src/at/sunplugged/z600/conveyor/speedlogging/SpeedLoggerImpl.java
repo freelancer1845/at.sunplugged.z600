@@ -16,9 +16,9 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
 
     private static final int RIGHT_DIGITAL_IN_ADDRESS = 40;
 
-    private static final double LEFT_HOLE_PLATE_RADIUS = 0.5;
+    private static final double LEFT_HOLE_PLATE_RADIUS = 0.05;
 
-    private static final double LEFT_DRUM_RADIUS = 0.8;
+    private static final double LEFT_DRUM_RADIUS = 0.08;
 
     private static final int LEFT_NUMBER_OF_HOLES = 30;
 
@@ -26,9 +26,9 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
 
     private static final double LEFT_TRANSMISSION_RATIO = LEFT_DRUM_RADIUS / LEFT_HOLE_PLATE_RADIUS;
 
-    private static final double RIGHT_HOLE_PLATE_RADIUS = 0.5;
+    private static final double RIGHT_HOLE_PLATE_RADIUS = 0.05;
 
-    private static final double RIGHT_DRUM_RADIUS = 0.8;
+    private static final double RIGHT_DRUM_RADIUS = 0.08;
 
     private static final int RIGHT_NUMBER_OF_HOLES = 30;
 
@@ -86,8 +86,8 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         boolean newLeftState = false;
         boolean newRightState = false;
 
-        long leftlastTickTime = 0;
-        long rightlastTickTime = 0;
+        long leftLastTickTime = 0;
+        long rightLastTickTime = 0;
 
         double leftTickDifference = -1;
         double rightTickDifference = -1;
@@ -101,14 +101,22 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
 
                 long now = System.nanoTime();
                 if (oldLeftState != newLeftState && newLeftState == true) {
-                    leftTickDifference = (now - leftlastTickTime) / 1000000000.0;
-                    leftlastTickTime = now;
+                    leftTickDifference = (now - leftLastTickTime) / 1000000000.0;
+                    leftLastTickTime = now;
                     addToLeftMeasurementList(leftTickDifference);
                 }
                 if (oldRightState != newRightState && newRightState == true) {
-                    rightTickDifference = (now - rightlastTickTime) / 1000000000.0;
-                    rightlastTickTime = now;
+                    rightTickDifference = (now - rightLastTickTime) / 1000000000.0;
+                    rightLastTickTime = now;
                     addToRightMeasurementList(rightTickDifference);
+                }
+                if (now - leftLastTickTime > 5000000000L) {
+                    leftLastTickTime = now;
+                    addToLeftMeasurementList(-1);
+                }
+                if (now - rightLastTickTime > 5000000000L) {
+                    rightLastTickTime = now;
+                    addToRightMeasurementList(-1);
                 }
 
                 oldLeftState = newLeftState;
@@ -127,8 +135,12 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
     }
 
     private void addToLeftMeasurementList(double tickDifference) {
-
-        double speed = LEFT_DISTANCE_PER_HOLE / tickDifference * LEFT_TRANSMISSION_RATIO;
+        double speed;
+        if (tickDifference < 0) {
+            speed = 0;
+        } else {
+            speed = LEFT_DISTANCE_PER_HOLE / tickDifference * LEFT_TRANSMISSION_RATIO;
+        }
         leftSpeedMeasurements.add(0, speed);
         if (leftSpeedMeasurements.size() > 30) {
             leftSpeedMeasurements.remove(leftSpeedMeasurements.size() - 1);
@@ -138,8 +150,13 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
     }
 
     private void addToRightMeasurementList(double tickDifference) {
+        double speed;
+        if (tickDifference < 0) {
+            speed = 0;
+        } else {
+            speed = RIGHT_DISTANCE_PER_HOLE / tickDifference * RIGHT_TRANSMISSION_RATION;
 
-        double speed = RIGHT_DISTANCE_PER_HOLE / tickDifference * RIGHT_TRANSMISSION_RATION;
+        }
         rightSpeedMeasurements.add(0, speed);
         if (rightSpeedMeasurements.size() > 30) {
             rightSpeedMeasurements.remove(rightSpeedMeasurements.size() - 1);

@@ -3,7 +3,7 @@ package at.sunplugged.z600.conveyor.api;
 public interface ConveyorControlService {
 
     public enum Mode {
-        LEFT_TO_RIGHT, RIGHT_TO_LEFT;
+        LEFT_TO_RIGHT, RIGHT_TO_LEFT, STOP;
     }
 
     public void start(double speed, Mode direction);

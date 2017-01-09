@@ -7,7 +7,7 @@ public class PressureChangedEvent extends MachineStateEvent {
     private final PressureMeasurementSite site;
 
     public PressureChangedEvent(PressureMeasurementSite site, double value) {
-        super(Type.PRESSURE_CHANGED_EVENT, value);
+        super(Type.PRESSURE_CHANGED, value);
         this.site = site;
     }
 

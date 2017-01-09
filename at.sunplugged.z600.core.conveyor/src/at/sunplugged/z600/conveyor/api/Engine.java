@@ -14,6 +14,8 @@ public interface Engine {
 
     public void setMaximumSpeed(int speed);
 
+    public int getCurrentMaximumSpeed();
+
     public void startEngine();
 
     public void stopEngine();

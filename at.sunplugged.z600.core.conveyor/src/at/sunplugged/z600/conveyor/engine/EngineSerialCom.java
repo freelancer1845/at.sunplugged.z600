@@ -27,6 +27,8 @@ public class EngineSerialCom implements Engine {
 
     private CommPort commPort = null;
 
+    private int currentMaximumSpeed = 0;
+
     private InputStream inputStream;
 
     private OutputStream outputStream;
@@ -115,6 +117,12 @@ public class EngineSerialCom implements Engine {
         }
 
         sendCommand("o" + speed);
+        currentMaximumSpeed = speed;
+    }
+
+    @Override
+    public int getCurrentMaximumSpeed() {
+        return currentMaximumSpeed;
     }
 
     public void startEngine() {

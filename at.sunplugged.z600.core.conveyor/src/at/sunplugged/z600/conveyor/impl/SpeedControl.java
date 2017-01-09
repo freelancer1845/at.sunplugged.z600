@@ -1,0 +1,148 @@
+package at.sunplugged.z600.conveyor.impl;
+
+import org.osgi.service.log.LogService;
+
+import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.Engine;
+
+public class SpeedControl {
+
+    private final ConveyorControlService conveyorControlService;
+
+    private final LogService logService;
+
+    private final Engine engineOne;
+
+    private final Engine engineTwo;
+
+    private double setPointSpeed = 0;
+
+    private Mode currentMode = null;
+
+    private boolean running = true;
+
+    private Thread controlThread;
+
+    public SpeedControl(ConveyorControlService conveyorControlService) {
+        this.conveyorControlService = conveyorControlService;
+        this.logService = ConveyorControlServiceImpl.getLogService();
+        this.engineOne = conveyorControlService.getEngineOne();
+        this.engineTwo = conveyorControlService.getEngineTwo();
+    }
+
+    public void setSetpoint(double speed) {
+        if (speed <= 0) {
+            currentMode = Mode.STOP;
+        }
+        setPointSpeed = speed;
+    }
+
+    public void setMode(Mode mode) {
+        currentMode = mode;
+        switch (mode) {
+        case LEFT_TO_RIGHT:
+            engineOne.setDirection(1);
+            engineTwo.setDirection(1);
+            break;
+        case RIGHT_TO_LEFT:
+            engineOne.setDirection(-1);
+            engineTwo.setDirection(-1);
+            break;
+        }
+    }
+
+    public void deactivate() {
+        running = false;
+    }
+
+    private class ControlRunnable implements Runnable {
+
+        private long speedCheckTimer = 0;
+
+        @Override
+        public void run() {
+
+            running = true;
+
+            while (running) {
+                if (currentMode != Mode.STOP && checkForBandError()) {
+                    tick();
+                } else {
+                    try {
+                        Thread.currentThread().wait();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        private boolean checkForBandError() {
+            double currentSpeed = conveyorControlService.getCurrentSpeed();
+            if (currentSpeed == 0 && speedCheckTimer == 0) {
+                speedCheckTimer = System.currentTimeMillis();
+            } else if (currentSpeed == 0) {
+                if (System.currentTimeMillis() - speedCheckTimer > 5000) {
+                    logService.log(LogService.LOG_ERROR, "Tried to start band but no movement was detected!");
+                    return false;
+                }
+            } else {
+                speedCheckTimer = 0;
+            }
+
+            return true;
+        }
+
+        private void tick() {
+            switch (currentMode) {
+            case STOP:
+                // Case is unreachable and only for completion
+                break;
+            case LEFT_TO_RIGHT:
+                break;
+            case RIGHT_TO_LEFT:
+                break;
+            default:
+                logService.log(LogService.LOG_DEBUG, "Unkown Conveyor movement Mode used: " + currentMode.name());
+                break;
+            }
+
+        }
+
+        private void leftToRightMotion() {
+            double currentSpeed = conveyorControlService.getCurrentSpeed();
+            int currentDrivingEngineSpeed = engineTwo.getCurrentMaximumSpeed();
+
+            int drivingEngineSpeed = calculateNewEngineSpeed(currentSpeed, currentDrivingEngineSpeed);
+            int breakingEngineSpeed = drivingEngineSpeed - drivingEngineSpeed / 100;
+
+            engineTwo.setMaximumSpeed(drivingEngineSpeed);
+            engineOne.setMaximumSpeed(breakingEngineSpeed);
+
+        }
+
+        private int calculateNewEngineSpeed(double currentSpeed, int currentEngineSpeed) {
+            if (currentEngineSpeed == 0) {
+                return 500;
+            }
+            if (currentSpeed == 0) {
+                return currentEngineSpeed;
+            }
+            if (Math.abs(currentSpeed - setPointSpeed) > 0.0003) {
+                double ratio = setPointSpeed / currentSpeed;
+                if (ratio > 1.05) {
+                    return (int) (currentEngineSpeed + 100);
+                } else if (ratio < 0.95) {
+                    return (int) (currentEngineSpeed - 100);
+                }
+
+                return (int) (currentEngineSpeed * ratio);
+            }
+
+            return currentEngineSpeed;
+        }
+    }
+
+}

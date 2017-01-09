@@ -51,7 +51,7 @@ public class PressureSiteFigure extends Figure implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
-        if (event.getType() == Type.PRESSURE_CHANGED_EVENT) {
+        if (event.getType() == Type.PRESSURE_CHANGED) {
             if (((PressureChangedEvent) event).getSite() == site) {
                 Display.getDefault().asyncExec(new Runnable() {
 
