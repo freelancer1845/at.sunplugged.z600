@@ -51,7 +51,13 @@ public interface MachineStateService {
      * 
      * @return the {@linkplain PressureMeasurement} Interface.
      */
-    public PressureMeasurement getPressureMeasurmentContro();
+    public PressureMeasurement getPressureMeasurmentControl();
+
+    /**
+     * 
+     * @return the {@linkplain GasFlowControl} Interface.
+     */
+    public GasFlowControl getGasFlowControl();
 
     public boolean getDigitalOutputState(DigitalOutput digitalOutput);
 

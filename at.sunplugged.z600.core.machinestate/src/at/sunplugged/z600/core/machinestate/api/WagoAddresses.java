@@ -143,7 +143,7 @@ public class WagoAddresses {
     }
 
     public enum AnalogOutput {
-        KATHODE_TWO_SETPOINT(3), KATHODE_THREE_SETPOINT(4), KATHODE_ONE_SETPOINT(5);
+        GAS_FLOW_SETPOINT(2), KATHODE_TWO_SETPOINT(3), KATHODE_THREE_SETPOINT(4), KATHODE_ONE_SETPOINT(5);
 
         private final int address;
 

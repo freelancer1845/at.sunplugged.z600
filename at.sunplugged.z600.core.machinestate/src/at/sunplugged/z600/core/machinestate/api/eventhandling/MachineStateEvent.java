@@ -15,7 +15,8 @@ public class MachineStateEvent {
         PUMP_STATUS_CHANGED,
         KATHODE_STATUS_CHANGED,
         PRESSURE_CHANGED,
-        POWER_UNIT_CHANGED;
+        POWER_UNIT_CHANGED,
+        GAS_FLOW_STATE_CHANGED;
     }
 
     private final Type type;

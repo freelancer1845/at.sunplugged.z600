@@ -13,6 +13,8 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.KathodeControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
@@ -48,6 +50,8 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private static StandardThreadPoolService standardThreadPoolService;
 
+    private static SettingsService settingsService;
+
     private OutletControl outletControl;
 
     private PumpControl pumpControl;
@@ -59,6 +63,8 @@ public class MachineStateServiceImpl implements MachineStateService {
     private PowerControl powerControl;
 
     private PressureMeasurement preasureMeasurement;
+
+    private GasFlowControl gasFlowControl;
 
     private List<Boolean> digitalOutputState = new ArrayList<>();
 
@@ -82,6 +88,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         this.kathodeControl = new KathodeControlImpl(this);
         this.powerControl = new PowerControlImpl(this);
         this.preasureMeasurement = new PreasureMeasurementImpl(this);
+        this.gasFlowControl = new GasFlowControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
         this.updaterThread = new InputUpdaterThread();
@@ -119,7 +126,12 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Override
-    public PressureMeasurement getPressureMeasurmentContro() {
+    public GasFlowControl getGasFlowControl() {
+        return gasFlowControl;
+    }
+
+    @Override
+    public PressureMeasurement getPressureMeasurmentControl() {
         return preasureMeasurement;
     }
 
@@ -330,6 +342,17 @@ public class MachineStateServiceImpl implements MachineStateService {
         }
     }
 
+    @Reference(unbind = "unbindSettingsService")
+    public synchronized void bindSettingsService(SettingsService settingsService) {
+        MachineStateServiceImpl.settingsService = settingsService;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService settingsService) {
+        if (MachineStateServiceImpl.settingsService == settingsService) {
+            MachineStateServiceImpl.settingsService = null;
+        }
+    }
+
     private class InputUpdaterThread {
 
         private boolean running = false;
@@ -404,6 +427,10 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     public static StandardThreadPoolService getStandardThreadPoolService() {
         return standardThreadPoolService;
+    }
+
+    public static SettingsService getSettingsService() {
+        return settingsService;
     }
 
 }
