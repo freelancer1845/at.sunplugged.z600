@@ -110,11 +110,11 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
                     rightLastTickTime = now;
                     addToRightMeasurementList(rightTickDifference);
                 }
-                if (now - leftLastTickTime > 5000000000L) {
+                if (now - leftLastTickTime > 10000000000L) {
                     leftLastTickTime = now;
                     addToLeftMeasurementList(-1);
                 }
-                if (now - rightLastTickTime > 5000000000L) {
+                if (now - rightLastTickTime > 10000000000L) {
                     rightLastTickTime = now;
                     addToRightMeasurementList(-1);
                 }
@@ -146,6 +146,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
             leftSpeedMeasurements.remove(leftSpeedMeasurements.size() - 1);
         }
         leftSpeedValue = speed;
+        SpeedChangeUtilityClass.submitLeftSpeedChange(speed);
         logService.log(LogService.LOG_DEBUG, "New Left Speed: " + leftSpeedValue);
     }
 
@@ -162,6 +163,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
             rightSpeedMeasurements.remove(rightSpeedMeasurements.size() - 1);
         }
         rightSpeedValue = speed;
+        SpeedChangeUtilityClass.submitRightSpeedChange(speed);
         logService.log(LogService.LOG_DEBUG, "New Right Speed: " + rightSpeedValue);
     }
 

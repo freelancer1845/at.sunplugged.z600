@@ -1,7 +1,5 @@
 package at.sunplugged.z600.gui.views;
 
-import java.io.IOException;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -12,6 +10,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -27,12 +26,14 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
@@ -54,13 +55,13 @@ public class MainView {
 
     private static ConveyorControlService conveyorControlService;
 
+    private static StandardThreadPoolService threadPool;
+
     private static BundleContext context;
-    private static Text text;
-    private static Text text_1;
-    private static Text txtValue;
-    private static Text txtValue_1;
 
     private static Viewer diagramViewer;
+    private static Text text_left_to_right_speed;
+    private static Text text_right_to_left_speed;
 
     public static LogService getLogService() {
         return logService;
@@ -72,6 +73,10 @@ public class MainView {
 
     public MbtService getMbtController() {
         return mbtController;
+    }
+
+    public static StandardThreadPoolService getStandardThreadPoolService() {
+        return threadPool;
     }
 
     public static BundleContext getContext() {
@@ -118,244 +123,179 @@ public class MainView {
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
 
-        TabItem tbtmEnginedebug = new TabItem(tabFolder, SWT.NONE);
-        tbtmEnginedebug.setText("EngineDebug");
+        TabItem tbtmConveyorDebug = new TabItem(tabFolder, SWT.NONE);
+        tbtmConveyorDebug.setText("Conveyor Debug");
 
-        Composite composite_1 = new Composite(tabFolder, SWT.NONE);
-        tbtmEnginedebug.setControl(composite_1);
-        GridLayout gl_composite_1 = new GridLayout(1, false);
-        gl_composite_1.marginWidth = 20;
-        gl_composite_1.marginHeight = 20;
-        composite_1.setLayout(gl_composite_1);
+        Composite composite = new Composite(tabFolder, SWT.NONE);
+        tbtmConveyorDebug.setControl(composite);
+        composite.setLayout(new GridLayout(1, true));
 
-        Group grpEngine = new Group(composite_1, SWT.NONE);
-        grpEngine.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-        grpEngine.setText("Engine 1");
-        grpEngine.setLayout(new GridLayout(2, true));
+        Group grpLeftToRight = new Group(composite, SWT.NONE);
+        grpLeftToRight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        grpLeftToRight.setText("Left To Right");
+        grpLeftToRight.setLayout(new GridLayout(3, true));
 
-        Button btnStart = new Button(grpEngine, SWT.NONE);
-        btnStart.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnStart.setText("Start");
-        btnStart.addSelectionListener(new SelectionListener() {
+        Label lblSpeedInMms = new Label(grpLeftToRight, SWT.NONE);
+        lblSpeedInMms.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblSpeedInMms.setText("Speed in mm/s");
+
+        text_left_to_right_speed = new Text(grpLeftToRight, SWT.BORDER);
+        text_left_to_right_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Button button_left_to_right = new Button(grpLeftToRight, SWT.NONE);
+        button_left_to_right.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_left_to_right.setText("START");
+        button_left_to_right.addSelectionListener(new SelectionListener() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // conveyorControlService.getEngineOne().startEngine();
-
-                machineStateService.fireMachineStateEvent(new PumpStateEvent(Pumps.PRE_PUMP_ONE, PumpState.ON));
+                conveyorControlService.start(Double.valueOf(text_left_to_right_speed.getText()) / 1000,
+                        Mode.LEFT_TO_RIGHT);
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
             }
         });
 
-        Button btnStop = new Button(grpEngine, SWT.NONE);
-        btnStop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnStop.setText("Stop");
-        btnStop.addSelectionListener(new SelectionListener() {
+        Group grpRightToLeft = new Group(composite, SWT.NONE);
+        grpRightToLeft.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        grpRightToLeft.setText("Right To Left");
+        grpRightToLeft.setLayout(new GridLayout(3, true));
+
+        Label label = new Label(grpRightToLeft, SWT.NONE);
+        label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        label.setText("Speed in mm/s");
+
+        text_right_to_left_speed = new Text(grpRightToLeft, SWT.BORDER);
+        text_right_to_left_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Button button_right_to_left = new Button(grpRightToLeft, SWT.NONE);
+        button_right_to_left.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        button_right_to_left.setText("START");
+
+        Group grpMonitoring = new Group(composite, SWT.NONE);
+        grpMonitoring.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        grpMonitoring.setText("Monitoring");
+        grpMonitoring.setLayout(new GridLayout(2, true));
+
+        Label lblLeftSpeed = new Label(grpMonitoring, SWT.NONE);
+        lblLeftSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblLeftSpeed.setText("Left Speed in mm/s");
+
+        Label label_left_speed = new Label(grpMonitoring, SWT.BORDER);
+        label_left_speed.setAlignment(SWT.RIGHT);
+        label_left_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        label_left_speed.setText("0.00");
+        machineStateService.registerMachineEventHandler(new MachineEventHandler() {
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().stopEngine();
-            }
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.CONVEYOR_EVENT)) {
+                    if (((ConveyorMachineEvent) event).getConveyorEventType()
+                            .equals(ConveyorMachineEvent.Type.LEFT_SPEED_CHANGED)) {
+                        Display.getDefault().asyncExec(new Runnable() {
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
+                            @Override
+                            public void run() {
+                                label_left_speed.setText("" + (Double) event.getValue() * 1000);
+                            }
 
-            }
-        });
+                        });
 
-        Button btnIncrease = new Button(grpEngine, SWT.NONE);
-        btnIncrease.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnIncrease.setText("Increase");
-        btnIncrease.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().increaseSpeed();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-        });
-
-        Button btnDecrease = new Button(grpEngine, SWT.NONE);
-        btnDecrease.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnDecrease.setText("Decrease");
-        btnDecrease.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().decreaseSpeed();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-        });
-
-        Button btnLeftdirection = new Button(grpEngine, SWT.NONE);
-        btnLeftdirection.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnLeftdirection.setText("LeftDirection");
-        btnLeftdirection.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().setDirection(0);
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-        });
-
-        Button btnRightdirection = new Button(grpEngine, SWT.NONE);
-        btnRightdirection.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnRightdirection.setText("RightDirection");
-        btnRightdirection.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().setDirection(1);
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-        });
-
-        Button btnSetspeed = new Button(grpEngine, SWT.NONE);
-        btnSetspeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnSetspeed.setText("SetSpeed");
-        btnSetspeed.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().setMaximumSpeed(Integer.valueOf(text.getText()));
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-        });
-
-        text = new Text(grpEngine, SWT.BORDER);
-        text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        Button buttonConnect = new Button(grpEngine, SWT.NONE);
-        buttonConnect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        buttonConnect.setText("Connected");
-        new Label(grpEngine, SWT.NONE);
-        buttonConnect.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.getEngineOne().connect();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-
-            }
-
-        });
-
-        Group grpEngine_1 = new Group(composite_1, SWT.NONE);
-        grpEngine_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        grpEngine_1.setText("Engine 2");
-        grpEngine_1.setLayout(new GridLayout(2, true));
-
-        Button button = new Button(grpEngine_1, SWT.NONE);
-        button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button.setText("Start");
-        button.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (machineStateService.getOutletControl().isOutletOpen(Outlet.OUTLET_ONE)) {
-                    try {
-                        machineStateService.getOutletControl().closeOutlet(Outlet.OUTLET_ONE);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                } else {
-                    try {
-                        machineStateService.getOutletControl().openOutlet(Outlet.OUTLET_ONE);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
                     }
                 }
             }
+        });
+
+        Label lblRightSpeedIn = new Label(grpMonitoring, SWT.NONE);
+        lblRightSpeedIn.setText("Right Speed in mm/s");
+
+        Label label__right_speed = new Label(grpMonitoring, SWT.BORDER);
+        label__right_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        label__right_speed.setText("0.00");
+        label__right_speed.setAlignment(SWT.RIGHT);
+        machineStateService.registerMachineEventHandler(new MachineEventHandler() {
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                // TODO Auto-generated method stub
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.CONVEYOR_EVENT)) {
+                    if (((ConveyorMachineEvent) event).getConveyorEventType()
+                            .equals(ConveyorMachineEvent.Type.RIGHT_SPEED_CHANGED)) {
+                        Display.getDefault().asyncExec(new Runnable() {
 
+                            @Override
+                            public void run() {
+                                label__right_speed.setText("" + ((Double) event.getValue() * 1000.0));
+                            }
+
+                        });
+                    }
+                }
             }
         });
 
-        Button button_1 = new Button(grpEngine_1, SWT.NONE);
-        button_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_1.setText("Stop");
+        Label lblLeftMotorMaximum = new Label(grpMonitoring, SWT.NONE);
+        lblLeftMotorMaximum.setText("Left Motor Maximum Speed");
 
-        Button button_2 = new Button(grpEngine_1, SWT.NONE);
-        button_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_2.setText("Increase");
+        Label label_left_engine_maximum_speed = new Label(grpMonitoring, SWT.BORDER);
+        label_left_engine_maximum_speed.setAlignment(SWT.RIGHT);
+        label_left_engine_maximum_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        label_left_engine_maximum_speed.setText("0");
+        threadPool.execute(new Runnable() {
 
-        Button button_3 = new Button(grpEngine_1, SWT.NONE);
-        button_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_3.setText("Decrease");
+            @Override
+            public void run() {
+                int currentMaximumSpeed = conveyorControlService.getEngineOne().getCurrentMaximumSpeed();
+                Display.getDefault().asyncExec(new Runnable() {
 
-        Button button_4 = new Button(grpEngine_1, SWT.NONE);
-        button_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_4.setText("LeftDirection");
+                    @Override
+                    public void run() {
+                        label_left_engine_maximum_speed.setText("" + currentMaximumSpeed);
+                    }
 
-        Button button_5 = new Button(grpEngine_1, SWT.NONE);
-        button_5.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_5.setText("RightDirection");
+                });
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+                threadPool.execute(this);
+            }
 
-        Button button_6 = new Button(grpEngine_1, SWT.NONE);
-        button_6.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_6.setText("SetSpeed");
+        });
 
-        text_1 = new Text(grpEngine_1, SWT.BORDER);
-        text_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        Label lblRightMotorMaximum = new Label(grpMonitoring, SWT.NONE);
+        lblRightMotorMaximum.setText("Right Motor Maximum Speed");
 
-        Group grpVelocity = new Group(composite_1, SWT.NONE);
-        grpVelocity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        grpVelocity.setText("Velocity");
-        grpVelocity.setLayout(new GridLayout(2, true));
+        Label label_right_engine_maximum_speed = new Label(grpMonitoring, SWT.BORDER);
+        label_right_engine_maximum_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        label_right_engine_maximum_speed.setText("0");
+        label_right_engine_maximum_speed.setAlignment(SWT.RIGHT);
+        threadPool.execute(new Runnable() {
 
-        Label lblDigin = new Label(grpVelocity, SWT.NONE);
-        lblDigin.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblDigin.setText("DigIn4.7");
+            @Override
+            public void run() {
+                int currentMaximumSpeed = conveyorControlService.getEngineTwo().getCurrentMaximumSpeed();
+                Display.getDefault().asyncExec(new Runnable() {
 
-        txtValue = new Text(grpVelocity, SWT.BORDER);
-        txtValue.setText("Value");
-        txtValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+                    @Override
+                    public void run() {
+                        label_right_engine_maximum_speed.setText("" + currentMaximumSpeed);
+                    }
 
-        Label lblDigin_1 = new Label(grpVelocity, SWT.NONE);
-        lblDigin_1.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        lblDigin_1.setText("DigIn5.0");
+                });
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+                threadPool.execute(this);
+            }
 
-        txtValue_1 = new Text(grpVelocity, SWT.BORDER);
-        txtValue_1.setText("Value");
-        txtValue_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        });
+
+        Button buttonStop = new Button(composite, SWT.NONE);
+        buttonStop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        buttonStop.setText("STOP");
         new Label(shell, SWT.NONE);
 
         return shell;
@@ -424,6 +364,17 @@ public class MainView {
     public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
         if (MainView.conveyorControlService == conveyorControlService) {
             MainView.conveyorControlService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindStandardThreadPoolService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService service) {
+        threadPool = service;
+    }
+
+    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService service) {
+        if (threadPool.equals(service)) {
+            threadPool = null;
         }
     }
 }

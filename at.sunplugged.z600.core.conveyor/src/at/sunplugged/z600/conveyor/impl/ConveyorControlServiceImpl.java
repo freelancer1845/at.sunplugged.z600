@@ -5,7 +5,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
@@ -15,6 +14,7 @@ import at.sunplugged.z600.conveyor.api.SpeedLogger;
 import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.engine.EngineSerialCom;
 import at.sunplugged.z600.conveyor.speedlogging.SpeedLoggerImpl;
+import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.mbt.api.MbtService;
 
 @Component(immediate = true)
@@ -26,17 +26,22 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     private static MbtService mbtService;
 
+    private static MachineStateService machineStateService;
+
     private EngineSerialCom engineOne;
 
     private EngineSerialCom engineTwo;
 
     private SpeedLogger speedLogger;
 
+    private SpeedControl speedControl;
+
     @Activate
     protected void activate() {
         engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
         engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
         speedLogger = new SpeedLoggerImpl();
+        speedControl = new SpeedControl(this);
     }
 
     @Deactivate
@@ -46,14 +51,13 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Override
     public void start(double speed, Mode direction) {
-        // TODO Auto-generated method stub
-
+        speedControl.setMode(direction);
+        speedControl.setSetpoint(speed);
     }
 
     @Override
     public void stop() {
-        // TODO Auto-generated method stub
-
+        speedControl.setMode(Mode.STOP);
     }
 
     @Override
@@ -112,6 +116,21 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
         if (ConveyorControlServiceImpl.mbtService.equals(mbtService)) {
             ConveyorControlServiceImpl.mbtService = null;
         }
+    }
+
+    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindMachineStateService(MachineStateService machineStateService) {
+        ConveyorControlServiceImpl.machineStateService = machineStateService;
+    }
+
+    public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
+        if (ConveyorControlServiceImpl.machineStateService.equals(machineStateService)) {
+            ConveyorControlServiceImpl.machineStateService = null;
+        }
+    }
+
+    public static MachineStateService getMachineStateService() {
+        return machineStateService;
     }
 
     public static MbtService getMbtService() {

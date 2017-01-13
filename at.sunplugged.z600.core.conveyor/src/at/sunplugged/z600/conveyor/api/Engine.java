@@ -8,10 +8,6 @@ public interface Engine {
 
     public void setDirection(int direction);
 
-    public void increaseSpeed();
-
-    public void decreaseSpeed();
-
     public void setMaximumSpeed(int speed);
 
     public int getCurrentMaximumSpeed();

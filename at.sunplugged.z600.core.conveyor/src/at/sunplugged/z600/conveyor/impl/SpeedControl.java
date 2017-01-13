@@ -18,7 +18,7 @@ public class SpeedControl {
 
     private double setPointSpeed = 0;
 
-    private Mode currentMode = null;
+    private Mode currentMode = Mode.STOP;
 
     private boolean running = true;
 
@@ -29,6 +29,9 @@ public class SpeedControl {
         this.logService = ConveyorControlServiceImpl.getLogService();
         this.engineOne = conveyorControlService.getEngineOne();
         this.engineTwo = conveyorControlService.getEngineTwo();
+        controlThread = new Thread(new ControlRunnable());
+        controlThread.setName("Speed Control Thread");
+        controlThread.start();
     }
 
     public void setSetpoint(double speed) {
@@ -40,14 +43,25 @@ public class SpeedControl {
 
     public void setMode(Mode mode) {
         currentMode = mode;
+
         switch (mode) {
         case LEFT_TO_RIGHT:
             engineOne.setDirection(1);
             engineTwo.setDirection(1);
+
+            engineOne.startEngine();
+            engineTwo.startEngine();
             break;
         case RIGHT_TO_LEFT:
             engineOne.setDirection(-1);
             engineTwo.setDirection(-1);
+
+            engineOne.startEngine();
+            engineTwo.startEngine();
+            break;
+        case STOP:
+            engineOne.stopEngine();
+            engineTwo.stopEngine();
             break;
         }
     }
@@ -68,12 +82,16 @@ public class SpeedControl {
             while (running) {
                 if (currentMode != Mode.STOP && checkForBandError()) {
                     tick();
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                    }
                 } else {
                     try {
-                        Thread.currentThread().wait();
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        logService.log(LogService.LOG_ERROR,
+                                "Speed Control Thread interrupted during waiting for wake up");
                     }
                 }
             }
@@ -86,6 +104,7 @@ public class SpeedControl {
             } else if (currentSpeed == 0) {
                 if (System.currentTimeMillis() - speedCheckTimer > 5000) {
                     logService.log(LogService.LOG_ERROR, "Tried to start band but no movement was detected!");
+                    currentMode = Mode.STOP;
                     return false;
                 }
             } else {
@@ -101,6 +120,7 @@ public class SpeedControl {
                 // Case is unreachable and only for completion
                 break;
             case LEFT_TO_RIGHT:
+                leftToRightMotion();
                 break;
             case RIGHT_TO_LEFT:
                 break;

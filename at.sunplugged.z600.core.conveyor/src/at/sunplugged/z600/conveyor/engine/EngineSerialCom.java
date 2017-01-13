@@ -39,6 +39,8 @@ public class EngineSerialCom implements Engine {
 
     private ReentrantLock lock = new ReentrantLock(true);
 
+    private boolean ignoreCommands = true;
+
     public EngineSerialCom(String portName, int engineAddress) {
         this.portName = portName;
         this.engineAddress = engineAddress;
@@ -79,6 +81,7 @@ public class EngineSerialCom implements Engine {
             disconnect();
             throw new IllegalStateException("Failed to open input and outputStream to serialPort!");
         }
+        ignoreCommands = false;
         initializeEngine();
 
     }
@@ -101,14 +104,6 @@ public class EngineSerialCom implements Engine {
         sendCommand("!" + mode);
     }
 
-    public void increaseSpeed() {
-        sendCommand("+");
-    }
-
-    public void decreaseSpeed() {
-        sendCommand("-");
-    }
-
     public void setMaximumSpeed(int speed) {
         if (speed <= 60 || speed >= 25000) {
             logService.log(LogService.LOG_WARNING,
@@ -118,6 +113,7 @@ public class EngineSerialCom implements Engine {
 
         sendCommand("o" + speed);
         currentMaximumSpeed = speed;
+
     }
 
     @Override
@@ -160,8 +156,12 @@ public class EngineSerialCom implements Engine {
     }
 
     private void sendCommand(String command) {
+        if (ignoreCommands) {
+            return;
+        }
         if (!isConnected()) {
-            logService.log(LogService.LOG_WARNING, "Engine is not conncted! Ignoring command.");
+            logService.log(LogService.LOG_WARNING, "Engine is not conncted! Ignoringing all further commands.");
+            ignoreCommands = true;
             return;
         }
         threadPool.execute(new Runnable() {
