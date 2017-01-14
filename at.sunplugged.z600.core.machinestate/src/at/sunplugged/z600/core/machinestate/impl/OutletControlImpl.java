@@ -10,6 +10,7 @@ import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 import at.sunplugged.z600.core.machinestate.impl.outlets.vat.VatOutlet;
 import at.sunplugged.z600.mbt.api.MbtService;
 
@@ -32,18 +33,52 @@ public class OutletControlImpl implements OutletControl {
         this.mbtController = MachineStateServiceImpl.getMbtService();
         this.settingsService = MachineStateServiceImpl.getSettingsService();
         this.logService = MachineStateServiceImpl.getLogService();
-        this.vatSeven = new VatOutlet("COM3");
-        this.vatEight = new VatOutlet("COM4");
+        this.vatSeven = new VatOutlet("COM3", machineStateService);
+        this.vatEight = new VatOutlet("COM4", machineStateService);
     }
 
     @Override
     public boolean isOutletOpen(Outlet outlet) {
-        return machineStateService.getDigitalOutputState(outlet.getDigitalOutput());
+        switch (outlet) {
+        case OUTLET_SEVEN:
+            return vatSeven.isOpen();
+        case OUTLET_EIGHT:
+            return vatEight.isOpen();
+        case OUTLET_ONE:
+        case OUTLET_TWO:
+        case OUTLET_THREE:
+        case OUTLET_FOUR:
+        case OUTLET_FIVE:
+        case OUTLET_SIX:
+        case OUTLET_NINE:
+            return machineStateService.getDigitalOutputState(outlet.getDigitalOutput());
+        default:
+            return false;
+        }
+
     }
 
     @Override
     public void closeOutlet(Outlet outlet) throws IOException {
-        mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), false);
+        switch (outlet) {
+        case OUTLET_SEVEN:
+            vatSeven.close();
+            break;
+        case OUTLET_EIGHT:
+            vatEight.close();
+            break;
+        case OUTLET_ONE:
+        case OUTLET_TWO:
+        case OUTLET_THREE:
+        case OUTLET_FOUR:
+        case OUTLET_FIVE:
+        case OUTLET_SIX:
+        case OUTLET_NINE:
+            mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), false);
+            machineStateService.fireMachineStateEvent(new OutletChangedEvent(outlet, false));
+            break;
+        }
+
     }
 
     @Override
@@ -54,7 +89,24 @@ public class OutletControlImpl implements OutletControl {
                 return;
             }
         }
-        mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), true);
+        switch (outlet) {
+        case OUTLET_SEVEN:
+            vatSeven.open();
+            break;
+        case OUTLET_EIGHT:
+            vatEight.open();
+            break;
+        case OUTLET_ONE:
+        case OUTLET_TWO:
+        case OUTLET_THREE:
+        case OUTLET_FOUR:
+        case OUTLET_FIVE:
+        case OUTLET_SIX:
+        case OUTLET_NINE:
+            mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), true);
+            machineStateService.fireMachineStateEvent(new OutletChangedEvent(outlet, true));
+            break;
+        }
     }
 
     @Override

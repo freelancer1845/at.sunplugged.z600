@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 import at.sunplugged.z600.core.machinestate.impl.MachineStateServiceImpl;
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
@@ -38,10 +41,13 @@ public class VatOutlet {
 
     private StandardThreadPoolService threadPool;
 
-    public VatOutlet(String portName) {
+    private MachineStateService machineStateService;
+
+    public VatOutlet(String portName, MachineStateService machineStateService) {
         connectToSerialPort(portName);
         threadPool = MachineStateServiceImpl.getStandardThreadPoolService();
         this.portName = portName;
+        this.machineStateService = machineStateService;
     }
 
     public boolean isOpen() {
@@ -98,13 +104,58 @@ public class VatOutlet {
                 case COMMAND_CLOSE:
                     state = false;
                     currentPosition = 0;
+                    switch (portName) {
+                    case "COM3":
+                        machineStateService.fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_SEVEN, false));
+                        break;
+                    case "COM4":
+                        machineStateService.fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_EIGHT, false));
+                        break;
+                    default:
+                        MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                                "Unexpected Com Port for VAT Outlet, consider going through code!");
+                    }
                     break;
                 case COMMAND_OPEN:
                     state = true;
                     currentPosition = 100;
+                    switch (portName) {
+                    case "COM3":
+                        machineStateService.fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_SEVEN, true));
+                        break;
+                    case "COM4":
+                        machineStateService.fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_EIGHT, true));
+                        break;
+                    default:
+                        MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                                "Unexpected Com Port for VAT Outlet, consider going through code!");
+                    }
                     break;
                 default:
                     currentPosition = Integer.valueOf(command.substring(2));
+                    switch (portName) {
+                    case "COM3":
+                        if (currentPosition > 0) {
+                            machineStateService.fireMachineStateEvent(
+                                    new OutletChangedEvent(Outlet.OUTLET_SEVEN, true, currentPosition));
+                        } else {
+                            machineStateService
+                                    .fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_SEVEN, false));
+                        }
+                        break;
+                    case "COM4":
+                        if (currentPosition > 0) {
+                            machineStateService.fireMachineStateEvent(
+                                    new OutletChangedEvent(Outlet.OUTLET_EIGHT, true, currentPosition));
+                        } else {
+                            machineStateService
+                                    .fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_EIGHT, false));
+                        }
+                        break;
+                    default:
+                        MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                                "Unexpected Com Port for VAT Outlet, consider going through code!");
+                    }
                     break;
                 }
             }
