@@ -13,6 +13,8 @@ public interface OutletControl {
         OUTLET_FOUR(DigitalOutput.OUTLET_FOUR),
         OUTLET_FIVE(DigitalOutput.OUTLET_FIVE),
         OUTLET_SIX(DigitalOutput.OUTLET_SIX),
+        OUTLET_SEVEN(null),
+        OUTLET_EIGHT(null),
         OUTLET_NINE(DigitalOutput.OUTLET_NINE);
 
         private final DigitalOutput digitalOutput;
@@ -52,4 +54,8 @@ public interface OutletControl {
      * @throws IOException
      */
     public void openOutlet(Outlet outlet) throws IOException;
+
+    public void setVatOutletPosition(Outlet outlet, int position);
+
+    public int getVatOutletPosition(Outlet outlet);
 }

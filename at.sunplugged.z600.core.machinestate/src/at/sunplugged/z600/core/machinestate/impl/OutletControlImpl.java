@@ -1,6 +1,7 @@
 package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 
 import org.osgi.service.log.LogService;
 
@@ -9,6 +10,7 @@ import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
+import at.sunplugged.z600.core.machinestate.impl.outlets.vat.VatOutlet;
 import at.sunplugged.z600.mbt.api.MbtService;
 
 public class OutletControlImpl implements OutletControl {
@@ -21,11 +23,17 @@ public class OutletControlImpl implements OutletControl {
 
     private LogService logService;
 
+    private VatOutlet vatSeven;
+
+    private VatOutlet vatEight;
+
     public OutletControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
         this.mbtController = MachineStateServiceImpl.getMbtService();
         this.settingsService = MachineStateServiceImpl.getSettingsService();
         this.logService = MachineStateServiceImpl.getLogService();
+        this.vatSeven = new VatOutlet("COM3");
+        this.vatEight = new VatOutlet("COM4");
     }
 
     @Override
@@ -47,6 +55,36 @@ public class OutletControlImpl implements OutletControl {
             }
         }
         mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), true);
+    }
+
+    @Override
+    public void setVatOutletPosition(Outlet outlet, int position) {
+        switch (outlet) {
+        case OUTLET_SEVEN:
+            vatSeven.setPosition(position);
+            break;
+        case OUTLET_EIGHT:
+            vatEight.setPosition(position);
+            break;
+        default:
+            logService.log(LogService.LOG_ERROR, "Outlet: \"" + outlet.name()
+                    + "\" is not a VAT Outlet. Can't set position to: \"" + position + "\"");
+            throw new InvalidParameterException("Not a VAT Outlet");
+        }
+    }
+
+    @Override
+    public int getVatOutletPosition(Outlet outlet) {
+        switch (outlet) {
+        case OUTLET_SEVEN:
+            return vatSeven.getPosition();
+        case OUTLET_EIGHT:
+            return vatEight.getPosition();
+        default:
+            logService.log(LogService.LOG_ERROR,
+                    "Outlet: \"" + outlet.name() + "\" is not a VAT Outlet. Can't get position.");
+            throw new InvalidParameterException("Not a VAT Outlet");
+        }
     }
 
     private boolean IsSafetyProtocolEnabeld() {
