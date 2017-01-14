@@ -13,6 +13,7 @@ import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 
 public class OutletFigure extends Figure implements MachineEventHandler {
 
@@ -115,8 +116,9 @@ public class OutletFigure extends Figure implements MachineEventHandler {
         if (this.outlet == null) {
             return;
         }
-        if (event.getType() == Type.DIGITAL_OUTPUT_CHANGED) {
-            if (event.getDigitalOutput() == this.outlet.getDigitalOutput()) {
+        if (event.getType().equals(Type.OUTLET_CHANGED)) {
+            OutletChangedEvent outletEvent = (OutletChangedEvent) event;
+            if (outletEvent.getOutlet().equals(this.outlet)) {
                 Display.getDefault().asyncExec(new Runnable() {
 
                     @Override
@@ -125,7 +127,6 @@ public class OutletFigure extends Figure implements MachineEventHandler {
                     }
 
                 });
-
             }
         }
     }
