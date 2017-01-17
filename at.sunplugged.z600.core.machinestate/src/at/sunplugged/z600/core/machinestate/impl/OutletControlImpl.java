@@ -33,8 +33,13 @@ public class OutletControlImpl implements OutletControl {
         this.mbtController = MachineStateServiceImpl.getMbtService();
         this.settingsService = MachineStateServiceImpl.getSettingsService();
         this.logService = MachineStateServiceImpl.getLogService();
-        this.vatSeven = new VatOutlet("COM3", machineStateService);
-        this.vatEight = new VatOutlet("COM4", machineStateService);
+        try {
+            this.vatSeven = new VatOutlet("COM3", machineStateService);
+            this.vatEight = new VatOutlet("COM4", machineStateService);
+        } catch (IllegalStateException e) {
+            logService.log(LogService.LOG_ERROR, "Couldn't connect to VAT Outlet", e);
+        }
+
     }
 
     @Override

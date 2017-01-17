@@ -1,6 +1,8 @@
 package at.sunplugged.z600.gui.views;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -34,6 +36,9 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
+import at.sunplugged.z600.gui.factorys.InterlocksGroupFactory;
+import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
@@ -62,6 +67,7 @@ public class MainView {
     private static Viewer diagramViewer;
     private static Text text_left_to_right_speed;
     private static Text text_right_to_left_speed;
+    private static Text text;
 
     public static LogService getLogService() {
         return logService;
@@ -296,6 +302,56 @@ public class MainView {
         Button buttonStop = new Button(composite, SWT.NONE);
         buttonStop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         buttonStop.setText("STOP");
+
+        TabItem tbtmMain = new TabItem(tabFolder, SWT.NONE);
+        tbtmMain.setText("Main");
+
+        Composite composite_1 = new Composite(tabFolder, SWT.NONE);
+        tbtmMain.setControl(composite_1);
+        composite_1.setLayout(new GridLayout(1, false));
+
+        Group groupVacuum = new Group(composite_1, SWT.NONE);
+        groupVacuum.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        groupVacuum.setText("Vakuum");
+        groupVacuum.setLayout(new GridLayout(1, false));
+
+        Button btnEvakuieren = new Button(groupVacuum, SWT.NONE);
+        btnEvakuieren.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                logService.log(LogService.LOG_WARNING, "Evakuieren Gedrückt!!!");
+            }
+        });
+        btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        btnEvakuieren.setText("Evakuieren");
+
+        Group grpBandlauf = ConveyorGroupFactory.createGroup(composite_1);
+
+       
+
+        Group grpInterlocks = InterlocksGroupFactory.createGroup(composite_1);
+        GridLayout gridLayout = (GridLayout) grpInterlocks.getLayout();
+        gridLayout.numColumns = 2;
+
+        Label lblPinnacle = new Label(grpInterlocks, SWT.NONE);
+        GridData gd_lblPinnacle = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gd_lblPinnacle.widthHint = 100;
+        lblPinnacle.setLayoutData(gd_lblPinnacle);
+        lblPinnacle.setText("Pinnacle");
+
+        Button button = new Button(grpInterlocks, SWT.CHECK);
+
+        Label lblMdx = new Label(grpInterlocks, SWT.NONE);
+        lblMdx.setText("MDX");
+
+        Button button_1 = new Button(grpInterlocks, SWT.CHECK);
+
+        Group grpSystemOutput = new Group(composite_1, SWT.NONE);
+        grpSystemOutput.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        grpSystemOutput.setText("System Output");
+        grpSystemOutput.setLayout(new GridLayout(1, false));
+
+        StyledText styledText = SystemOutputFactory.createStyledText(grpSystemOutput);
         new Label(shell, SWT.NONE);
 
         return shell;

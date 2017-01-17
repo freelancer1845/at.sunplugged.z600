@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="at.sunplugged.z600.gui.factorys.ConveyorGroupFactory">
+   <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
+   <implementation class="at.sunplugged.z600.gui.factorys.ConveyorGroupFactory"/>
+</scr:component>

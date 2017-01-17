@@ -38,8 +38,13 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Activate
     protected void activate() {
-        engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
-        engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
+        try {
+            engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
+            engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
+        } catch (IllegalStateException e) {
+            logService.log(LogService.LOG_ERROR, "Couldnt connect engines!!!", e);
+        }
+
         speedLogger = new SpeedLoggerImpl();
         speedControl = new SpeedControl(this);
     }
