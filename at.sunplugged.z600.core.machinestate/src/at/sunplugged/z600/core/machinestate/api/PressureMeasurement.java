@@ -21,6 +21,12 @@ public interface PressureMeasurement {
         }
     }
 
+    /**
+     * Returns the current value at that site in mbar.
+     * 
+     * @param site
+     * @return
+     */
     public double getCurrentValue(PressureMeasurementSite site);
 
 }

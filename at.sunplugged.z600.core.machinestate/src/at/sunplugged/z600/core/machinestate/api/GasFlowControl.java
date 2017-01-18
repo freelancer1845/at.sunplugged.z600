@@ -18,9 +18,12 @@ public interface GasFlowControl {
      * Only sets the desired pressure point. Use {@linkplain startGasFlow()} to
      * actually start gas flow control.
      * 
-     * @param desiredPresure for the gas flow control.
+     * @param desiredPresure
+     *            for the gas flow control.
      */
     public void setGasflowDesiredPressure(double desiredPresure);
+
+    public double getCurrentGasFlowValue();
 
     /**
      * Tries to open Outlet 9 and starts the gas flow control. To stop call

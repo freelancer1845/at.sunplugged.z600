@@ -36,6 +36,8 @@ public class WagoAddresses {
         WATERPUMP(37),
         SSV_ONE_START(39),
         SSV_TWO_START(40),
+        PINNACLE_REG_ONE(41),
+        PINNACLE_REG_TWO(42),
         PINNACLE_START(43),
         PINNACLE_INTERLOCK(44),
         MDX_START(45),
@@ -118,7 +120,18 @@ public class WagoAddresses {
 
     public enum AnalogInput {
 
-        PREASURE_TURBO_PUMP(3), PREASURE_CRYO_ONE(5), PREASURE_CRYO_TWO(6), PREASURE_CHAMBER(9);
+        VOLTAGE_KATHODE_TWO(0),
+        CURRENT_KATHODE_TWO(1),
+        GAS_FLOW(3),
+        PREASURE_TURBO_PUMP(4),
+        CONVEYOR_POSITION_L_R(5),
+        PREASURE_CRYO_ONE(6),
+        PREASURE_CRYO_TWO(7),
+        VOLTAGE_KATHODE_ONE(8),
+        POWER_KATHODE_ONE(9),
+        PREASURE_CHAMBER(10),
+        VOLTAGE_KATHODE_THREE(11),
+        CURRENT_KATHODE_THREE(12);
 
         private final int address;
 

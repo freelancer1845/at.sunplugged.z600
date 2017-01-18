@@ -10,14 +10,15 @@ import at.sunplugged.z600.common.settings.api.SettingsIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.GasFlowEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.PressureChangedEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PressureChangedEvent;
 import at.sunplugged.z600.mbt.api.MbtService;
 
 public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
@@ -49,7 +50,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         this.logService = MachineStateServiceImpl.getLogService();
         this.settingsService = MachineStateServiceImpl.getSettingsService();
         this.threadPoolService = MachineStateServiceImpl.getStandardThreadPoolService();
-        desiredPressure = Double.valueOf(settingsService.getProperty(SettingsIds.INTIAL_DESIRED_PRESSURE_GAS_FLOW));
+        desiredPressure = Double.valueOf(settingsService.getProperty(SettingsIds.INITIAL_DESIRED_PRESSURE_GAS_FLOW));
 
         machineStateService.registerMachineEventHandler(this);
     }
@@ -57,6 +58,13 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
     @Override
     public void setGasflowDesiredPressure(double desiredPressure) {
         this.desiredPressure = desiredPressure;
+    }
+
+    @Override
+    public double getCurrentGasFlowValue() {
+        int analogValue = machineStateService.getAnalogInputState(AnalogInput.GAS_FLOW);
+
+        return analogValue / 4095 * 400;
     }
 
     @Override
@@ -153,7 +161,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         }
 
         private void setIntialGasFlow() throws IOException {
-            gasFlowVariable = Double.valueOf(settingsService.getProperty(SettingsIds.INTIAL_GAS_FLOW_PARAMETER));
+            gasFlowVariable = Double.valueOf(settingsService.getProperty(SettingsIds.INITIAL_GAS_FLOW_PARAMETER));
             mbtService.writeOutputRegister(WagoAddresses.AnalogOutput.GAS_FLOW_SETPOINT.getAddress(),
                     convertGasFlowParameterToAnalogOutput(desiredPressure));
         }
