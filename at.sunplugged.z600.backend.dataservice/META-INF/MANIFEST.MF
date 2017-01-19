@@ -5,8 +5,10 @@ Bundle-SymbolicName: at.sunplugged.z600.backend.dataservice;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.osgi.framework;version="1.3.0",
+ org.osgi.service.component.annotations;version="1.2.0",
  org.osgi.service.log;version="1.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,lib/sqljdbc42.jar
 Export-Package: at.sunplugged.z600.backend.dataservice.api
-Service-Component: OSGI-INF/dataService.xml
+Service-Component: OSGI-INF/dataService.xml,
+ OSGI-INF/at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl.xml

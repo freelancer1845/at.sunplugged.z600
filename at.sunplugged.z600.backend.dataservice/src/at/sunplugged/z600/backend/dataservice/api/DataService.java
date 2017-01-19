@@ -15,13 +15,19 @@ import java.util.List;
  */
 public interface DataService {
 
+    public void issueStatement(String statement);
+
     /**
      * Opens a connection to an SQL server.
      * 
-     * @param address of the server to use.
-     * @param username of the account to use.
-     * @param password of the account to use.
-     * @throws DataServiceException if connecting to the server failed.
+     * @param address
+     *            of the server to use.
+     * @param username
+     *            of the account to use.
+     * @param password
+     *            of the account to use.
+     * @throws DataServiceException
+     *             if connecting to the server failed.
      */
     public void connectToSqlServer(String address, String username, String password) throws DataServiceException;
 
@@ -29,13 +35,15 @@ public interface DataService {
      * Starts the automatic updating or creation (if table doesn't exit) of
      * given table in the connected SQL Database.
      * 
-     * @param tickrate updates that are done per min.
-     * @param variableName of the table in the database (will be added if non
-     *            existent).
-     * @param columns that will be created. Must be the same names as are used
-     *            in addData(...).
-     * @throws DataServiceException if either there is no connection or the
-     *             updating failed.
+     * @param tickrate
+     *            updates that are done per min.
+     * @param variableName
+     *            of the table in the database (will be added if non existent).
+     * @param columns
+     *            that will be created. Must be the same names as are used in
+     *            addData(...).
+     * @throws DataServiceException
+     *             if either there is no connection or the updating failed.
      */
     public void startAutomaticSqlTableUpdating(int tickrate, String variableName, String... columns)
             throws DataServiceException;
@@ -43,17 +51,21 @@ public interface DataService {
     /**
      * Stops the automatic table updating of the given table.
      * 
-     * @param variableName to stop updating.
-     * @throws DataServiceException if table doesn't exit or there is no
-     *             updating for this table done.
+     * @param variableName
+     *            to stop updating.
+     * @throws DataServiceException
+     *             if table doesn't exit or there is no updating for this table
+     *             done.
      */
     public void stopAutomaticSqlTableUpdating(String variableName) throws DataServiceException;
 
     /**
      * Creates a snapshot of the current data contained in the DataService.
      * 
-     * @param filePath of the outputFile. Will be appended by the current date.
-     * @throws DataServiceException if this fails.
+     * @param filePath
+     *            of the outputFile. Will be appended by the current date.
+     * @throws DataServiceException
+     *             if this fails.
      */
     public void createDataBaseSnapshot(String filePath) throws DataServiceException;
 
@@ -61,19 +73,24 @@ public interface DataService {
      * Saves the data provided to the given variableName or creates one if there
      * is none.
      * 
-     * @param variableName unique identifier of this variable. The variableName
-     *            will be used for the SQL database saving. Remember it!
-     * @throws DataServiceException if fails.
+     * @param variableName
+     *            unique identifier of this variable. The variableName will be
+     *            used for the SQL database saving. Remember it!
+     * @throws DataServiceException
+     *             if fails.
      */
     public void saveData(String variableName, Date date, Object data) throws DataServiceException;
 
     /**
      * Returns a list containing the current data set.
      * 
-     * @param variableName of the data set.
-     * @param type of the data set (i. e. Double.class)
+     * @param variableName
+     *            of the data set.
+     * @param type
+     *            of the data set (i. e. Double.class)
      * @return A List of that data.
-     * @throws DataServiceException if this fails.
+     * @throws DataServiceException
+     *             if this fails.
      */
     public <T> List<T> getData(String variableName, Class<T> type) throws DataServiceException;
 
