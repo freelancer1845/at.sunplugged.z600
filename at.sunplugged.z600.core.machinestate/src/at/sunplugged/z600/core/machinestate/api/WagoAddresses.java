@@ -87,6 +87,7 @@ public class WagoAddresses {
         PINNACLE_OUT(34),
         SSV_TWO_ERROR(42),
         SSV_ONE_ERROR(43),
+        P_120_MBAR(38),
         LEFT_SPEED_TRIGGER(39),
         RIGHT_SPEED_TRIGGER(40),
         PRE_PUMP_ROOTS_OK(13);

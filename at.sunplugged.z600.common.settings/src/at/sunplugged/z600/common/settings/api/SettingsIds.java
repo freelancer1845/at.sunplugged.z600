@@ -53,6 +53,9 @@ public class SettingsIds {
     /** Vacuum upper limit. */
     public static final String VACUUM_UPPER_LIMIT_MBAR = "Vacuum_Upper_Limit_mbar";
 
+    /** Vacuum trigger tubopump. */
+    public static final String START_TRIGGER_TURBO_PUMP = "Start_Trigger_Turbo_Pump";
+
     private SettingsIds() {
 
     }

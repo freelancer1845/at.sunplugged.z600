@@ -36,6 +36,7 @@ public class DefaultProperties extends Properties {
         this.put(SettingsIds.DELTA_CURRENT_KATHODE_THREE, "0.02");
         this.put(SettingsIds.VACUUM_LOWER_LIMIT_MBAR, "0.001");
         this.put(SettingsIds.VACUUM_UPPER_LIMIT_MBAR, "0.007");
+        this.put(SettingsIds.START_TRIGGER_TURBO_PUMP, "0.2");
 
     }
 

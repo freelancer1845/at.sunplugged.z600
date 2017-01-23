@@ -7,6 +7,7 @@ Bundle-Vendor: Sunplugged.at
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: at.sunplugged.z600.backend.dataservice.api,
  at.sunplugged.z600.common.execution.api,
+ at.sunplugged.z600.common.settings.api,
  at.sunplugged.z600.conveyor.api,
  at.sunplugged.z600.core.machinestate.api,
  at.sunplugged.z600.core.machinestate.api.eventhandling,

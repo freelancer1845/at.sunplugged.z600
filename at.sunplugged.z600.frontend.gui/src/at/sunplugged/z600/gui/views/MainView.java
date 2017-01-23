@@ -324,7 +324,7 @@ public class MainView {
         btnEvakuieren.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                logService.log(LogService.LOG_WARNING, "Evakuieren Gedrückt!!!");
+
             }
         });
         btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
