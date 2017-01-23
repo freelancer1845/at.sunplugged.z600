@@ -46,7 +46,6 @@ public class EngineSerialCom implements Engine {
         this.engineAddress = engineAddress;
         logService = ConveyorControlServiceImpl.getLogService();
         threadPool = ConveyorControlServiceImpl.getStandardThreadPoolService();
-        connect();
 
     }
 

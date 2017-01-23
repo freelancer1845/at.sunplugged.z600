@@ -4,6 +4,8 @@ public interface Engine {
 
     public void connect();
 
+    public boolean isConnected();
+
     public void setEngineMode(int mode);
 
     public void setDirection(int direction);

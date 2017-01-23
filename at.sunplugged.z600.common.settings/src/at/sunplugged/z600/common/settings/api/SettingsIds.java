@@ -38,8 +38,14 @@ public class SettingsIds {
     /** Initial Current Kathode Three. */
     public static final String INITIAL_CURRENT_KATHODE_THREE = "Initial_Current_Kahtode_Three";
 
-    /** Delta Power Kathode One per 10ms. */
-    public static final String DELTA_POWER_KATHODE_ONE = "Delta_Power_Kathode_One_Per_Ten_Milliseconds";
+    /** Delta Current Kathode One per 10ms. */
+    public static final String DELTA_CURRENT_KATHODE_ONE = "Delta_Current_Kathode_One_Per_Ten_Milliseconds";
+
+    /** Delta Current Kathode Two per 10ms. */
+    public static final String DELTA_CURRENT_KATHODE_TWO = "Delta_Current_Kathode_Two_Per_Ten_Milliseconds";
+
+    /** Delta Current Kathode Three per 10ms. */
+    public static final String DELTA_CURRENT_KATHODE_THREE = "Delta_Current_kathode_Three_Per_Ten_Milliseconds";
 
     /** Vacuum lower limit. */
     public static final String VACUUM_LOWER_LIMIT_MBAR = "Vacuum_Lower_Limit_mbar";

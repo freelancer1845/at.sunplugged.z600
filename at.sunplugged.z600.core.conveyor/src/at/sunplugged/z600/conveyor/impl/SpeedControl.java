@@ -31,7 +31,12 @@ public class SpeedControl {
         this.engineTwo = conveyorControlService.getEngineTwo();
         controlThread = new Thread(new ControlRunnable());
         controlThread.setName("Speed Control Thread");
-        controlThread.start();
+
+        if (engineOne.isConnected() && engineTwo.isConnected()) {
+            controlThread.start();
+        } else {
+            logService.log(LogService.LOG_ERROR, "SpeedControl not started -- Engines not connected.");
+        }
     }
 
     public void setSetpoint(double speed) {
@@ -78,6 +83,7 @@ public class SpeedControl {
         public void run() {
 
             running = true;
+            logService.log(LogService.LOG_DEBUG, "SpeedControl started.");
 
             while (running) {
                 if (currentMode != Mode.STOP && checkForBandError()) {

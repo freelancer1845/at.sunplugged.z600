@@ -31,6 +31,9 @@ public class DefaultProperties extends Properties {
         this.put(SettingsIds.INITIAL_POWER_KATHODE_ONE, "0.1");
         this.put(SettingsIds.INITIAL_CURRENT_KATHODE_TWO, "0.4");
         this.put(SettingsIds.INITIAL_CURRENT_KATHODE_THREE, "0.4");
+        this.put(SettingsIds.DELTA_CURRENT_KATHODE_ONE, "0.05");
+        this.put(SettingsIds.DELTA_CURRENT_KATHODE_TWO, "0.02");
+        this.put(SettingsIds.DELTA_CURRENT_KATHODE_THREE, "0.02");
         this.put(SettingsIds.VACUUM_LOWER_LIMIT_MBAR, "0.001");
         this.put(SettingsIds.VACUUM_UPPER_LIMIT_MBAR, "0.007");
 
