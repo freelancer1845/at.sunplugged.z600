@@ -30,6 +30,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
@@ -62,6 +63,8 @@ public class MainView {
     private static ConveyorControlService conveyorControlService;
 
     private static StandardThreadPoolService threadPool;
+
+    private static SettingsService settings;
 
     private static BundleContext context;
 
@@ -322,13 +325,25 @@ public class MainView {
 
         Button btnEvakuieren = new Button(groupVacuum, SWT.NONE);
         btnEvakuieren.addSelectionListener(new SelectionAdapter() {
+
+            private EvacuateCommand evacuateCommand;
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-
+                if (evacuateCommand == null) {
+                    evacuateCommand = new EvacuateCommand(threadPool, machineStateService, logService, settings);
+                }
+                if (btnEvakuieren.getText().equals("Evakuieren Primary")) {
+                    evacuateCommand.executeRouteOne();
+                    btnEvakuieren.setText("Cancel");
+                } else if (btnEvakuieren.getText().equals("Cancel")) {
+                    evacuateCommand.cancelRouteOne();
+                    btnEvakuieren.setText("Evakuieren Primary");
+                }
             }
         });
         btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        btnEvakuieren.setText("Evakuieren");
+        btnEvakuieren.setText("Evakuieren Primary");
 
         Group grpBandlauf = ConveyorGroupFactory.createGroup(composite_1);
 
@@ -487,6 +502,10 @@ public class MainView {
         }
     }
 
+    public static MachineStateService getMachineStateService() {
+        return machineStateService;
+    }
+
     @Reference(unbind = "unbindConveyorControlService", cardinality = ReferenceCardinality.MANDATORY)
     public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
         MainView.conveyorControlService = conveyorControlService;
@@ -506,6 +525,17 @@ public class MainView {
     public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService service) {
         if (threadPool.equals(service)) {
             threadPool = null;
+        }
+    }
+
+    @Reference(unbind = "unbindSettingsService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindSettingsService(SettingsService settingsService) {
+        settings = settingsService;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService settingsService) {
+        if (settings.equals(settingsService)) {
+            settings = null;
         }
     }
 }

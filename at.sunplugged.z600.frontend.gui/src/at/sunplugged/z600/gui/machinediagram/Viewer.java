@@ -6,11 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.draw2d.RectangleFigure;
 import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.XYLayout;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
@@ -20,6 +25,8 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 
 public class Viewer implements MachineEventHandler {
 
@@ -35,7 +42,7 @@ public class Viewer implements MachineEventHandler {
 
     private ChamberFigure chamberFigure;
 
-    private Map<String, VaccumConnection> connections = new HashMap<>();
+    private Map<String, VacuumConnection> connections = new HashMap<>();
 
     private List<MachineEventHandler> eventHandlingFigures = new ArrayList<>();
 
@@ -49,9 +56,20 @@ public class Viewer implements MachineEventHandler {
         createPumpFigures();
         createPressureSiteFigures();
         createChamberFigure();
+        createConnections();
 
         for (String connectionName : connections.keySet()) {
+            if (connectionName.equals("2M1-V4")) {
+                RectangleFigure crossingFigure = new RectangleFigure();
+                crossingFigure.setBounds(new Rectangle(new Point(outletFigures[1].getBounds().getCenter().x - 5,
+                        outletFigures[4].getBounds().getCenter().y - 5), new Dimension(10, 10)));
+                crossingFigure.setOpaque(true);
+                crossingFigure.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+                crossingFigure.setOutline(false);
+                contents.add(crossingFigure);
+            }
             contents.add(connections.get(connectionName));
+            eventHandlingFigures.add(connections.get(connectionName));
         }
 
         for (int i = 0; i < outletFigures.length; i++) {
@@ -88,8 +106,8 @@ public class Viewer implements MachineEventHandler {
 
     private void createOutletFigures() {
         outletFigures[0] = new OutletFigure("V1", 130, 120, Outlet.OUTLET_ONE, false);
-        outletFigures[1] = new OutletFigure("V2", 130, 220, Outlet.OUTLET_TWO, false);
-        outletFigures[2] = new OutletFigure("V3", 180, 220, Outlet.OUTLET_THREE, false);
+        outletFigures[1] = new OutletFigure("V2", 130, 245, Outlet.OUTLET_TWO, false);
+        outletFigures[2] = new OutletFigure("V3", 180, 245, Outlet.OUTLET_THREE, false);
         outletFigures[3] = new OutletFigure("V4", 250, 220, Outlet.OUTLET_FOUR, false);
         outletFigures[4] = new OutletFigure("V5", 90, 280, Outlet.OUTLET_FIVE, true);
         outletFigures[5] = new OutletFigure("V6", 390, 280, Outlet.OUTLET_SIX, true);
@@ -126,7 +144,7 @@ public class Viewer implements MachineEventHandler {
     }
 
     private void createPressureSiteFigures() {
-        pressureSiteFigures[0] = new PressureSiteFigure(140, 270, PressureMeasurementSite.TURBO_PUMP);
+        pressureSiteFigures[0] = new PressureSiteFigure(136, 220, PressureMeasurementSite.TURBO_PUMP);
         pressureSiteFigures[1] = new PressureSiteFigure(40, 243, PressureMeasurementSite.CRYO_PUMP_ONE);
         pressureSiteFigures[2] = new PressureSiteFigure(430, 243, PressureMeasurementSite.CRYO_PUMP_TWO);
 
@@ -134,42 +152,219 @@ public class Viewer implements MachineEventHandler {
 
     private void createConnections() {
         connections.put("1M1-1M2",
-                new VaccumConnection(pumpFigures[0].getBounds().getCenter(), pumpFigures[1].getBounds().getCenter()));
+                new VacuumConnection(pumpFigures[0].getBounds().getCenter(), pumpFigures[1].getBounds().getCenter()) {
+
+                    @Override
+                    public void handleEvent(MachineStateEvent event) {
+                        if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
+                            PumpStateEvent pumpEvent = (PumpStateEvent) event;
+                            if (pumpEvent.getPump().equals(Pumps.PRE_PUMP_ONE)) {
+                                if (pumpEvent.getState().equals(PumpState.ON)) {
+                                    this.setState(true);
+                                } else if (pumpEvent.getState().equals(PumpState.OFF)) {
+                                    this.setState(false);
+                                }
+                            }
+                        }
+                    }
+
+                });
         connections.put("1M2-V2",
-                new VaccumConnection(pumpFigures[1].getBounds().getCenter(), outletFigures[1].getBounds().getCenter(),
+                new VacuumConnection(pumpFigures[1].getBounds().getCenter(), outletFigures[1].getBounds().getCenter(),
                         new Point(outletFigures[1].getBounds().getCenter().x, outletFigures[1].getBounds().y + 28),
                         new Point(outletFigures[2].getBounds().getCenter().x, outletFigures[1].getBounds().y + 28),
-                        outletFigures[2].getBounds().getCenter()));
-        connections.put("2M1-V4", new VaccumConnection(pumpFigures[2].getBounds().getCenter(),
+                        outletFigures[2].getBounds().getCenter()) {
+
+                    @Override
+                    public void handleEvent(MachineStateEvent event) {
+                        if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
+                            PumpStateEvent pumpEvent = (PumpStateEvent) event;
+                            if (pumpEvent.getPump().equals(Pumps.PRE_PUMP_ROOTS)) {
+                                if (pumpEvent.getState().equals(PumpState.ON)) {
+                                    this.setState(true);
+                                } else if (pumpEvent.getState().equals(PumpState.OFF)) {
+                                    this.setState(false);
+                                }
+                            }
+                        }
+                    }
+
+                });
+
+        connections.put("2M1-V4", new VacuumConnection(pumpFigures[2].getBounds().getCenter(),
                 new Point(pumpFigures[2].getBounds().getCenter().x, outletFigures[4].getBounds().getCenter().y),
                 outletFigures[5].getBounds().getCenter(), outletFigures[4].getBounds().getCenter(),
                 new Point(outletFigures[3].getBounds().getCenter().x, outletFigures[4].getBounds().getCenter().y),
-                outletFigures[3].getBounds().getCenter()));
+                outletFigures[3].getBounds().getCenter()) {
+
+            @Override
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
+                    PumpStateEvent pumpEvent = (PumpStateEvent) event;
+                    if (pumpEvent.getPump().equals(Pumps.PRE_PUMP_TWO)) {
+                        if (pumpEvent.getState().equals(PumpState.ON)) {
+                            this.setState(true);
+                        } else if (pumpEvent.getState().equals(PumpState.OFF)) {
+                            this.setState(false);
+                        }
+                    }
+                }
+            }
+
+        });
         connections.put("V2-TMP",
-                new VaccumConnection(outletFigures[1].getBounds().getCenter(), pumpFigures[3].getBounds().getCenter()));
+                new VacuumConnection(outletFigures[1].getBounds().getCenter(), pumpFigures[3].getBounds().getCenter()) {
+
+                    @Override
+                    public void handleEvent(MachineStateEvent event) {
+                        if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                            OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                            if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_TWO)) {
+                                if ((boolean) outletChangedEvent.getValue() == true) {
+                                    this.setState(true);
+                                } else {
+                                    this.setState(false);
+                                }
+                            }
+                        }
+                    }
+
+                });
         connections.put("TMP-V1",
-                new VaccumConnection(pumpFigures[3].getBounds().getCenter(), outletFigures[0].getBounds().getCenter()));
-        connections.put("V1-Chamber", new VaccumConnection(outletFigures[0].getBounds().getCenter(),
-                new Point(outletFigures[0].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)));
-        connections.put("V3-Chamber", new VaccumConnection(outletFigures[2].getBounds().getCenter(),
-                new Point(outletFigures[2].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)));
-        connections.put("V4-Chamber", new VaccumConnection(outletFigures[3].getBounds().getCenter(),
-                new Point(outletFigures[3].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)));
-        connections.put("V9-Chamber", new VaccumConnection(outletFigures[8].getBounds().getCenter(),
-                new Point(outletFigures[8].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)));
+                new VacuumConnection(pumpFigures[3].getBounds().getCenter(), outletFigures[0].getBounds().getCenter()) {
+
+                    @Override
+                    public void handleEvent(MachineStateEvent event) {
+                        if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                            OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                            if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_TWO)) {
+                                if ((boolean) outletChangedEvent.getValue() == true) {
+                                    this.setState(true);
+                                } else {
+                                    this.setState(false);
+                                }
+                            }
+                        }
+                    }
+
+                });
+        connections.put("V1-Chamber", new VacuumConnection(outletFigures[0].getBounds().getCenter(),
+                new Point(outletFigures[0].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)) {
+
+            @Override
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                    OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                    if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_ONE)) {
+                        if ((boolean) outletChangedEvent.getValue() == true) {
+                            this.setState(true);
+                        } else {
+                            this.setState(false);
+                        }
+                    }
+                }
+            }
+
+        });
+        connections.put("V3-Chamber", new VacuumConnection(outletFigures[2].getBounds().getCenter(),
+                new Point(outletFigures[2].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)) {
+
+            @Override
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                    OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                    if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_THREE)) {
+                        if ((boolean) outletChangedEvent.getValue() == true) {
+                            this.setState(true);
+                        } else {
+                            this.setState(false);
+                        }
+                    }
+                }
+            }
+
+        });
+        connections.put("V4-Chamber", new VacuumConnection(outletFigures[3].getBounds().getCenter(),
+                new Point(outletFigures[3].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)) {
+
+            @Override
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                    OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                    if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_FOUR)) {
+                        if ((boolean) outletChangedEvent.getValue() == true) {
+                            this.setState(true);
+                        } else {
+                            this.setState(false);
+                        }
+                    }
+                }
+            }
+
+        });
+        connections.put("V9-Chamber", new VacuumConnection(outletFigures[8].getBounds().getCenter(),
+                new Point(outletFigures[8].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y)) {
+
+            @Override
+            public void handleEvent(MachineStateEvent event) {
+                if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                    OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                    if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_NINE)) {
+                        if ((boolean) outletChangedEvent.getValue() == true) {
+                            this.setState(true);
+                        } else {
+                            this.setState(false);
+                        }
+                    }
+                }
+            }
+
+        });
         connections.put("Gas-V9",
-                new VaccumConnection(
+                new VacuumConnection(
                         new Point(outletFigures[8].getBounds().getCenter().x,
                                 outletFigures[8].getBounds().getCenter().y + 25),
                         outletFigures[8].getBounds().getCenter()));
         connections.put("V7-Chamber",
-                new VaccumConnection(outletFigures[6].getBounds().getCenter(),
+                new VacuumConnection(outletFigures[6].getBounds().getCenter(),
                         new Point(outletFigures[6].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y),
-                        chamberFigure.getBounds().getCenter()));
+                        chamberFigure.getBounds().getCenter()) {
+
+                    @Override
+                    public void handleEvent(MachineStateEvent event) {
+                        if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                            OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                            if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_SEVEN)) {
+                                if ((boolean) outletChangedEvent.getValue() == true) {
+                                    this.setState(true);
+                                } else {
+                                    this.setState(false);
+                                }
+                            }
+                        }
+                    }
+
+                });
         connections.put("V8-Chamber",
-                new VaccumConnection(outletFigures[7].getBounds().getCenter(),
+                new VacuumConnection(outletFigures[7].getBounds().getCenter(),
                         new Point(outletFigures[7].getBounds().getCenter().x, chamberFigure.getBounds().getCenter().y),
-                        chamberFigure.getBounds().getCenter()));
+                        chamberFigure.getBounds().getCenter()) {
+
+                    @Override
+                    public void handleEvent(MachineStateEvent event) {
+                        if (event.getType().equals(Type.OUTLET_CHANGED)) {
+                            OutletChangedEvent outletChangedEvent = (OutletChangedEvent) event;
+                            if (outletChangedEvent.getOutlet().equals(Outlet.OUTLET_EIGHT)) {
+                                if ((boolean) outletChangedEvent.getValue() == true) {
+                                    this.setState(true);
+                                } else {
+                                    this.setState(false);
+                                }
+                            }
+                        }
+                    }
+
+                });
     }
 
     private void createChamberFigure() {

@@ -6,7 +6,7 @@ public class WagoAddresses {
 
     public static final int DIGITAL_INPUT_MAX_ADDRESS = 55;
 
-    public static final int ANALOG_INPUT_MAX_ADDRESS = 11;
+    public static final int ANALOG_INPUT_MAX_ADDRESS = 12;
 
     public static final int ANALOG_OUTPUT_MAX_ADDRESS = 6;
 

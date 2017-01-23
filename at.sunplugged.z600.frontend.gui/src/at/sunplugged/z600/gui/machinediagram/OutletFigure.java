@@ -14,6 +14,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandle
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
+import at.sunplugged.z600.gui.views.MainView;
 
 public class OutletFigure extends Figure implements MachineEventHandler {
 
@@ -38,15 +39,24 @@ public class OutletFigure extends Figure implements MachineEventHandler {
         }
         createShape(vertical);
         createLabel(name, vertical);
-
+        if (outlet != null) {
+            setState(MainView.getMachineStateService().getOutletControl().isOutletOpen(outlet));
+        }
     }
 
     private void setState(boolean state) {
-        if (state == true) {
-            polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
-        } else {
-            polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
-        }
+        Display.getDefault().asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                if (state == true) {
+                    polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
+                } else {
+                    polygonShape.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
+                }
+            }
+
+        });
 
     }
 
@@ -119,14 +129,7 @@ public class OutletFigure extends Figure implements MachineEventHandler {
         if (event.getType().equals(Type.OUTLET_CHANGED)) {
             OutletChangedEvent outletEvent = (OutletChangedEvent) event;
             if (outletEvent.getOutlet().equals(this.outlet)) {
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        setState((boolean) event.getValue());
-                    }
-
-                });
+                setState((boolean) event.getValue());
             }
         }
     }

@@ -100,6 +100,11 @@ public final class SystemOutputFactory implements LogListener {
 
                 String timeString = createTimeStampe(entry);
                 String logText = timeString + entry.getMessage();
+                Throwable exception = entry.getException();
+                while (exception != null) {
+                    logText += "\nCaused by: " + exception.getClass().getName() + " --- " + exception.getMessage();
+                    exception = exception.getCause();
+                }
                 styledText.append(logText + "\n");
 
                 int lastTextPosition = styledText.getCharCount();

@@ -10,7 +10,6 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.mbt.api.MbtService;
 
 public class PumpControlImpl implements PumpControl, MachineEventHandler {
@@ -76,11 +75,11 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
         if (event.getType().equals(MachineStateEvent.Type.DIGITAL_INPUT_CHANGED)) {
             DigitalInput digitalInput = event.getDigitalInput();
             if (digitalInput.equals(Pumps.PRE_PUMP_ONE.getDigitalInput())) {
-                handleNormalPumpChange(Pumps.PRE_PUMP_ONE, (boolean) event.getValue(), pumpOneState);
+                handleNormalPumpChange(Pumps.PRE_PUMP_ONE, (boolean) event.getValue());
             } else if (digitalInput.equals(Pumps.PRE_PUMP_TWO.getDigitalInput())) {
-                handleNormalPumpChange(Pumps.PRE_PUMP_TWO, (boolean) event.getValue(), pumpTwoState);
+                handleNormalPumpChange(Pumps.PRE_PUMP_TWO, (boolean) event.getValue());
             } else if (digitalInput.equals(Pumps.PRE_PUMP_ROOTS.getDigitalInput())) {
-                handleNormalPumpChange(Pumps.PRE_PUMP_ROOTS, (boolean) event.getValue(), pumpRootState);
+                handleNormalPumpChange(Pumps.PRE_PUMP_ROOTS, (boolean) event.getValue());
             } else if (digitalInput.equals(Pumps.TURBO_PUMP.getDigitalInput())) {
                 if (machineStateService.getDigitalInputState(digitalInput)) {
                     turboPumpState = PumpState.STARTING;
@@ -101,12 +100,36 @@ public class PumpControlImpl implements PumpControl, MachineEventHandler {
         logService.log(LogService.LOG_DEBUG, "Event catched by pump Control: " + event.getType().name());
     }
 
-    private void handleNormalPumpChange(Pumps pump, boolean state, PumpState stateContainer) {
-        if (state == true) {
-            stateContainer = PumpState.ON;
-        } else {
-            stateContainer = PumpState.OFF;
+    private void handleNormalPumpChange(Pumps pump, boolean state) {
+        switch (pump) {
+        case PRE_PUMP_ONE:
+            if (state == true) {
+                pumpOneState = PumpState.ON;
+            } else {
+                pumpOneState = PumpState.OFF;
+            }
+            machineStateService.fireMachineStateEvent(new PumpStateEvent(pump, pumpOneState));
+            break;
+        case PRE_PUMP_ROOTS:
+            if (state == true) {
+                pumpRootState = PumpState.ON;
+            } else {
+                pumpRootState = PumpState.OFF;
+            }
+            machineStateService.fireMachineStateEvent(new PumpStateEvent(pump, pumpRootState));
+            break;
+        case PRE_PUMP_TWO:
+            if (state == true) {
+                pumpTwoState = PumpState.ON;
+            } else {
+                pumpRootState = PumpState.OFF;
+            }
+            machineStateService.fireMachineStateEvent(new PumpStateEvent(pump, pumpTwoState));
+            break;
+        default:
+            logService.log(LogService.LOG_DEBUG, "HandleNormalPumpChange not implemented for Pump: " + pump.name());
+            break;
         }
-        machineStateService.fireMachineStateEvent(new PumpStateEvent(pump, stateContainer));
+
     }
 }

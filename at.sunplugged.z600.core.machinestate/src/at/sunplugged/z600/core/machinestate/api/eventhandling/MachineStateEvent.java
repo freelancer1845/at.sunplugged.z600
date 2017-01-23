@@ -111,4 +111,44 @@ public class MachineStateEvent {
         return value;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((analogInput == null) ? 0 : analogInput.hashCode());
+        result = prime * result + ((analogOutput == null) ? 0 : analogOutput.hashCode());
+        result = prime * result + ((digitalInput == null) ? 0 : digitalInput.hashCode());
+        result = prime * result + ((digitalOutput == null) ? 0 : digitalOutput.hashCode());
+        result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MachineStateEvent other = (MachineStateEvent) obj;
+        if (analogInput != other.analogInput)
+            return false;
+        if (analogOutput != other.analogOutput)
+            return false;
+        if (digitalInput != other.digitalInput)
+            return false;
+        if (digitalOutput != other.digitalOutput)
+            return false;
+        if (type != other.type)
+            return false;
+        if (value == null) {
+            if (other.value != null)
+                return false;
+        } else if (!value.equals(other.value))
+            return false;
+        return true;
+    }
+
 }

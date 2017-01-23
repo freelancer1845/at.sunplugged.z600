@@ -15,6 +15,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandle
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
+import at.sunplugged.z600.gui.views.MainView;
 
 public class PumpFigure extends Figure implements MachineEventHandler {
 
@@ -61,44 +62,46 @@ public class PumpFigure extends Figure implements MachineEventHandler {
         innerCircle.setBounds(new Rectangle(bounds.x + bounds.width / 2 - (int) (WIDTH / INNER_CIRCLE_SCALE / 2),
                 bounds.y + bounds.height / 2 - (int) (HEIGHT / INNER_CIRCLE_SCALE / 2),
                 (int) (WIDTH / INNER_CIRCLE_SCALE), (int) (WIDTH / INNER_CIRCLE_SCALE)));
-
+        if (pump != null) {
+            setState(MainView.getMachineStateService().getPumpControl().getState(pump));
+        }
         this.add(innerCircle);
 
     }
 
     protected void setState(PumpState state) {
-        switch (state) {
-        case ON:
-            innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
-            break;
-        case OFF:
-            innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_GRAY));
-            break;
-        case FAILED:
-            innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
-            break;
-        case STARTING:
-            innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_YELLOW));
-            break;
-        case STOPPING:
-            innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GRAY));
-            break;
-        }
+        Display.getDefault().asyncExec(new Runnable() {
+
+            @Override
+            public void run() {
+                switch (state) {
+                case ON:
+                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
+                    break;
+                case OFF:
+                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_GRAY));
+                    break;
+                case FAILED:
+                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
+                    break;
+                case STARTING:
+                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_YELLOW));
+                    break;
+                case STOPPING:
+                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+                    break;
+                }
+            }
+
+        });
+
     }
 
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType() == Type.PUMP_STATUS_CHANGED) {
             if (((PumpStateEvent) event).getPump() == pump) {
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        setState(((PumpStateEvent) event).getState());
-                    }
-
-                });
-
+                setState(((PumpStateEvent) event).getState());
             }
         }
     }

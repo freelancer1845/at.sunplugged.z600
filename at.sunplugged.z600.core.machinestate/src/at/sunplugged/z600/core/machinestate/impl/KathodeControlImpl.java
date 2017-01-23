@@ -176,7 +176,12 @@ public class KathodeControlImpl implements KathodeControl, MachineEventHandler {
         @Override
         public void run() {
             this.setName("Kathode-Power-Control-Thread");
-
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             running = true;
             while (running) {
                 try {

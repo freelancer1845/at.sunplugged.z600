@@ -15,6 +15,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandle
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PressureChangedEvent;
+import at.sunplugged.z600.gui.views.MainView;
 
 public class PressureSiteFigure extends Figure implements MachineEventHandler {
 
@@ -37,7 +38,7 @@ public class PressureSiteFigure extends Figure implements MachineEventHandler {
     private void createLabel() {
         label = new Label();
         label.setBounds(getBounds().getCopy());
-        label.setText(0 + " ");
+        updateValue(MainView.getMachineStateService().getPressureMeasurmentControl().getCurrentValue(site));
         label.setBorder(new LineBorder());
         label.setFont(SWTResourceManager.getFont("tahoma", 7, SWT.NONE));
         label.setTextAlignment(Label.RIGHT);

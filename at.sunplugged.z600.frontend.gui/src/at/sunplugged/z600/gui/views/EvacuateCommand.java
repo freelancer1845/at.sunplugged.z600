@@ -102,61 +102,70 @@ public class EvacuateCommand {
                     cancel();
                 }
 
-                logService.log(LogService.LOG_INFO, "Starting pre pump one...");
-                pumpControl.startPump(Pumps.PRE_PUMP_ONE);
+                PumpState state = pumpControl.getState(Pumps.PRE_PUMP_ONE);
+                System.out.println("State: " + state.name());
+                if (pumpControl.getState(Pumps.PRE_PUMP_ONE).equals(PumpState.OFF)) {
+                    logService.log(LogService.LOG_INFO, "Starting pre pump one...");
 
-                FutureEvent pumpOneEvent = new FutureEvent(machineStateService,
-                        new PumpStateEvent(Pumps.PRE_PUMP_ONE, PumpState.ON));
-                try {
-                    pumpOneEvent.get(5, TimeUnit.SECONDS);
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (TimeoutException e) {
-                    logService.log(LogService.LOG_ERROR,
-                            "Pre Pump One didn't start after 5 Seconds. Canceling Evacuation.");
-                    cancel();
-                }
-
-                logService.log(LogService.LOG_INFO, "Starting roots pump...");
-
-                if (machineStateService.getDigitalInputState(DigitalInput.P_120_MBAR)) {
-                    pumpControl.startPump(Pumps.PRE_PUMP_ROOTS);
-                } else {
-                    FutureEvent p120TriggerEvent = new FutureEvent(machineStateService,
-                            new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.P_120_MBAR, true));
+                    FutureEvent pumpOneEvent = new FutureEvent(machineStateService,
+                            new PumpStateEvent(Pumps.PRE_PUMP_ONE, PumpState.ON));
+                    pumpControl.startPump(Pumps.PRE_PUMP_ONE);
                     try {
-                        p120TriggerEvent.get(10, TimeUnit.SECONDS);
+                        pumpOneEvent.get(5, TimeUnit.SECONDS);
                     } catch (ExecutionException e) {
+                        e.printStackTrace();
                     } catch (TimeoutException e) {
                         logService.log(LogService.LOG_ERROR,
-                                "Roots pump couldn't start. P_120_MBAR trigger not reached.");
+                                "Pre Pump One didn't start after 5 Seconds. Canceling Evacuation.");
                         cancel();
                     }
-                    pumpControl.startPump(Pumps.PRE_PUMP_ROOTS);
                 }
 
-                FutureEvent rootsPumpEvent = new FutureEvent(machineStateService,
-                        new PumpStateEvent(Pumps.PRE_PUMP_ROOTS, PumpState.ON));
+                if (pumpControl.getState(Pumps.PRE_PUMP_ROOTS).equals(PumpState.OFF)) {
+                    if (machineStateService.getDigitalInputState(DigitalInput.P_120_MBAR)) {
+                        pumpControl.startPump(Pumps.PRE_PUMP_ROOTS);
+                    } else {
+                        FutureEvent p120TriggerEvent = new FutureEvent(machineStateService,
+                                new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.P_120_MBAR, true));
+                        try {
+                            p120TriggerEvent.get(10, TimeUnit.SECONDS);
+                        } catch (ExecutionException e) {
+                        } catch (TimeoutException e) {
+                            logService.log(LogService.LOG_ERROR,
+                                    "Roots pump couldn't start. P_120_MBAR trigger not reached.");
+                            cancel();
+                        }
+                        pumpControl.startPump(Pumps.PRE_PUMP_ROOTS);
+                    }
+                    logService.log(LogService.LOG_INFO, "Starting roots pump...");
 
-                try {
-                    rootsPumpEvent.get(5, TimeUnit.SECONDS);
-                } catch (ExecutionException | TimeoutException e) {
-                    logService.log(LogService.LOG_ERROR, "Roots Pump didnt start after 5 seconds.");
-                    cancel();
+                    FutureEvent rootsPumpEvent = new FutureEvent(machineStateService,
+                            new PumpStateEvent(Pumps.PRE_PUMP_ROOTS, PumpState.ON));
+
+                    try {
+                        rootsPumpEvent.get(5, TimeUnit.SECONDS);
+                    } catch (ExecutionException | TimeoutException e) {
+                        logService.log(LogService.LOG_ERROR, "Roots Pump didnt start after 5 seconds.");
+                        cancel();
+                    }
                 }
 
-                logService.log(LogService.LOG_INFO, "Preevacuating turbo pump chamber...");
-                try {
-                    outletControl.openOutlet(Outlet.OUTLET_TWO);
-                } catch (IOException e) {
-                    logService.log(LogService.LOG_ERROR, "Failed to open V2", e);
-                    cancel();
-                }
-
-                // Effectively waits until the pressure at the turbo pump is
-                // below 1 mbar.
-                while (pressureMeasurement.getCurrentValue(PressureMeasurementSite.TURBO_PUMP) >= 1) {
-                    Thread.sleep(100);
+                if (pressureMeasurement.getCurrentValue(PressureMeasurementSite.TURBO_PUMP) >= 1) {
+                    logService.log(LogService.LOG_INFO, "Preevacuating turbo pump chamber...");
+                    try {
+                        outletControl.openOutlet(Outlet.OUTLET_TWO);
+                    } catch (IOException e) {
+                        logService.log(LogService.LOG_ERROR, "Failed to open V2", e);
+                        cancel();
+                    }
+                    FuturePressureReachedEvent preEvacuateTurboPumpEvent = new FuturePressureReachedEvent(
+                            machineStateService, PressureMeasurementSite.TURBO_PUMP, 1);
+                    try {
+                        preEvacuateTurboPumpEvent.get(1, TimeUnit.MINUTES);
+                    } catch (TimeoutException e) {
+                        logService.log(LogService.LOG_ERROR,
+                                "Pre Vacuum in turbo pump chamber not reached in 1 minute.");
+                    }
                 }
 
                 logService.log(LogService.LOG_INFO, "Prevacuating turbo pump chamber finished. Closing Outlet 2...");
@@ -229,8 +238,10 @@ public class EvacuateCommand {
                 logService.log(LogService.LOG_INFO, "Ready to start turbo pump...");
 
             } catch (InterruptedException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
+                logService.log(LogService.LOG_ERROR, "Primary route canceld", e1);
+            } catch (RuntimeException runtimeException) {
+                logService.log(LogService.LOG_ERROR, "Unhandled Runtime Exception in Primaray evacuation route.",
+                        runtimeException);
             }
         }
 

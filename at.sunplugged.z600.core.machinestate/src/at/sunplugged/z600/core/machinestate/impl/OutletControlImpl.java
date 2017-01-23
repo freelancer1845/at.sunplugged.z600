@@ -46,8 +46,14 @@ public class OutletControlImpl implements OutletControl {
     public boolean isOutletOpen(Outlet outlet) {
         switch (outlet) {
         case OUTLET_SEVEN:
+            if (vatSeven == null) {
+                return false;
+            }
             return vatSeven.isOpen();
         case OUTLET_EIGHT:
+            if (vatEight == null) {
+                return false;
+            }
             return vatEight.isOpen();
         case OUTLET_ONE:
         case OUTLET_TWO:
@@ -67,9 +73,15 @@ public class OutletControlImpl implements OutletControl {
     public void closeOutlet(Outlet outlet) throws IOException {
         switch (outlet) {
         case OUTLET_SEVEN:
+            if (vatSeven == null) {
+                return;
+            }
             vatSeven.close();
             break;
         case OUTLET_EIGHT:
+            if (vatEight == null) {
+                return;
+            }
             vatEight.close();
             break;
         case OUTLET_ONE:
@@ -80,9 +92,9 @@ public class OutletControlImpl implements OutletControl {
         case OUTLET_SIX:
         case OUTLET_NINE:
             mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), false);
-            machineStateService.fireMachineStateEvent(new OutletChangedEvent(outlet, false));
             break;
         }
+        machineStateService.fireMachineStateEvent(new OutletChangedEvent(outlet, false));
 
     }
 
@@ -109,9 +121,9 @@ public class OutletControlImpl implements OutletControl {
         case OUTLET_SIX:
         case OUTLET_NINE:
             mbtController.writeDigOut(outlet.getDigitalOutput().getAddress(), true);
-            machineStateService.fireMachineStateEvent(new OutletChangedEvent(outlet, true));
             break;
         }
+        machineStateService.fireMachineStateEvent(new OutletChangedEvent(outlet, true));
     }
 
     @Override

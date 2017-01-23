@@ -16,8 +16,10 @@ public class FutureEvent implements MachineEventHandler {
 
     /**
      * 
-     * @param machineStateService that fires the desired event.
-     * @param event that should be waited for.
+     * @param machineStateService
+     *            that fires the desired event.
+     * @param event
+     *            that should be waited for.
      */
     public FutureEvent(MachineStateService machineStateService, MachineStateEvent event) {
         this.machineStateService = machineStateService;
@@ -44,6 +46,7 @@ public class FutureEvent implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
+        System.out.println("Future Event catched event: " + event.getType().name());
         if (event.equals(this.event)) {
             eventCatched = true;
             machineStateService.unregisterMachineEventHandler(this);

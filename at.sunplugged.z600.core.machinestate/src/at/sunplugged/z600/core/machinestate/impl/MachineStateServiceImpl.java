@@ -2,7 +2,9 @@ package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -78,7 +80,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private InputUpdaterThread updaterThread;
 
-    private List<MachineEventHandler> registeredEventHandler = new ArrayList<>();
+    private Collection<MachineEventHandler> registeredEventHandler = new ConcurrentLinkedQueue<>();
 
     @Activate
     protected void activateMachineStateService(BundleContext context) {
@@ -195,15 +197,25 @@ public class MachineStateServiceImpl implements MachineStateService {
         try {
             List<Boolean> currentState = mbtService.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
             for (int i = 0; i < currentState.size() - 1; i++) {
-                if (currentState.get(i) != digitalOutputState.get(i)) {
+                try {
+                    boolean previousDigitalOutputState = digitalOutputState.get(i);
+                    if (currentState.get(i) != previousDigitalOutputState) {
+                        DigitalOutput digitalOutput = DigitalOutput.getByAddress(i);
+                        if (digitalOutput != null) {
+                            fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED, digitalOutput,
+                                    currentState.get(i)));
+                        } else {
+                            logService.log(LogService.LOG_DEBUG, "Unkown Digital Output changed: " + i);
+                        }
+                    }
+                } catch (IndexOutOfBoundsException e) {
                     DigitalOutput digitalOutput = DigitalOutput.getByAddress(i);
                     if (digitalOutput != null) {
                         fireMachineStateEvent(
                                 new MachineStateEvent(Type.DIGITAL_OUTPUT_CHANGED, digitalOutput, currentState.get(i)));
-                    } else {
-                        logService.log(LogService.LOG_DEBUG, "Unkown Digital Output changed: " + i);
                     }
                 }
+
             }
             synchronized (digitalOutputState) {
                 digitalOutputState = currentState;
@@ -218,15 +230,25 @@ public class MachineStateServiceImpl implements MachineStateService {
         try {
             List<Integer> currentState = mbtService.readOutputRegister(0, WagoAddresses.ANALOG_OUTPUT_MAX_ADDRESS + 1);
             for (int i = 0; i < currentState.size() - 1; i++) {
-                if (currentState.get(i) != analogOutputState.get(i)) {
+                try {
+                    int previousAnalogOutputState = analogOutputState.get(i);
+                    if (currentState.get(i) != previousAnalogOutputState) {
+                        AnalogOutput analogOutput = AnalogOutput.getByAddress(i);
+                        if (analogOutput != null) {
+                            fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_OUTPUT_CHANGED, analogOutput,
+                                    currentState.get(i)));
+                        } else {
+                            logService.log(LogService.LOG_DEBUG, "Unkown Analog Output changed: " + i);
+                        }
+                    }
+                } catch (IndexOutOfBoundsException e) {
                     AnalogOutput analogOutput = AnalogOutput.getByAddress(i);
                     if (analogOutput != null) {
                         fireMachineStateEvent(
                                 new MachineStateEvent(Type.ANALOG_OUTPUT_CHANGED, analogOutput, currentState.get(i)));
-                    } else {
-                        logService.log(LogService.LOG_DEBUG, "Unkown Analog Output changed: " + i);
                     }
                 }
+
             }
             synchronized (analogOutputState) {
                 analogOutputState = currentState;
@@ -241,16 +263,26 @@ public class MachineStateServiceImpl implements MachineStateService {
         try {
             List<Boolean> currentState = mbtService.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
             for (int i = 0; i < currentState.size() - 1; i++) {
-                if (currentState.get(i) != digitalInputState.get(i)) {
+                try {
+                    boolean previousState = digitalInputState.get(i);
+                    if (currentState.get(i) != previousState) {
+                        DigitalInput digitalInput = DigitalInput.getByAddress(i);
+                        if (digitalInput != null) {
+                            fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED,
+                                    DigitalInput.getByAddress(i), currentState.get(i)));
+                        } else {
+                            logService.log(LogService.LOG_DEBUG, "Unkown Digital Input changed: " + i);
+                        }
+
+                    }
+                } catch (IndexOutOfBoundsException e) {
                     DigitalInput digitalInput = DigitalInput.getByAddress(i);
                     if (digitalInput != null) {
                         fireMachineStateEvent(new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED,
                                 DigitalInput.getByAddress(i), currentState.get(i)));
-                    } else {
-                        logService.log(LogService.LOG_DEBUG, "Unkown Digital Input changed: " + i);
                     }
-
                 }
+
             }
             synchronized (digitalInputState) {
                 digitalInputState = currentState;
@@ -264,16 +296,25 @@ public class MachineStateServiceImpl implements MachineStateService {
         try {
             List<Integer> currentState = mbtService.readInputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
             for (int i = 0; i < currentState.size() - 1; i++) {
-                if (!currentState.get(i).equals(analogInputState.get(i))) {
+                try {
+                    int previousAnalogInputState = analogInputState.get(i);
+                    if (!currentState.get(i).equals(previousAnalogInputState)) {
+                        AnalogInput analogInput = AnalogInput.getByAddress(i);
+                        if (analogInput != null) {
+                            fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_INPUT_CHANGED,
+                                    AnalogInput.getByAddress(i), currentState.get(i)));
+                        } else {
+                            logService.log(LogService.LOG_DEBUG, "Unkown Analog Input changed: " + i);
+                        }
+                    }
+                } catch (IndexOutOfBoundsException e) {
                     AnalogInput analogInput = AnalogInput.getByAddress(i);
                     if (analogInput != null) {
                         fireMachineStateEvent(new MachineStateEvent(Type.ANALOG_INPUT_CHANGED,
                                 AnalogInput.getByAddress(i), currentState.get(i)));
-                    } else {
-                        logService.log(LogService.LOG_DEBUG, "Unkown Analog Input changed: " + i);
                     }
-
                 }
+
             }
             synchronized (analogInputState) {
                 analogInputState = currentState;
@@ -365,12 +406,6 @@ public class MachineStateServiceImpl implements MachineStateService {
                 public void run() {
                     long lastTime = System.nanoTime();
                     try {
-
-                        digitalInputState = mbtService.readDigIns(0, WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS + 1);
-                        digitalOutputState = mbtService.readDigOuts(0, WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS + 1);
-                        analogInputState = mbtService.readInputRegister(0, WagoAddresses.ANALOG_INPUT_MAX_ADDRESS + 1);
-                        analogOutputState = mbtService.readOutputRegister(0,
-                                WagoAddresses.ANALOG_OUTPUT_MAX_ADDRESS + 1);
 
                         while (running) {
                             updateDigitalInputState();
