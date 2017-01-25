@@ -75,7 +75,9 @@ public class SplashWindow implements EventHandler {
         mbt_styled_text = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
         mbt_styled_text.setEnabled(false);
         mbt_styled_text.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        mbt_styled_text.setText("Modbus Controller... connected");
+        mbt_styled_text.setText("Trying to connect to modbus...");
+        mbt_styled_text.setStyleRange(new StyleRange(0, mbt_styled_text.getText().length(),
+                SWTResourceManager.getColor(SWT.COLOR_DARK_YELLOW), null));
         mbt_styled_text.setAlwaysShowScrollBars(false);
         mbt_styled_text.setEditable(false);
         mbt_styled_text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
