@@ -110,7 +110,7 @@ public class SettingsServiceImpl implements SettingsService {
             FileOutputStream outputStream = new FileOutputStream(newSettingsFile);
             userProperties.store(outputStream, "Settings File for Z600");
             outputStream.close();
-            settingsFile.delete();
+            backupSettingsFile.delete();
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Failed to save settings.", e);
             if (settingsFile.exists()) {

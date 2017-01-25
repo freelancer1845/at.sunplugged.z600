@@ -38,7 +38,7 @@ public class Main implements IApplication {
         Display display = Display.getDefault();
         Shell shell = SplashWindow.getShell();
         Rectangle splashRect = shell.getBounds();
-        Rectangle displayRect = display.getBounds();
+        Rectangle displayRect = display.getPrimaryMonitor().getBounds();
         int x = (displayRect.width - splashRect.width) / 2;
         int y = (displayRect.height - splashRect.height) / 2;
         shell.setLocation(x, y);

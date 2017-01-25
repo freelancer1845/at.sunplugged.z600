@@ -16,6 +16,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -60,22 +61,38 @@ public class MbtServiceImpl implements MbtService {
 
     private EventAdmin eventAdmin;
 
+    private StandardThreadPoolService threadPool;
+
     @Activate
     protected synchronized void activate(BundleContext context) {
-        try {
-            connect();
-        } catch (IOException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to connect to Modbus Controller.", e);
-        }
+        threadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    connect();
+                } catch (IOException e) {
+                    logService.log(LogService.LOG_ERROR, "Failed to connect to Modbus Controller.", e);
+                }
+            }
+        });
     }
 
     @Deactivate
     protected synchronized void deactivate() {
-        try {
-            disconnect();
-        } catch (IOException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to disconnect from Modbus Controller.", e);
-        }
+        threadPool.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+
+                    disconnect();
+                } catch (IOException e) {
+                    logService.log(LogService.LOG_ERROR, "Failed to disconnect from Modbus Controller.", e);
+                }
+
+            }
+
+        });
     }
 
     private void connect() throws IOException {
@@ -308,6 +325,17 @@ public class MbtServiceImpl implements MbtService {
     public synchronized void unbindEventAdmin(EventAdmin eventAdmin) {
         if (this.eventAdmin == eventAdmin) {
             this.eventAdmin = null;
+        }
+    }
+
+    @Reference(unbind = "unbindStandardThreadPoolService")
+    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService threadPool) {
+        this.threadPool = threadPool;
+    }
+
+    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService threadPool) {
+        if (this.threadPool == threadPool) {
+            this.threadPool = null;
         }
     }
 
