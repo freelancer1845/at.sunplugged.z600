@@ -8,6 +8,15 @@ public class SettingsIds {
     /** MBT Controller Ip. */
     public static final String MBT_CONTROLLER_IP = "MBT_Controller_IP";
 
+    /** SQL Connection String. */
+    public static final String SQL_CONNECTION_STRING = "Sql_Connection_String";
+
+    /** SQL Username. */
+    public static final String SQL_USERNAME = "Sql_Username";
+
+    /** SQL Password. */
+    public static final String SQL_PASSWORD = "Sql_Password";
+
     /** Left Engine Port. */
     public static final String LEFT_ENGINE_COM_PORT = "Motor_Links_Port";
 

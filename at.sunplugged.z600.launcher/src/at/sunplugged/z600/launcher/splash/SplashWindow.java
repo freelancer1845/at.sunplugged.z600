@@ -1,11 +1,17 @@
 package at.sunplugged.z600.launcher.splash;
 
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.event.Event;
@@ -14,32 +20,31 @@ import org.osgi.service.event.EventHandler;
 
 import at.sunplugged.z600.launcher.ProgrammShutdownException;
 
-import org.eclipse.swt.widgets.ProgressBar;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.widgets.Button;
-
-@Component(immediate = true, property = { EventConstants.EVENT_TOPIC + "=at/sunplugged/z600/mbt/connect" })
+@Component(immediate = true, property = { EventConstants.EVENT_TOPIC + "=at/sunplugged/z600/mbt/connect",
+        EventConstants.EVENT_TOPIC + "=at/sunplugged/z600/sql/connect" })
 public class SplashWindow implements EventHandler {
 
     private static Shell shell;
 
     private static ProgressBar progressBar;
 
-    private static Event mbtServiceEvent;
     private static Label label;
     private static Composite information_composite;
+
+    private static Event mbtServiceEvent;
     private static StyledText mbt_styled_text;
     private static Button mbt_error_button;
     private static ErrorSelectionListener mbtSelectionListener;
-    private static StyledText styledText_1;
+
+    private static Event sqlServiceEvent;
+    private static StyledText sql_styled_text;
+    private static Button sql_error_button;
+    private static ErrorSelectionListener sqlSelectionListener;
+
     private static StyledText styledText_2;
     private static StyledText styledText_3;
     private static StyledText styledText_4;
-    private static Button button;
+
     private static Button button_1;
     private static Button button_2;
     private static Button button_3;
@@ -89,17 +94,19 @@ public class SplashWindow implements EventHandler {
         mbtSelectionListener = new ErrorSelectionListener(shell);
         mbt_error_button.addSelectionListener(mbtSelectionListener);
 
-        styledText_1 = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
-        styledText_1.setEnabled(false);
-        styledText_1.setText("Modbus Controller... connected");
-        styledText_1.setEditable(false);
-        styledText_1.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        styledText_1.setAlwaysShowScrollBars(false);
-        styledText_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        sql_styled_text = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
+        sql_styled_text.setEnabled(false);
+        sql_styled_text.setText("Trying to connect to sql server...");
+        sql_styled_text.setEditable(false);
+        sql_styled_text.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
+        sql_styled_text.setAlwaysShowScrollBars(false);
+        sql_styled_text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 
-        button = new Button(information_composite, SWT.NONE);
-        button.setEnabled(false);
-        button.setText("Fehler Anzeigen");
+        sql_error_button = new Button(information_composite, SWT.NONE);
+        sql_error_button.setEnabled(false);
+        sql_error_button.setText("Fehler Anzeigen");
+        sqlSelectionListener = new ErrorSelectionListener(shell);
+        sql_error_button.addSelectionListener(sqlSelectionListener);
 
         styledText_2 = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
         styledText_2.setEnabled(false);
@@ -206,6 +213,22 @@ public class SplashWindow implements EventHandler {
                 mbt_error_button.setEnabled(true);
                 mbtSelectionListener.setError((Throwable) SplashWindow.mbtServiceEvent.getProperty("Error"));
             }
+            mbtServiceEvent = null;
+        }
+        if (SplashWindow.sqlServiceEvent != null) {
+            if ((boolean) sqlServiceEvent.getProperty("success") == true) {
+                sql_styled_text.setText("SQL Server verbunden!");
+                sql_styled_text.setStyleRange(new StyleRange(0, sql_styled_text.getText().length(),
+                        SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN), null));
+                sql_error_button.setEnabled(false);
+            } else {
+                sql_styled_text.setText("SQL Server nicht verbunden...");
+                sql_styled_text.setStyleRange(new StyleRange(0, sql_styled_text.getText().length(),
+                        SWTResourceManager.getColor(SWT.COLOR_RED), null));
+                sql_error_button.setEnabled(true);
+                sqlSelectionListener.setError((Throwable) sqlServiceEvent.getProperty("Error"));
+            }
+            sqlServiceEvent = null;
         }
     }
 
@@ -221,6 +244,8 @@ public class SplashWindow implements EventHandler {
     public void handleEvent(Event event) {
         if (event.getTopic() == "at/sunplugged/z600/mbt/connect") {
             SplashWindow.mbtServiceEvent = event;
+        } else if (event.getTopic() == "at/sunplugged/z600/sql/connect") {
+            SplashWindow.sqlServiceEvent = event;
         }
         if (shell != null) {
             shell.getDisplay().asyncExec(new Runnable() {

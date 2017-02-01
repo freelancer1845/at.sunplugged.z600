@@ -5,16 +5,24 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.event.Event;
+import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.SettingsService;
 
 /**
  * Standard implementation of the DataService interface.
@@ -26,30 +34,45 @@ import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
  *
  */
 
-@Component(immediate = true)
+@Component()
 public class DataServiceImpl implements DataService {
 
     private static LogService logService;
+
+    private static StandardThreadPoolService threadPool;
+
+    private static SettingsService settings;
+
+    private static EventAdmin eventAdmin;
 
     private SqlConnection sqlConnection = null;
 
     private final Map<String, VariableSlot<?>> variableSlots = new HashMap<>();
 
     public DataServiceImpl() {
-        // sqlConnection = new SqlConnection(
-        // "jdbc:sqlserver://10.0.0.1;integratedsecurity=false;Initialcatalog=Z600_Datenerfassung;",
-        // "Z600",
-        // "alwhrh29035uafpue9ru3AWU");
 
+        threadPool.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    connectToSqlServer(settings.getProperty(SettingsIds.SQL_CONNECTION_STRING),
+                            SettingsIds.SQL_USERNAME, SettingsIds.SQL_PASSWORD);
+                    postConnectEvent(true, null);
+                } catch (DataServiceException e) {
+                    logService.log(LogService.LOG_ERROR, "Failed to connect to sql server specified in settings file.",
+                            e);
+                    postConnectEvent(false, e);
+                }
+            }
+
+        });
     }
 
     @Override
     public void connectToSqlServer(String address, String username, String password) throws DataServiceException {
         sqlConnection = new SqlConnection("jdbc:sqlserver://" + address, username, password);
         sqlConnection.open();
-        if (sqlConnection.isOpen()) {
-            System.out.println("SQL Connection OPEN");
-        }
     }
 
     @Override
@@ -113,21 +136,6 @@ public class DataServiceImpl implements DataService {
 
     }
 
-    public static LogService getLogService() {
-        return DataServiceImpl.logService;
-    }
-
-    @Reference(unbind = "unsetLogService")
-    public synchronized void setLogService(LogService logService) {
-        DataServiceImpl.logService = logService;
-    }
-
-    public synchronized void unsetLogService(LogService logService) {
-        if (DataServiceImpl.logService == logService) {
-            DataServiceImpl.logService = null;
-        }
-    }
-
     @Override
     public void issueStatement(String statement) {
         if (!sqlConnection.isOpen()) {
@@ -160,6 +168,76 @@ public class DataServiceImpl implements DataService {
             e.printStackTrace();
         }
 
+    }
+
+    private void postConnectEvent(boolean successful, Throwable e) {
+        Dictionary<String, Object> properties = new Hashtable<>();
+        properties.put("IP", sqlConnection.getDbUrl());
+        properties.put("success", successful);
+        if (!successful) {
+            properties.put("Error", e);
+        }
+        eventAdmin.postEvent(new Event("at/sunplugged/z600/sql/connect", properties));
+    }
+
+    public static LogService getLogService() {
+        return DataServiceImpl.logService;
+    }
+
+    @Reference(unbind = "unsetLogService")
+    public synchronized void setLogService(LogService logService) {
+        DataServiceImpl.logService = logService;
+    }
+
+    public synchronized void unsetLogService(LogService logService) {
+        if (DataServiceImpl.logService == logService) {
+            DataServiceImpl.logService = null;
+        }
+    }
+
+    public static StandardThreadPoolService getStandardThreadPoolService() {
+        return DataServiceImpl.threadPool;
+    }
+
+    @Reference(unbind = "unbindStandardThreadPoolService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService service) {
+        threadPool = service;
+    }
+
+    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService service) {
+        if (threadPool.equals(service)) {
+            threadPool = null;
+        }
+    }
+
+    public static SettingsService getSettingsServce() {
+        return settings;
+    }
+
+    @Reference(unbind = "unbindSettingsService")
+    public synchronized void bindSettingsService(SettingsService service) {
+        settings = service;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService service) {
+        if (settings.equals(service)) {
+            settings = null;
+        }
+    }
+
+    public static EventAdmin getEventAdmin() {
+        return eventAdmin;
+    }
+
+    @Reference(unbind = "unbindEventAdmin")
+    public synchronized void bindEventAdmin(EventAdmin service) {
+        eventAdmin = service;
+    }
+
+    public synchronized void unbindEventAdmin(EventAdmin service) {
+        if (eventAdmin.equals(service)) {
+            eventAdmin = null;
+        }
     }
 
 }

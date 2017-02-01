@@ -21,6 +21,10 @@ public class DefaultProperties extends Properties {
     public DefaultProperties() {
         this.put(SettingsIds.TURBO_PUMP_ON_TRIGGER, "0,025");
         this.put(SettingsIds.MBT_CONTROLLER_IP, "localhost");
+        this.put(SettingsIds.SQL_CONNECTION_STRING,
+                "10.0.0.1\\SQLEXPRESS; Integrated Security=false;Initial Catalog=Z600_Datenerfassung");
+        this.put(SettingsIds.SQL_USERNAME, "Z600");
+        this.put(SettingsIds.SQL_PASSWORD, "alwhrh29035uafpue9ru3AWU");
         this.put(SettingsIds.LEFT_ENGINE_COM_PORT, "COM6");
         this.put(SettingsIds.RIGHT_ENGINE_COMP_PORT, "COM5");
         this.put(SettingsIds.SAFETY_PROTOCOLS_OUTLETS, "true");

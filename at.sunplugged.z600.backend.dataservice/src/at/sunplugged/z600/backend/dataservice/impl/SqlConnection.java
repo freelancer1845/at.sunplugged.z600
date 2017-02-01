@@ -63,4 +63,8 @@ public class SqlConnection {
         return true;
     }
 
+    public String getDbUrl() {
+        return dbUrl;
+    }
+
 }
