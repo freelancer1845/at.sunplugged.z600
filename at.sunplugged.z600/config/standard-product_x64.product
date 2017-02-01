@@ -3,6 +3,7 @@
 
 <product name="z600_x64" uid="z600_x64_product" id="at.sunplugged.z600.launcher.z600" application="at.sunplugged.z600.launcher.standardApplicationId" version="0.1.0" useFeatures="false" includeLaunchers="true">
 
+
    <configIni use="default">
    </configIni>
 
@@ -15,12 +16,14 @@
 
    <windowImages/>
 
+
    <launcher>
       <solaris/>
       <win useIco="false">
          <bmp/>
       </win>
    </launcher>
+
 
    <vm>
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</windows>
@@ -65,6 +68,7 @@
       <plugin id="org.eclipse.osgi.services"/>
       <plugin id="org.eclipse.swt"/>
       <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
+      <plugin id="org.eclipse.swt.win32.win32.x86_64.source"/>
       <plugin id="org.swtchart"/>
       <plugin id="rxtx.org"/>
    </plugins>
