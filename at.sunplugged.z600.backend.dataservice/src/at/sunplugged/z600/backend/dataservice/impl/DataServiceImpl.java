@@ -19,6 +19,9 @@ import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 /**
  * Standard implementation of the DataService interface.
  * 
+ * Connection String Working: "10.0.0.1\SQLEXPRESS; Integrated
+ * Security=false;Initial Catalog=Z600_Datenerfassung"
+ * 
  * @author Jascha Riedel
  *
  */
