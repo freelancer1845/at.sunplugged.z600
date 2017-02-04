@@ -5,7 +5,7 @@ import java.security.InvalidParameterException;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
@@ -157,7 +157,7 @@ public class OutletControlImpl implements OutletControl {
     }
 
     private boolean IsSafetyProtocolEnabeld() {
-        return Boolean.getBoolean(settingsService.getProperty(SettingsIds.SAFETY_PROTOCOLS_OUTLETS));
+        return Boolean.getBoolean(settingsService.getProperty(ParameterIds.SAFETY_PROTOCOLS_OUTLETS));
     }
 
     private boolean checkSafetyProtocol(Outlet outlet, boolean newState) {

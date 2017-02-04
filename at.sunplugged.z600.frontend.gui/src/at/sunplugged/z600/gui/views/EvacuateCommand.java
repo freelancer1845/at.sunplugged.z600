@@ -9,7 +9,7 @@ import java.util.concurrent.TimeoutException;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
@@ -177,7 +177,7 @@ public class EvacuateCommand {
                 }
 
                 if (pressureMeasurement.getCurrentValue(PressureMeasurementSite.CHAMBER) > Double
-                        .valueOf(settings.getProperty(SettingsIds.START_TRIGGER_TURBO_PUMP)) * 0.9) {
+                        .valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.9) {
                     logService.log(LogService.LOG_INFO,
                             "Opening Outlet 3 to evacuate chamber until the start trigger of the turbo pump is reached (110%) ...");
                     try {
@@ -188,7 +188,7 @@ public class EvacuateCommand {
                     }
                     FuturePressureReachedEvent turboPumpPressureTrigger = new FuturePressureReachedEvent(
                             machineStateService, PressureMeasurementSite.CHAMBER,
-                            Double.valueOf(settings.getProperty(SettingsIds.START_TRIGGER_TURBO_PUMP)) * 0.9);
+                            Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.9);
                     try {
                         turboPumpPressureTrigger.get(1, TimeUnit.HOURS);
                     } catch (TimeoutException e) {
@@ -219,7 +219,7 @@ public class EvacuateCommand {
 
                 FuturePressureReachedEvent turboPumpChamberPressureTrigger = new FuturePressureReachedEvent(
                         machineStateService, PressureMeasurementSite.TURBO_PUMP,
-                        Double.valueOf(settings.getProperty(SettingsIds.START_TRIGGER_TURBO_PUMP)) * 0.9);
+                        Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.9);
 
                 try {
                     turboPumpChamberPressureTrigger.get(10, TimeUnit.MINUTES);

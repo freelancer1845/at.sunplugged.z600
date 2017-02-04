@@ -17,7 +17,7 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.mbt.api.MbtServiceException;
@@ -96,7 +96,7 @@ public class MbtServiceImpl implements MbtService {
     }
 
     private void connect() throws IOException {
-        addr = InetAddress.getByName(settingsService.getProperty(SettingsIds.MBT_CONTROLLER_IP));
+        addr = InetAddress.getByName(settingsService.getProperty(NetworkComIds.MBT_CONTROLLER_IP));
         connection = new TCPMasterConnection(addr);
         connection.setPort(port);
         try {

@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -50,7 +50,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         this.logService = MachineStateServiceImpl.getLogService();
         this.settingsService = MachineStateServiceImpl.getSettingsService();
         this.threadPoolService = MachineStateServiceImpl.getStandardThreadPoolService();
-        desiredPressure = Double.valueOf(settingsService.getProperty(SettingsIds.INITIAL_DESIRED_PRESSURE_GAS_FLOW));
+        desiredPressure = Double.valueOf(settingsService.getProperty(ParameterIds.INITIAL_DESIRED_PRESSURE_GAS_FLOW));
 
         machineStateService.registerMachineEventHandler(this);
     }
@@ -99,9 +99,10 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     private void handleEventLocal(double currentPressure) {
         if (lastPressureChangedReaction + TimeUnit.MILLISECONDS.toNanos(500) < System.nanoTime()) {
-            int controlParameter = Integer.valueOf(settingsService.getProperty(SettingsIds.GAS_FLOW_CONTROL_PARAMETER));
+            int controlParameter = Integer
+                    .valueOf(settingsService.getProperty(ParameterIds.GAS_FLOW_CONTROL_PARAMETER));
             double controlParameterHysteresis = Double
-                    .valueOf(settingsService.getProperty(SettingsIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER));
+                    .valueOf(settingsService.getProperty(ParameterIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER));
 
             if (currentPressure < desiredPressure * (1 + controlParameterHysteresis / 100.0)) {
                 gasFlowVariable += controlParameter;
@@ -161,7 +162,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         }
 
         private void setIntialGasFlow() throws IOException {
-            gasFlowVariable = Double.valueOf(settingsService.getProperty(SettingsIds.INITIAL_GAS_FLOW_PARAMETER));
+            gasFlowVariable = Double.valueOf(settingsService.getProperty(ParameterIds.INITIAL_GAS_FLOW_PARAMETER));
             mbtService.writeOutputRegister(WagoAddresses.AnalogOutput.GAS_FLOW_SETPOINT.getAddress(),
                     convertGasFlowParameterToAnalogOutput(desiredPressure));
         }
@@ -171,9 +172,10 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         }
 
         private void startControlLoop() {
-            int controlParameter = Integer.valueOf(settingsService.getProperty(SettingsIds.GAS_FLOW_CONTROL_PARAMETER));
+            int controlParameter = Integer
+                    .valueOf(settingsService.getProperty(ParameterIds.GAS_FLOW_CONTROL_PARAMETER));
             double controlParameterHysteresis = Double
-                    .valueOf(settingsService.getProperty(SettingsIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER));
+                    .valueOf(settingsService.getProperty(ParameterIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER));
 
             long lastTick = System.nanoTime();
             while (true) {

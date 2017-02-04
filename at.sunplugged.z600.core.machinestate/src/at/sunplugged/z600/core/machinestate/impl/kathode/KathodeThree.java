@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -40,7 +40,7 @@ public class KathodeThree extends AbstractKathode {
 
         logService.log(LogService.LOG_INFO, "Vacuum and Water are ok. Starting PowerSupply SVV2.");
 
-        setCurrentSetpoint(Double.valueOf(settings.getProperty(SettingsIds.INITIAL_CURRENT_KATHODE_THREE)));
+        setCurrentSetpoint(Double.valueOf(settings.getProperty(ParameterIds.INITIAL_CURRENT_KATHODE_THREE)));
         machineStateService.getPowerControl().start(PowerUnit.SSV_TWO);
     }
 
@@ -79,10 +79,10 @@ public class KathodeThree extends AbstractKathode {
         }
         if (getPowerSetpoint() > (getPowerAtKathode() + 0.05)) {
             setCurrentSetpoint(getCurrentSetpoint()
-                    + Double.valueOf(settings.getProperty(SettingsIds.DELTA_CURRENT_KATHODE_THREE)));
+                    + Double.valueOf(settings.getProperty(ParameterIds.DELTA_CURRENT_KATHODE_THREE)));
         } else if (getPowerSetpoint() < (getPowerAtKathode() - 0.05)) {
             setCurrentSetpoint(getCurrentSetpoint()
-                    + Double.valueOf(settings.getProperty(SettingsIds.DELTA_CURRENT_KATHODE_THREE)));
+                    + Double.valueOf(settings.getProperty(ParameterIds.DELTA_CURRENT_KATHODE_THREE)));
         }
         int outputValue = 0;
         if (getCurrentSetpoint() > 30) {

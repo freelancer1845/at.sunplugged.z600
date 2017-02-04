@@ -7,7 +7,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -63,11 +63,11 @@ public abstract class AbstractKathode implements KathodeInterface {
     protected boolean checkVacuum(Kathode kathode) {
         double currentPressure = machineStateService.getPressureMeasurmentControl()
                 .getCurrentValue(PressureMeasurementSite.CHAMBER);
-        if (currentPressure < Double.valueOf(settings.getProperty(SettingsIds.VACUUM_LOWER_LIMIT_MBAR))) {
+        if (currentPressure < Double.valueOf(settings.getProperty(ParameterIds.VACUUM_LOWER_LIMIT_MBAR))) {
             logService.log(LogService.LOG_ERROR,
                     "Won't start kathode: \"" + kathode.name() + "\". Pressure is too low.");
             return false;
-        } else if (currentPressure > Double.valueOf(settings.getProperty(SettingsIds.VACUUM_UPPER_LIMIT_MBAR))) {
+        } else if (currentPressure > Double.valueOf(settings.getProperty(ParameterIds.VACUUM_UPPER_LIMIT_MBAR))) {
             logService.log(LogService.LOG_ERROR,
                     "Won't start kathode: \"" + kathode.name() + "\". Pressure is too high.");
             return false;

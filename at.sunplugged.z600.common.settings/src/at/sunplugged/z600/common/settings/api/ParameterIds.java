@@ -1,27 +1,15 @@
 package at.sunplugged.z600.common.settings.api;
 
-public class SettingsIds {
+/**
+ * Holds the IDs of parameters of the machine.
+ * 
+ * @author Jascha Riedel
+ *
+ */
+public class ParameterIds {
 
     /** Turbo Pump Vaccum Trigger Value ID. */
     public static final String TURBO_PUMP_ON_TRIGGER = "Einschalttrigger Tmp";
-
-    /** MBT Controller Ip. */
-    public static final String MBT_CONTROLLER_IP = "MBT_Controller_IP";
-
-    /** SQL Connection String. */
-    public static final String SQL_CONNECTION_STRING = "Sql_Connection_String";
-
-    /** SQL Username. */
-    public static final String SQL_USERNAME = "Sql_Username";
-
-    /** SQL Password. */
-    public static final String SQL_PASSWORD = "Sql_Password";
-
-    /** Left Engine Port. */
-    public static final String LEFT_ENGINE_COM_PORT = "Motor_Links_Port";
-
-    /** Right Engine Port. */
-    public static final String RIGHT_ENGINE_COMP_PORT = "Motor_Rechts_Port";
 
     /** SafetyProtcols Outlets. */
     public static final String SAFETY_PROTOCOLS_OUTLETS = "Safety_Protocols_Outlets";
@@ -65,7 +53,4 @@ public class SettingsIds {
     /** Vacuum trigger tubopump. */
     public static final String START_TRIGGER_TURBO_PUMP = "Start_Trigger_Turbo_Pump";
 
-    private SettingsIds() {
-
-    }
 }

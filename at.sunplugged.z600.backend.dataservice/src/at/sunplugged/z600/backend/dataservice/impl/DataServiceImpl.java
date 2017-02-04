@@ -16,7 +16,6 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
@@ -24,14 +23,13 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 
 /**
- * Standard implementation of the DataService interface.
- * 
- * Connection String Working: "10.0.0.1\SQLEXPRESS; Integrated
- * Security=false;Initial Catalog=Z600_Datenerfassung"
+ * Standard implementation of the DataService interface. Connection String
+ * Working: "10.0.0.1\SQLEXPRESS; Integrated Security=false;Initial
+ * Catalog=Z600_Datenerfassung"
  * 
  * @author Jascha Riedel
  *
@@ -62,8 +60,8 @@ public class DataServiceImpl implements DataService {
             @Override
             public void run() {
                 try {
-                    connectToSqlServer(settings.getProperty(SettingsIds.SQL_CONNECTION_STRING),
-                            SettingsIds.SQL_USERNAME, SettingsIds.SQL_PASSWORD);
+                    connectToSqlServer(settings.getProperty(NetworkComIds.SQL_CONNECTION_STRING),
+                            NetworkComIds.SQL_USERNAME, NetworkComIds.SQL_PASSWORD);
                     postConnectEvent(true, null);
                 } catch (DataServiceException e) {
                     logService.log(LogService.LOG_ERROR, "Failed to connect to sql server specified in settings file.",

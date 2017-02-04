@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.settings.api.SettingsIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -40,7 +40,7 @@ public class KathodeOne extends AbstractKathode {
 
         logService.log(LogService.LOG_INFO, "Vacuum and Water are ok. Starting PowerSupply Pinnacle.");
 
-        setPowerSetpoint(Double.valueOf(settings.getProperty(SettingsIds.INITIAL_POWER_KATHODE_ONE)));
+        setPowerSetpoint(Double.valueOf(settings.getProperty(ParameterIds.INITIAL_POWER_KATHODE_ONE)));
         try {
             mbtService.writeDigOut(DigitalOutput.PINNACLE_REG_ONE.getAddress(), false);
             mbtService.writeDigOut(DigitalOutput.PINNACLE_REG_TWO.getAddress(), true);
@@ -94,11 +94,11 @@ public class KathodeOne extends AbstractKathode {
         double currentPower = getPowerAtKathode();
 
         if (getPowerSetpoint() > currentPower + 0.01) {
-            setCurrentSetpoint(
-                    getCurrentSetpoint() + Double.valueOf(settings.getProperty(SettingsIds.DELTA_CURRENT_KATHODE_ONE)));
+            setCurrentSetpoint(getCurrentSetpoint()
+                    + Double.valueOf(settings.getProperty(ParameterIds.DELTA_CURRENT_KATHODE_ONE)));
         } else if (getPowerSetpoint() < currentPower - 0.01) {
-            setCurrentSetpoint(
-                    getCurrentSetpoint() - Double.valueOf(settings.getProperty(SettingsIds.DELTA_CURRENT_KATHODE_ONE)));
+            setCurrentSetpoint(getCurrentSetpoint()
+                    - Double.valueOf(settings.getProperty(ParameterIds.DELTA_CURRENT_KATHODE_ONE)));
         }
         mbtService.writeOutputRegister(Kathode.KATHODE_ONE.getAnalogOutput().getAddress(),
                 (int) (getCurrentSetpoint() * 4095.0 / 5));
