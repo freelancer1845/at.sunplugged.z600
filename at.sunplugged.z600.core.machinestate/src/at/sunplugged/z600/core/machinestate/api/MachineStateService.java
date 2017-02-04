@@ -18,6 +18,16 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 public interface MachineStateService {
 
     /**
+     * Starts the automatic updating of the machineStateService.
+     */
+    public void start();
+
+    /**
+     * Stops the machineStateService
+     */
+    public void stop();
+
+    /**
      * 
      * @return the {@linkplain OutletControl} Interface.
      */

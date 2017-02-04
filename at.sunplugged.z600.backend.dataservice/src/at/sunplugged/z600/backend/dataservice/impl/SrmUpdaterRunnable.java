@@ -6,6 +6,8 @@ import java.sql.Statement;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+
 public class SrmUpdaterRunnable implements Runnable {
 
     private final LogService logService;
@@ -20,7 +22,12 @@ public class SrmUpdaterRunnable implements Runnable {
     @Override
     public void run() {
         if (!sqlConnection.isOpen()) {
-            sqlConnection.open();
+            try {
+                sqlConnection.open();
+            } catch (DataServiceException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         Statement stmt = null;
         ResultSet resultSet = null;

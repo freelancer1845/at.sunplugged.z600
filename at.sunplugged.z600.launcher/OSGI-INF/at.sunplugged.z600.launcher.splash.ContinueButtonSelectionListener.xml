@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="at.sunplugged.z600.launcher.splash.ContinueButtonSelectionListener">
+   <service>
+      <provide interface="org.eclipse.swt.events.SelectionListener"/>
+   </service>
+   <reference bind="bindMachineStateService" cardinality="0..1" interface="at.sunplugged.z600.core.machinestate.api.MachineStateService" name="MachineStateService" policy="static" unbind="unbindMachineStateService"/>
+   <implementation class="at.sunplugged.z600.launcher.splash.ContinueButtonSelectionListener"/>
+</scr:component>

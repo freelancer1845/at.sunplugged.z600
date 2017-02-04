@@ -177,17 +177,7 @@ public class SplashWindow implements EventHandler {
         gd_btnWeiter.widthHint = 75;
         btnWeiter.setLayoutData(gd_btnWeiter);
         btnWeiter.setText("Weiter");
-        btnWeiter.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                dispose();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
+        btnWeiter.addSelectionListener(new ContinueButtonSelectionListener(shell));
         initializeShell();
         createContents();
         updateSplashWindow();

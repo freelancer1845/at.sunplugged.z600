@@ -93,13 +93,38 @@ public class MachineStateServiceImpl implements MachineStateService {
         this.gasFlowControl = new GasFlowControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
-        this.updaterThread = new InputUpdaterThread();
-        this.updaterThread.start();
+
     }
 
     @Deactivate
     protected void deactivateMachineStateService() {
-        updaterThread.stop();
+        stop();
+    }
+
+    @Override
+    public void start() {
+        if (this.updaterThread != null) {
+            this.updaterThread = new InputUpdaterThread();
+            this.updaterThread.start();
+        } else if (updaterThread.isRunning()) {
+            this.updaterThread = new InputUpdaterThread();
+            this.updaterThread.start();
+        } else {
+            logService.log(LogService.LOG_DEBUG,
+                    "Tried to start MachineStateService updater thread although it is already running.");
+        }
+
+    }
+
+    @Override
+    public void stop() {
+        if (this.updaterThread != null) {
+            if (this.updaterThread.isRunning()) {
+                updaterThread.stop();
+                updaterThread = null;
+            }
+        }
+
     }
 
     @Override
@@ -440,6 +465,10 @@ public class MachineStateServiceImpl implements MachineStateService {
 
         public void stop() {
             running = false;
+        }
+
+        public boolean isRunning() {
+            return running;
         }
 
     }

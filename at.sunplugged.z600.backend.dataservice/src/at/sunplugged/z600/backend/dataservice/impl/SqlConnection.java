@@ -7,6 +7,8 @@ import java.sql.Statement;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+
 public class SqlConnection {
 
     /**
@@ -27,13 +29,14 @@ public class SqlConnection {
         this.password = password;
     }
 
-    public void open() {
+    public void open() throws DataServiceException {
         try {
             DriverManager.registerDriver(new com.microsoft.sqlserver.jdbc.SQLServerDriver());
             DriverManager.setLoginTimeout(5);
             conn = DriverManager.getConnection(dbUrl, username, password);
         } catch (SQLException e) {
             DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to open connection", e);
+            throw new DataServiceException(e);
         }
 
     }

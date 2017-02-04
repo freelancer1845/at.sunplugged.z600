@@ -51,9 +51,6 @@ public class KathodeControlImpl implements KathodeControl, MachineEventHandler {
         kathodeTwo = new KathodeTwo(logService, machineStateService, settings, mbtService);
         kathodeThree = new KathodeThree(logService, machineStateService, settings, mbtService);
 
-        this.powerControlThread = new PowerControlThread();
-
-        powerControlThread.start();
     }
 
     @Override
@@ -83,7 +80,8 @@ public class KathodeControlImpl implements KathodeControl, MachineEventHandler {
     @Override
     public void startKathode(Kathode kathode) throws InvalidKathodeStateException {
         if (powerControlThread.isRunning() == false) {
-            throw new InvalidKathodeStateException("Power Control Thread is not running. Try restarting the program.");
+            logService.log(LogService.LOG_DEBUG, "Starting Power Control Thread");
+            startPowerControlThread();
         }
         switch (kathode) {
         case KATHODE_ONE:
@@ -168,6 +166,23 @@ public class KathodeControlImpl implements KathodeControl, MachineEventHandler {
         // double currentPower = getPowerAtKathode(Kathode.KATHODE_ONE);
         //
         // }
+    }
+
+    private void startPowerControlThread() {
+        if (this.powerControlThread == null) {
+            this.powerControlThread = new PowerControlThread();
+            powerControlThread.start();
+        } else if (this.powerControlThread.isRunning() == false) {
+            this.powerControlThread = new PowerControlThread();
+            powerControlThread.start();
+        }
+    }
+
+    private void stopPowerControlThread() {
+        if (this.powerControlThread != null) {
+            this.powerControlThread.stopSoft();
+            this.powerControlThread = null;
+        }
     }
 
     private class PowerControlThread extends Thread {
