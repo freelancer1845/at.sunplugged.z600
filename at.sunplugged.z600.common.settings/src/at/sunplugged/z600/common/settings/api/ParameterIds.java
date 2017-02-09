@@ -8,9 +8,6 @@ package at.sunplugged.z600.common.settings.api;
  */
 public class ParameterIds {
 
-    /** Turbo Pump Vaccum Trigger Value ID. */
-    public static final String TURBO_PUMP_ON_TRIGGER = "Einschalttrigger Tmp";
-
     /** SafetyProtcols Outlets. */
     public static final String SAFETY_PROTOCOLS_OUTLETS = "Safety_Protocols_Outlets";
 
@@ -52,5 +49,8 @@ public class ParameterIds {
 
     /** Vacuum trigger tubopump. */
     public static final String START_TRIGGER_TURBO_PUMP = "Start_Trigger_Turbo_Pump";
+
+    /** Cryo Pump Trigger Pressure. */
+    public static final String CRYO_PUMP_PRESSURE_TRIGGER = "Cryo_Pump_Pressure_Trigger";
 
 }

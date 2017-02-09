@@ -122,7 +122,7 @@ public final class SystemOutputFactory implements LogListener {
         Date resultDate = new Date(entry.getTime());
         switch (entry.getLevel()) {
         case LogService.LOG_INFO:
-            return simpleDateFormat.format(resultDate) + " ERROR ->";
+            return simpleDateFormat.format(resultDate) + " INFO ->";
         case LogService.LOG_DEBUG:
             return simpleDateFormat.format(resultDate) + " DEBUG ->";
         case LogService.LOG_WARNING:

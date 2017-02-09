@@ -6,6 +6,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 
@@ -16,7 +17,7 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
  * @author Jascha Riedel
  *
  */
-@Component
+@Component(immediate = true)
 public class ContinueButtonSelectionListener implements SelectionListener {
 
     private static MachineStateService machineStateService;
@@ -49,7 +50,7 @@ public class ContinueButtonSelectionListener implements SelectionListener {
         }
     }
 
-    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.OPTIONAL)
+    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.OPTIONAL, policy = ReferencePolicy.DYNAMIC)
     public synchronized void bindMachineStateService(MachineStateService machineStateService) {
         ContinueButtonSelectionListener.machineStateService = machineStateService;
     }

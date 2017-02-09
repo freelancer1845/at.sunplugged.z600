@@ -333,17 +333,17 @@ public class MainView {
                 if (evacuateCommand == null) {
                     evacuateCommand = new EvacuateCommand(threadPool, machineStateService, logService, settings);
                 }
-                if (btnEvakuieren.getText().equals("Evakuieren Primary")) {
-                    evacuateCommand.executeRouteOne();
+                if (btnEvakuieren.getText().equals("Evakuieren Secondary")) {
+                    evacuateCommand.executeRouteTwo();
                     btnEvakuieren.setText("Cancel");
                 } else if (btnEvakuieren.getText().equals("Cancel")) {
-                    evacuateCommand.cancelRouteOne();
-                    btnEvakuieren.setText("Evakuieren Primary");
+                    evacuateCommand.cancelRouteTwo();
+                    btnEvakuieren.setText("Evakuieren Secondary");
                 }
             }
         });
         btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        btnEvakuieren.setText("Evakuieren Primary");
+        btnEvakuieren.setText("Evakuieren Secondary");
 
         Group grpBandlauf = ConveyorGroupFactory.createGroup(composite_1);
 

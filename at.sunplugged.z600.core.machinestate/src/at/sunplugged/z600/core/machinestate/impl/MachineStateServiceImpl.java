@@ -100,7 +100,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Override
     public void start() {
-        if (this.updaterThread != null) {
+        if (this.updaterThread == null) {
             this.updaterThread = new InputUpdaterThread();
             this.updaterThread.start();
         } else if (updaterThread.isRunning()) {
