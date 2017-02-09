@@ -3,7 +3,6 @@
    <service>
       <provide interface="at.sunplugged.z600.core.machinestate.api.MachineStateService"/>
    </service>
-   <reference bind="setDataService" cardinality="1..1" interface="at.sunplugged.z600.backend.dataservice.api.DataService" name="DataService" policy="static" unbind="unsetDataService"/>
    <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
    <reference bind="setMbtService" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MbtService" policy="static" unbind="unsetMbtService"/>
    <reference bind="bindSettingsService" cardinality="1..1" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="SettingsService" policy="static" unbind="unbindSettingsService"/>

@@ -70,4 +70,8 @@ public class SqlConnection {
         return dbUrl;
     }
 
+    public Connection getConnection() {
+        return conn;
+    }
+
 }

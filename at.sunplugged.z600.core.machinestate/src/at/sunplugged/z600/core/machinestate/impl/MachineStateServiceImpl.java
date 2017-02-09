@@ -13,7 +13,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
@@ -41,8 +40,6 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     /** Update tickrate. */
     private static final int INPUT_UPDATE_TICKRATE = 10;
-
-    private static DataService dataService;
 
     private static LogService logService;
 
@@ -353,17 +350,6 @@ public class MachineStateServiceImpl implements MachineStateService {
     // Declarative Service Specific Code
     // #################################
 
-    @Reference(unbind = "unsetDataService")
-    public synchronized void setDataService(DataService dataService) {
-        MachineStateServiceImpl.dataService = dataService;
-    }
-
-    public synchronized void unsetDataService(DataService dataService) {
-        if (MachineStateServiceImpl.dataService == dataService) {
-            MachineStateServiceImpl.dataService = null;
-        }
-    }
-
     @Reference(unbind = "unsetLogService")
     public synchronized void setLogService(LogService logService) {
         MachineStateServiceImpl.logService = logService;
@@ -471,10 +457,6 @@ public class MachineStateServiceImpl implements MachineStateService {
             return running;
         }
 
-    }
-
-    public static DataService getDataService() {
-        return dataService;
     }
 
     public static LogService getLogService() {

@@ -17,11 +17,18 @@ public interface KathodeControl {
     public void setPowerSetpoint(Kathode kathode, double power);
 
     /**
+     * Returns the setPoint of the {@linkplain Kathode} in [kw].
+     * 
+     * @param kathode
+     * @return value in [kw]
+     */
+    public double getPowerSetpoint(Kathode kathode);
+
+    /**
      * Initializes the start method of the {@linkplain Kathode}. When finished a
      * {@linkplain KathodeStateEvent} is fired.
      * 
-     * @param kathode
-     *            to start.
+     * @param kathode to start.
      * @throws InvalidKathodeStateException
      */
     public void startKathode(Kathode kathode) throws InvalidKathodeStateException;
@@ -30,8 +37,7 @@ public interface KathodeControl {
      * Stops the desired kathode. When finished a {@linkplain KathodeStateEvent}
      * is fired.
      * 
-     * @param kathode
-     *            to stop.
+     * @param kathode to stop.
      */
     public void stopKathode(Kathode kathode);
 
@@ -62,13 +68,19 @@ public interface KathodeControl {
 
     public enum Kathode {
         KATHODE_ONE(
-                AnalogOutput.KATHODE_ONE_SETPOINT, PowerUnit.PINNACLE, AnalogInput.VOLTAGE_KATHODE_ONE,
+                AnalogOutput.KATHODE_ONE_SETPOINT,
+                PowerUnit.PINNACLE,
+                AnalogInput.VOLTAGE_KATHODE_ONE,
                 AnalogInput.POWER_KATHODE_ONE),
         KATHODE_TWO(
-                AnalogOutput.KATHODE_TWO_SETPOINT, PowerUnit.SSV_ONE, AnalogInput.VOLTAGE_KATHODE_TWO,
+                AnalogOutput.KATHODE_TWO_SETPOINT,
+                PowerUnit.SSV_ONE,
+                AnalogInput.VOLTAGE_KATHODE_TWO,
                 AnalogInput.CURRENT_KATHODE_TWO),
         KATHODE_THREE(
-                AnalogOutput.KATHODE_THREE_SETPOINT, PowerUnit.SSV_TWO, AnalogInput.VOLTAGE_KATHODE_THREE,
+                AnalogOutput.KATHODE_THREE_SETPOINT,
+                PowerUnit.SSV_TWO,
+                AnalogInput.VOLTAGE_KATHODE_THREE,
                 AnalogInput.CURRENT_KATHODE_THREE);
 
         private final AnalogOutput analogOutput;

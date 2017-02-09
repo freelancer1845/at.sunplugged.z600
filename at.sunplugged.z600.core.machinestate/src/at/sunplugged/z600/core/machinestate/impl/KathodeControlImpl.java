@@ -71,6 +71,21 @@ public class KathodeControlImpl implements KathodeControl, MachineEventHandler {
     }
 
     @Override
+    public double getPowerSetpoint(Kathode kathode) {
+        switch (kathode) {
+        case KATHODE_ONE:
+            return kathodeOne.getPowerSetpoint();
+        case KATHODE_TWO:
+            return kathodeTwo.getPowerSetpoint();
+        case KATHODE_THREE:
+            return kathodeThree.getPowerSetpoint();
+        default:
+            logService.log(LogService.LOG_DEBUG, "No Setpoint Variable for kathode: " + kathode.name());
+            return -1;
+        }
+    }
+
+    @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(Type.ANALOG_INPUT_CHANGED)) {
             safetyChecks(event);

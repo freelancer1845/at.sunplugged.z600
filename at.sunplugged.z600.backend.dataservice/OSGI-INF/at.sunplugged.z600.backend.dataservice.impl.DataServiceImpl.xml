@@ -3,8 +3,10 @@
    <service>
       <provide interface="at.sunplugged.z600.backend.dataservice.api.DataService"/>
    </service>
+   <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
    <reference bind="bindEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static" unbind="unbindEventAdmin"/>
    <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
+   <reference bind="bindMachineStateService" cardinality="0..1" interface="at.sunplugged.z600.core.machinestate.api.MachineStateService" name="MachineStateService" policy="static" unbind="unbindMachineStateService"/>
    <reference bind="bindSettingsService" cardinality="1..1" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="SettingsService" policy="static" unbind="unbindSettingsService"/>
    <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
    <implementation class="at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl"/>

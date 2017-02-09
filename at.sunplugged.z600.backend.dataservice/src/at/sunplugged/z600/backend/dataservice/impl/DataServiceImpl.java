@@ -25,6 +25,8 @@ import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 
 /**
  * Standard implementation of the DataService interface. Connection String
@@ -45,6 +47,10 @@ public class DataServiceImpl implements DataService {
     private static SettingsService settings;
 
     private static EventAdmin eventAdmin;
+
+    private static MachineStateService machineStateService;
+
+    private static ConveyorControlService conveyorService;
 
     private SqlConnection sqlConnection = null;
 
@@ -242,6 +248,36 @@ public class DataServiceImpl implements DataService {
         if (eventAdmin.equals(service)) {
             eventAdmin = null;
         }
+    }
+
+    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.OPTIONAL)
+    public synchronized void bindMachineStateService(MachineStateService machineStateService) {
+        DataServiceImpl.machineStateService = machineStateService;
+    }
+
+    public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
+        if (DataServiceImpl.machineStateService == machineStateService) {
+            DataServiceImpl.machineStateService = null;
+        }
+    }
+
+    public static MachineStateService getMachineStateService() {
+        return machineStateService;
+    }
+
+    @Reference(unbind = "unbindConveyorControlService")
+    public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
+        DataServiceImpl.conveyorService = conveyorControlService;
+    }
+
+    public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
+        if (DataServiceImpl.conveyorService == conveyorControlService) {
+            DataServiceImpl.conveyorService = null;
+        }
+    }
+
+    public static ConveyorControlService getConveyorControlService() {
+        return conveyorService;
     }
 
 }
