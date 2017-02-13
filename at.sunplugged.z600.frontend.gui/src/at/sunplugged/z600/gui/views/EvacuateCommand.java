@@ -1,7 +1,6 @@
 package at.sunplugged.z600.gui.views;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -16,15 +15,14 @@ import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
-import at.sunplugged.z600.core.machinestate.api.PumpControl;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.FutureEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.FuturePressureReachedEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 
 public class EvacuateCommand {
 
@@ -36,7 +34,7 @@ public class EvacuateCommand {
 
     private PressureMeasurement pressureMeasurement;
 
-    private PumpControl pumpControl;
+    private PumpRegistry pumpControl;
 
     private LogService logService;
 
@@ -52,7 +50,7 @@ public class EvacuateCommand {
         this.machineStateService = machineStateService;
         this.outletControl = machineStateService.getOutletControl();
         this.pressureMeasurement = machineStateService.getPressureMeasurmentControl();
-        this.pumpControl = machineStateService.getPumpControl();
+        this.pumpControl = machineStateService.getPumpRegistry();
         this.logService = logService;
         this.settings = settings;
     }
@@ -109,6 +107,7 @@ public class EvacuateCommand {
 
         @Override
         public void run() {
+
             try {
                 try {
                     logService.log(LogService.LOG_INFO, "Executing primary vaccum route.");
@@ -126,18 +125,13 @@ public class EvacuateCommand {
                         cancel();
                     }
 
-                    PumpState state = pumpControl.getState(Pumps.PRE_PUMP_ONE);
-                    System.out.println("State: " + state.name());
-                    if (pumpControl.getState(Pumps.PRE_PUMP_ONE).equals(PumpState.OFF)) {
+                    PumpState state = pumpControl.getPump(PumpIds.PRE_PUMP_ONE).getState();
+                    if (state.equals(PumpState.OFF)) {
                         logService.log(LogService.LOG_INFO, "Starting pre pump one...");
 
-                        FutureEvent pumpOneEvent = new FutureEvent(machineStateService,
-                                new PumpStateEvent(Pumps.PRE_PUMP_ONE, PumpState.ON));
-                        pumpControl.startPump(Pumps.PRE_PUMP_ONE);
+                        FutureEvent pumpOneEvent = pumpControl.getPump(PumpIds.PRE_PUMP_ONE).startPump();
                         try {
                             pumpOneEvent.get(5, TimeUnit.SECONDS);
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
                         } catch (TimeoutException e) {
                             logService.log(LogService.LOG_ERROR,
                                     "Pre Pump One didn't start after 5 Seconds. Canceling Evacuation.");
@@ -145,33 +139,35 @@ public class EvacuateCommand {
                         }
                     }
 
-                    if (pumpControl.getState(Pumps.PRE_PUMP_ROOTS).equals(PumpState.OFF)) {
+                    state = pumpControl.getPump(PumpIds.PRE_PUMP_ROOTS).getState();
+
+                    if (state.equals(PumpState.OFF)) {
+
+                        FutureEvent rootsPumpEvent;
                         if (machineStateService.getDigitalInputState(DigitalInput.P_120_MBAR)) {
-                            pumpControl.startPump(Pumps.PRE_PUMP_ROOTS);
+                            rootsPumpEvent = pumpControl.getPump(PumpIds.PRE_PUMP_ROOTS).startPump();
                         } else {
                             FutureEvent p120TriggerEvent = new FutureEvent(machineStateService,
                                     new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.P_120_MBAR, true));
                             try {
                                 p120TriggerEvent.get(10, TimeUnit.SECONDS);
-                            } catch (ExecutionException e) {
                             } catch (TimeoutException e) {
                                 logService.log(LogService.LOG_ERROR,
                                         "Roots pump couldn't start. P_120_MBAR trigger not reached.");
                                 cancel();
                             }
-                            pumpControl.startPump(Pumps.PRE_PUMP_ROOTS);
+                            rootsPumpEvent = pumpControl.getPump(PumpIds.PRE_PUMP_ROOTS).startPump();
+
                         }
                         logService.log(LogService.LOG_INFO, "Starting roots pump...");
 
-                        FutureEvent rootsPumpEvent = new FutureEvent(machineStateService,
-                                new PumpStateEvent(Pumps.PRE_PUMP_ROOTS, PumpState.ON));
-
                         try {
                             rootsPumpEvent.get(5, TimeUnit.SECONDS);
-                        } catch (ExecutionException | TimeoutException e) {
+                        } catch (TimeoutException e) {
                             logService.log(LogService.LOG_ERROR, "Roots Pump didnt start after 5 seconds.");
                             cancel();
                         }
+
                     }
 
                     if (pressureMeasurement.getCurrentValue(PressureMeasurementSite.TURBO_PUMP) >= 1) {
@@ -261,6 +257,16 @@ public class EvacuateCommand {
                     }
 
                     logService.log(LogService.LOG_INFO, "Ready to start turbo pump...");
+                    logService.log(LogService.LOG_INFO, "Starting turbo pump");
+
+                    FutureEvent turboPumpStartEvent = machineStateService.getPumpRegistry().getPump(PumpIds.TURBO_PUMP)
+                            .startPump();
+                    try {
+                        turboPumpStartEvent.get(5, TimeUnit.MINUTES);
+                    } catch (TimeoutException e) {
+                        logService.log(LogService.LOG_ERROR, "Turbo Pump didn't start after 5 minutes!");
+                        cancel();
+                    }
 
                 } catch (InterruptedException e1) {
                     logService.log(LogService.LOG_ERROR, "Primary route interrupted by user", e1);
@@ -271,6 +277,11 @@ public class EvacuateCommand {
             } catch (RuntimeException runtimeException) {
                 logService.log(LogService.LOG_ERROR, "Unhandled Runtime Exception in Primaray evacuation route.",
                         runtimeException);
+                try {
+                    cancel();
+                } catch (CancelException e) {
+                    // Do nothing here
+                }
             }
         }
 
@@ -284,8 +295,9 @@ public class EvacuateCommand {
                         e);
             }
 
-            pumpControl.stopPump(Pumps.PRE_PUMP_ONE);
-            pumpControl.stopPump(Pumps.PRE_PUMP_ROOTS);
+            pumpControl.getPump(PumpIds.PRE_PUMP_ONE).stopPump();
+            pumpControl.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
+            pumpControl.getPump(PumpIds.TURBO_PUMP).stopPump();
 
             throw new CancelException("Evacuation Route One canceled by error.");
         }
@@ -304,7 +316,7 @@ public class EvacuateCommand {
                         "Failed to close outlets while canceling secondary evacuation route.", e);
             }
 
-            pumpControl.stopPump(Pumps.PRE_PUMP_TWO);
+            pumpControl.getPump(PumpIds.PRE_PUMP_TWO).stopPump();
             throw new CancelException("Secondary Evacuation route canceled by error.");
 
         }
@@ -324,15 +336,13 @@ public class EvacuateCommand {
                                 e1);
                         cancel();
                     }
-
-                    if (pumpControl.getState(Pumps.PRE_PUMP_TWO).equals(PumpState.OFF)) {
+                    PumpState state = pumpControl.getPump(PumpIds.PRE_PUMP_TWO).getState();
+                    if (state.equals(PumpState.OFF)) {
                         logService.log(LogService.LOG_INFO, "Starting Pre Pump Two.");
-                        pumpControl.startPump(Pumps.PRE_PUMP_TWO);
-                        FutureEvent pumpStartEvent = new FutureEvent(machineStateService,
-                                new PumpStateEvent(Pumps.PRE_PUMP_TWO, PumpState.ON));
+                        FutureEvent pumpStartEvent = pumpControl.getPump(PumpIds.PRE_PUMP_TWO).startPump();
                         try {
                             pumpStartEvent.get(10, TimeUnit.SECONDS);
-                        } catch (ExecutionException | TimeoutException e) {
+                        } catch (TimeoutException e) {
                             logService.log(LogService.LOG_ERROR,
                                     "Pre Pump Two didn't start after 10 seconds. Canceling...", e);
                             cancel();
@@ -419,6 +429,11 @@ public class EvacuateCommand {
     }
 
     private class CancelException extends Exception {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 3483448682361853841L;
 
         public CancelException() {
             super();

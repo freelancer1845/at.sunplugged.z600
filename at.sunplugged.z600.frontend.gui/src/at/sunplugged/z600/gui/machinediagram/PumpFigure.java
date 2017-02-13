@@ -9,8 +9,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
@@ -25,11 +25,11 @@ public class PumpFigure extends Figure implements MachineEventHandler {
 
     private static final double INNER_CIRCLE_SCALE = 4;
 
-    private final Pumps pump;
+    private final PumpIds pump;
 
     private Ellipse innerCircle;
 
-    public PumpFigure(String name, int x, int y, Pumps pump) {
+    public PumpFigure(String name, int x, int y, PumpIds pump) {
         this.pump = pump;
         this.setBounds(new Rectangle(x, y, WIDTH, HEIGHT));
         // this.setLocation(new Point(x, y));
@@ -63,7 +63,7 @@ public class PumpFigure extends Figure implements MachineEventHandler {
                 bounds.y + bounds.height / 2 - (int) (HEIGHT / INNER_CIRCLE_SCALE / 2),
                 (int) (WIDTH / INNER_CIRCLE_SCALE), (int) (WIDTH / INNER_CIRCLE_SCALE)));
         if (pump != null) {
-            setState(MainView.getMachineStateService().getPumpControl().getState(pump));
+            setState(MainView.getMachineStateService().getPumpRegistry().getPump(pump).getState());
         }
         this.add(innerCircle);
 

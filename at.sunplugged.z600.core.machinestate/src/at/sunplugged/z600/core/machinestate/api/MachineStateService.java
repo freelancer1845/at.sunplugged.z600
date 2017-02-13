@@ -35,9 +35,9 @@ public interface MachineStateService {
 
     /**
      * 
-     * @return the {@linkplain PumpControl} Interface.
+     * @return the {@linkplain PumpRegistry} Interface.
      */
-    public PumpControl getPumpControl();
+    public PumpRegistry getPumpRegistry();
 
     /**
      * 

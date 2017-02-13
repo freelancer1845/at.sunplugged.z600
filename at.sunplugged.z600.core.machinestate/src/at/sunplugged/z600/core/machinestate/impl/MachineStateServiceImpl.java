@@ -21,7 +21,7 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PowerControl;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
-import at.sunplugged.z600.core.machinestate.api.PumpControl;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
@@ -53,7 +53,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private OutletControl outletControl;
 
-    private PumpControl pumpControl;
+    private PumpRegistry pumpControl;
 
     private WaterControl waterControl;
 
@@ -82,7 +82,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     @Activate
     protected void activateMachineStateService(BundleContext context) {
         this.outletControl = new OutletControlImpl(this);
-        this.pumpControl = new PumpControlImpl(this);
+        this.pumpControl = new PumpRegisterImpl(this);
         this.waterControl = new WaterControlImpl(this);
         this.kathodeControl = new KathodeControlImpl(this);
         this.powerControl = new PowerControlImpl(this);
@@ -125,7 +125,7 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Override
-    public PumpControl getPumpControl() {
+    public PumpRegistry getPumpRegistry() {
         return pumpControl;
     }
 

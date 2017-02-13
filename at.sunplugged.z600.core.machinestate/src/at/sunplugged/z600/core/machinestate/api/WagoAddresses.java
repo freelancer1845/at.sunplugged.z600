@@ -77,6 +77,7 @@ public class WagoAddresses {
         OUTLET_TWO_CLOSED(2),
         OUTLET_THREE_OPEN(3),
         PRE_PUMP_ONE_OK(12),
+        PRE_PUMP_ROOTS_OK(13),
         TURBO_PUMP_OK(14),
         TURBO_PUMP_HIGH_SPEED(15),
         PRE_PUMP_TWO_OK(16),
@@ -85,12 +86,12 @@ public class WagoAddresses {
         WATER_KATH_THREE_ON(25),
         WATER_KATH_FOUR_ON(26),
         PINNACLE_OUT(34),
-        SSV_TWO_ERROR(42),
-        SSV_ONE_ERROR(43),
         P_120_MBAR(38),
         LEFT_SPEED_TRIGGER(39),
         RIGHT_SPEED_TRIGGER(40),
-        PRE_PUMP_ROOTS_OK(13);
+        COOLING_PUMP_OK(41),
+        SSV_TWO_ERROR(42),
+        SSV_ONE_ERROR(43);
 
         private final int address;
 

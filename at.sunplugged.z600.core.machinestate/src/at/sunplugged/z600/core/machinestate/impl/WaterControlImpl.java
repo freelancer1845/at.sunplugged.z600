@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.WaterControl;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
 public class WaterControlImpl implements WaterControl {
 
@@ -23,12 +21,6 @@ public class WaterControlImpl implements WaterControl {
     @Override
     public void setOutletState(WaterOutlet outlet, boolean state) throws IOException {
         MachineStateServiceImpl.getMbtService().writeDigOut(outlet.getDigitalOutput().getAddress(), state);
-
-    }
-
-    @Override
-    public void setWaterPumpState(WaterPump pump, boolean state) throws IOException {
-        MachineStateServiceImpl.getMbtService().writeDigOut(pump.getDigitalOutput().getAddress(), state);
 
     }
 

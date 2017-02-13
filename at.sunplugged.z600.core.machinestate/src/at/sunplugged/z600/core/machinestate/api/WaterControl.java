@@ -25,20 +25,6 @@ public interface WaterControl {
         }
     }
 
-    public enum WaterPump {
-        STANDARD_PUMP(DigitalOutput.WATERPUMP);
-
-        private final DigitalOutput digitalOutput;
-
-        private WaterPump(DigitalOutput digitalOutput) {
-            this.digitalOutput = digitalOutput;
-        }
-
-        public DigitalOutput getDigitalOutput() {
-            return digitalOutput;
-        }
-    }
-
     public enum FlowCheckPoint {
         KATH_ONE(DigitalInput.WATER_KATH_ONE_ON),
         KATH_TWO(DigitalInput.WATER_KATH_TWO_ON),
@@ -60,8 +46,6 @@ public interface WaterControl {
     public boolean getOutletState(WaterOutlet outlet);
 
     public void setOutletState(WaterOutlet outlet, boolean state) throws IOException;
-
-    public void setWaterPumpState(WaterPump pump, boolean state) throws IOException;
 
     public boolean getFlowCheckPointState(FlowCheckPoint checkPoint);
 

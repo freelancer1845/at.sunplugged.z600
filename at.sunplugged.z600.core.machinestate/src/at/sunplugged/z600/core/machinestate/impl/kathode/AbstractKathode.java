@@ -87,7 +87,7 @@ public abstract class AbstractKathode implements KathodeInterface {
                     new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, waterInput, true));
             try {
                 waterKathodeOneEvent.get(10, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (InterruptedException | TimeoutException e) {
                 throw new InvalidKathodeStateException("Failed to start " + waterOutput.name(), e);
             }
         }

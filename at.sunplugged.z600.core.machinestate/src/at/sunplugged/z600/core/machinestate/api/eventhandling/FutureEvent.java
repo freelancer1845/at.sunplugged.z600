@@ -16,10 +16,8 @@ public class FutureEvent implements MachineEventHandler {
 
     /**
      * 
-     * @param machineStateService
-     *            that fires the desired event.
-     * @param event
-     *            that should be waited for.
+     * @param machineStateService that fires the desired event.
+     * @param event that should be waited for.
      */
     public FutureEvent(MachineStateService machineStateService, MachineStateEvent event) {
         this.machineStateService = machineStateService;
@@ -28,7 +26,7 @@ public class FutureEvent implements MachineEventHandler {
         machineStateService.registerMachineEventHandler(this);
     }
 
-    public Boolean get(long arg0, TimeUnit arg1) throws InterruptedException, ExecutionException, TimeoutException {
+    public Boolean get(long arg0, TimeUnit arg1) throws InterruptedException, TimeoutException {
         long startTime = System.nanoTime();
         while (!eventCatched) {
             Thread.sleep(10);

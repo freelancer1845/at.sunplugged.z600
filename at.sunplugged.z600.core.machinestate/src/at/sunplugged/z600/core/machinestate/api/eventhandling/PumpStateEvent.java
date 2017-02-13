@@ -1,21 +1,21 @@
 package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
-import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 
 public class PumpStateEvent extends MachineStateEvent {
 
-    private final Pumps pump;
+    private final PumpIds pump;
 
     private final PumpState state;
 
-    public PumpStateEvent(Pumps pump, PumpState state) {
+    public PumpStateEvent(PumpIds pump, PumpState state) {
         super(Type.PUMP_STATUS_CHANGED);
         this.pump = pump;
         this.state = state;
     }
 
-    public Pumps getPump() {
+    public PumpIds getPump() {
         return pump;
     }
 

@@ -19,8 +19,8 @@ import org.eclipse.wb.swt.SWTResourceManager;
 
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.PumpState;
-import at.sunplugged.z600.core.machinestate.api.PumpControl.Pumps;
+import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
@@ -121,10 +121,10 @@ public class Viewer implements MachineEventHandler {
     }
 
     private void createPumpFigures() {
-        pumpFigures[0] = new PumpFigure("1M1", 130, 420, Pumps.PRE_PUMP_ONE);
-        pumpFigures[1] = new PumpFigure("1M2", 130, 350, Pumps.PRE_PUMP_ROOTS);
-        pumpFigures[2] = new PumpFigure("2M2", 230, 350, Pumps.PRE_PUMP_TWO);
-        pumpFigures[3] = new PumpFigure("TMP", 130, 154, Pumps.TURBO_PUMP);
+        pumpFigures[0] = new PumpFigure("1M1", 130, 420, PumpIds.PRE_PUMP_ONE);
+        pumpFigures[1] = new PumpFigure("1M2", 130, 350, PumpIds.PRE_PUMP_ROOTS);
+        pumpFigures[2] = new PumpFigure("2M2", 230, 350, PumpIds.PRE_PUMP_TWO);
+        pumpFigures[3] = new PumpFigure("TMP", 130, 154, PumpIds.TURBO_PUMP);
         pumpFigures[4] = new PumpFigure("Wasser", 280, 420, null) {
 
             @Override
@@ -158,7 +158,7 @@ public class Viewer implements MachineEventHandler {
                     public void handleEvent(MachineStateEvent event) {
                         if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
                             PumpStateEvent pumpEvent = (PumpStateEvent) event;
-                            if (pumpEvent.getPump().equals(Pumps.PRE_PUMP_ONE)) {
+                            if (pumpEvent.getPump().equals(PumpIds.PRE_PUMP_ONE)) {
                                 if (pumpEvent.getState().equals(PumpState.ON)) {
                                     this.setState(true);
                                 } else if (pumpEvent.getState().equals(PumpState.OFF)) {
@@ -179,7 +179,7 @@ public class Viewer implements MachineEventHandler {
                     public void handleEvent(MachineStateEvent event) {
                         if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
                             PumpStateEvent pumpEvent = (PumpStateEvent) event;
-                            if (pumpEvent.getPump().equals(Pumps.PRE_PUMP_ROOTS)) {
+                            if (pumpEvent.getPump().equals(PumpIds.PRE_PUMP_ROOTS)) {
                                 if (pumpEvent.getState().equals(PumpState.ON)) {
                                     this.setState(true);
                                 } else if (pumpEvent.getState().equals(PumpState.OFF)) {
@@ -201,7 +201,7 @@ public class Viewer implements MachineEventHandler {
             public void handleEvent(MachineStateEvent event) {
                 if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
                     PumpStateEvent pumpEvent = (PumpStateEvent) event;
-                    if (pumpEvent.getPump().equals(Pumps.PRE_PUMP_TWO)) {
+                    if (pumpEvent.getPump().equals(PumpIds.PRE_PUMP_TWO)) {
                         if (pumpEvent.getState().equals(PumpState.ON)) {
                             this.setState(true);
                         } else if (pumpEvent.getState().equals(PumpState.OFF)) {
