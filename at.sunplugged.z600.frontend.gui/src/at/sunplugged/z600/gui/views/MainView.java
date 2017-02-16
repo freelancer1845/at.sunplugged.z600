@@ -187,6 +187,19 @@ public class MainView {
         Button button_right_to_left = new Button(grpRightToLeft, SWT.NONE);
         button_right_to_left.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         button_right_to_left.setText("START");
+        button_right_to_left.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.start(Double.valueOf(text_right_to_left_speed.getText()) / 1000,
+                        Mode.RIGHT_TO_LEFT);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+
+        });
 
         Group grpMonitoring = new Group(composite, SWT.NONE);
         grpMonitoring.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -310,6 +323,17 @@ public class MainView {
         Button buttonStop = new Button(composite, SWT.NONE);
         buttonStop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         buttonStop.setText("STOP");
+        buttonStop.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.stop();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+            }
+        });
 
         TabItem tbtmMain = new TabItem(tabFolder, SWT.NONE);
         tbtmMain.setText("Main");

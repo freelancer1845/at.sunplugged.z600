@@ -14,6 +14,10 @@ public class KathodeStateEvent extends MachineStateEvent {
         this.state = state;
     }
 
+    public Kathode getKathode() {
+        return kathode;
+    }
+
     public boolean getState() {
         return state;
     }

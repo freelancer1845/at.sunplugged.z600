@@ -58,8 +58,8 @@ public class SpeedControl {
             engineTwo.startEngine();
             break;
         case RIGHT_TO_LEFT:
-            engineOne.setDirection(-1);
-            engineTwo.setDirection(-1);
+            engineOne.setDirection(0);
+            engineTwo.setDirection(0);
 
             engineOne.startEngine();
             engineTwo.startEngine();
@@ -89,7 +89,7 @@ public class SpeedControl {
                 if (currentMode != Mode.STOP && checkForBandError()) {
                     tick();
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                     }
                 } else {
@@ -129,6 +129,7 @@ public class SpeedControl {
                 leftToRightMotion();
                 break;
             case RIGHT_TO_LEFT:
+                rightToLeftMotion();
                 break;
             default:
                 logService.log(LogService.LOG_DEBUG, "Unkown Conveyor movement Mode used: " + currentMode.name());
@@ -147,6 +148,17 @@ public class SpeedControl {
             engineTwo.setMaximumSpeed(drivingEngineSpeed);
             engineOne.setMaximumSpeed(breakingEngineSpeed);
 
+        }
+
+        private void rightToLeftMotion() {
+            double currentSpeed = conveyorControlService.getCurrentSpeed();
+            int currentDrivingEngineSpeed = engineOne.getCurrentMaximumSpeed();
+
+            int drivingEngineSpeed = calculateNewEngineSpeed(currentSpeed, currentDrivingEngineSpeed);
+            int breakingEngineSpeed = drivingEngineSpeed - drivingEngineSpeed / 100;
+
+            engineOne.setMaximumSpeed(drivingEngineSpeed);
+            engineTwo.setMaximumSpeed(breakingEngineSpeed);
         }
 
         private int calculateNewEngineSpeed(double currentSpeed, int currentEngineSpeed) {
