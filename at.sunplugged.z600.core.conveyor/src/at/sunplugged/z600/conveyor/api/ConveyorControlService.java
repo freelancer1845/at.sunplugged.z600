@@ -1,6 +1,10 @@
 package at.sunplugged.z600.conveyor.api;
 
+import java.util.concurrent.Future;
+
 public interface ConveyorControlService {
+
+    public static final String CALIBRATION_TABLE_NAME = "speed_logger_calibration_sql_table123g90";
 
     public enum Mode {
         LEFT_TO_RIGHT, RIGHT_TO_LEFT, STOP;
@@ -36,5 +40,13 @@ public interface ConveyorControlService {
      * @return {@linkplain SpeedLogger}
      */
     public SpeedLogger getSpeedLogger();
+
+    /**
+     * This starts a calibration routine. The data obtained is saved in an
+     * bundle specific file with name "speed_calibration.cfg".
+     * 
+     * @return {@linkplain Future<?>} with which the process may be canceled.
+     */
+    public Future<?> calibrate();
 
 }

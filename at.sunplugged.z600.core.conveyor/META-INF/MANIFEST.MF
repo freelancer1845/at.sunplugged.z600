@@ -10,6 +10,7 @@ Import-Package: at.sunplugged.z600.common.execution.api,
  at.sunplugged.z600.core.machinestate.api.eventhandling,
  at.sunplugged.z600.mbt.api,
  gnu.io;version="2.2.2",
+ org.osgi.framework;version="1.8.0",
  org.osgi.service.component.annotations,
  org.osgi.service.log;version="1.3.0"
 Service-Component: OSGI-INF/at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl.xml

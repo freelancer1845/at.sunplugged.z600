@@ -1,5 +1,8 @@
 package at.sunplugged.z600.conveyor.impl;
 
+import java.util.concurrent.Future;
+
+import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -21,6 +24,8 @@ import at.sunplugged.z600.mbt.api.MbtService;
 @Component(immediate = true)
 public class ConveyorControlServiceImpl implements ConveyorControlService {
 
+    private static BundleContext context;
+
     private static StandardThreadPoolService threadPoolService;
 
     private static LogService logService;
@@ -40,7 +45,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     private SpeedControl speedControl;
 
     @Activate
-    protected void activate() {
+    protected void activate(BundleContext context) {
+        ConveyorControlServiceImpl.context = context;
         try {
             engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
             engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
@@ -85,6 +91,11 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     public Mode getActiveMode() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public Future<?> calibrate() {
+        return threadPoolService.submit(new CalibrationRunnable(this));
     }
 
     @Reference(unbind = "unbindStandardThreadPoolService", cardinality = ReferenceCardinality.MANDATORY)
@@ -160,6 +171,10 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     public static SettingsService getSettingsService() {
         return settingsService;
+    }
+
+    public static BundleContext getBundleContext() {
+        return context;
     }
 
     @Override
