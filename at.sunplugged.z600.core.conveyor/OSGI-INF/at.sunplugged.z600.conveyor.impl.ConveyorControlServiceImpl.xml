@@ -6,6 +6,7 @@
    <reference bind="bindLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unbindLogService"/>
    <reference bind="bindMachineStateService" cardinality="1..1" interface="at.sunplugged.z600.core.machinestate.api.MachineStateService" name="MachineStateService" policy="static" unbind="unbindMachineStateService"/>
    <reference bind="bindMbtService" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MbtService" policy="static" unbind="unbindMbtService"/>
+   <reference bind="bindSettingsService" cardinality="1..1" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="SettingsService" policy="static" unbind="unbindSettingsService"/>
    <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
    <implementation class="at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl"/>
 </scr:component>

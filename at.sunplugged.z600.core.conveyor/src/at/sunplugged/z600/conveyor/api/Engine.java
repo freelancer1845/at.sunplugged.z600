@@ -16,6 +16,8 @@ public interface Engine {
 
     public void startEngine();
 
+    public void setLoose();
+
     public void stopEngine();
 
     public void stopEngineHard();

@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.conveyor.api.Engine;
 import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl;
@@ -111,7 +112,14 @@ public class EngineSerialCom implements Engine {
                     "Setting maximum speed to \"" + speed + "\" is not allowed (61- 24999)");
             return;
         }
+        int maximumSpeed = Integer.valueOf(
+                ConveyorControlServiceImpl.getSettingsService().getProperty(ParameterIds.ENGINE_MAXIMUM_SPEED));
 
+        if (speed > maximumSpeed) {
+            logService.log(LogService.LOG_DEBUG,
+                    "Setting maximum speed higher than DEBUG value: \"" + maximumSpeed + "\"");
+            return;
+        }
         sendCommand("o" + speed);
         currentMaximumSpeed = speed;
 
@@ -124,6 +132,10 @@ public class EngineSerialCom implements Engine {
 
     public void startEngine() {
         sendCommand("A");
+    }
+
+    public void setLoose() {
+        sendCommand("S");
     }
 
     public void stopEngine() {

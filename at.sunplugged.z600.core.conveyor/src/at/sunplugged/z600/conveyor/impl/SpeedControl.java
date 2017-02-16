@@ -53,15 +53,17 @@ public class SpeedControl {
         case LEFT_TO_RIGHT:
             engineOne.setDirection(1);
             engineTwo.setDirection(1);
+            engineTwo.setLoose();
 
+            engineOne.setMaximumSpeed(100);
             engineOne.startEngine();
-            engineTwo.startEngine();
             break;
         case RIGHT_TO_LEFT:
             engineOne.setDirection(0);
             engineTwo.setDirection(0);
+            engineOne.setLoose();
 
-            engineOne.startEngine();
+            engineTwo.setMaximumSpeed(100);
             engineTwo.startEngine();
             break;
         case STOP:
@@ -143,10 +145,8 @@ public class SpeedControl {
             int currentDrivingEngineSpeed = engineTwo.getCurrentMaximumSpeed();
 
             int drivingEngineSpeed = calculateNewEngineSpeed(currentSpeed, currentDrivingEngineSpeed);
-            int breakingEngineSpeed = drivingEngineSpeed - drivingEngineSpeed / 100;
 
             engineTwo.setMaximumSpeed(drivingEngineSpeed);
-            engineOne.setMaximumSpeed(breakingEngineSpeed);
 
         }
 
@@ -155,10 +155,8 @@ public class SpeedControl {
             int currentDrivingEngineSpeed = engineOne.getCurrentMaximumSpeed();
 
             int drivingEngineSpeed = calculateNewEngineSpeed(currentSpeed, currentDrivingEngineSpeed);
-            int breakingEngineSpeed = drivingEngineSpeed - drivingEngineSpeed / 100;
 
             engineOne.setMaximumSpeed(drivingEngineSpeed);
-            engineTwo.setMaximumSpeed(breakingEngineSpeed);
         }
 
         private int calculateNewEngineSpeed(double currentSpeed, int currentEngineSpeed) {

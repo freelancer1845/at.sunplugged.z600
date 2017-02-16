@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="z600_x86" uid="z600_x86_product" id="at.sunplugged.z600.launcher.z600" application="at.sunplugged.z600.launcher.standardApplicationId" version="0.1.0" useFeatures="false" includeLaunchers="true">
+<product name="z600_x86" uid="z600_x86_product" id="at.sunplugged.z600.launcher.z600" application="at.sunplugged.z600.launcher.standardApplicationId" version="0.1.0" useFeatures="false" includeLaunchers="false">
 
    <configIni use="default">
    </configIni>

@@ -163,8 +163,12 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.start(Double.valueOf(text_left_to_right_speed.getText()) / 1000,
-                        Mode.LEFT_TO_RIGHT);
+                int speedToSet = Integer.valueOf(text_left_to_right_speed.getText());
+                conveyorControlService.getEngineTwo().setDirection(0);
+                conveyorControlService.getEngineTwo().setMaximumSpeed(speedToSet);
+                conveyorControlService.getEngineOne().setLoose();
+                conveyorControlService.getEngineTwo().startEngine();
+
             }
 
             @Override
@@ -191,8 +195,12 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.start(Double.valueOf(text_right_to_left_speed.getText()) / 1000,
-                        Mode.RIGHT_TO_LEFT);
+                int speedToSet = Integer.valueOf(text_left_to_right_speed.getText());
+                conveyorControlService.getEngineOne().setDirection(1);
+                conveyorControlService.getEngineOne().setMaximumSpeed(speedToSet);
+                conveyorControlService.getEngineTwo().setLoose();
+                conveyorControlService.getEngineOne().startEngine();
+
             }
 
             @Override

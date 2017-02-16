@@ -5,6 +5,7 @@ Bundle-SymbolicName: at.sunplugged.z600.core.conveyor
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: at.sunplugged.z600.common.execution.api,
+ at.sunplugged.z600.common.settings.api,
  at.sunplugged.z600.core.machinestate.api,
  at.sunplugged.z600.core.machinestate.api.eventhandling,
  at.sunplugged.z600.mbt.api,

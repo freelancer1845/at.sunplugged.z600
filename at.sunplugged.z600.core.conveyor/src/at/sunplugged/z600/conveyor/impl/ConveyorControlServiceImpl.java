@@ -8,6 +8,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
 import at.sunplugged.z600.conveyor.api.SpeedLogger;
@@ -27,6 +28,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     private static MbtService mbtService;
 
     private static MachineStateService machineStateService;
+
+    private static SettingsService settingsService;
 
     private EngineSerialCom engineOne;
 
@@ -142,6 +145,21 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     public static MbtService getMbtService() {
         return mbtService;
+    }
+
+    @Reference(unbind = "unbindSettingsService")
+    public synchronized void bindSettingsService(SettingsService settingsService) {
+        ConveyorControlServiceImpl.settingsService = settingsService;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService settingsService) {
+        if (ConveyorControlServiceImpl.settingsService == settingsService) {
+            ConveyorControlServiceImpl.settingsService = null;
+        }
+    }
+
+    public static SettingsService getSettingsService() {
+        return settingsService;
     }
 
     @Override

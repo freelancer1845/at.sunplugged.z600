@@ -53,4 +53,7 @@ public class ParameterIds {
     /** Cryo Pump Trigger Pressure. */
     public static final String CRYO_PUMP_PRESSURE_TRIGGER = "Cryo_Pump_Pressure_Trigger";
 
+    /** Maximum Speed Setting. */
+    public static final String ENGINE_MAXIMUM_SPEED = "Engine_Maximum_Speed";
+
 }
