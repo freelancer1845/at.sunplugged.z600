@@ -14,14 +14,16 @@ import java.util.List;
 public interface MbtService {
 
     /**
+     * @return
+     */
+    public boolean isConnected();
+
+    /**
      * Write to a digOut.
      * 
-     * @param digOut
-     *            "name" of the digOut.
-     * @param value
-     *            New value for the digOut.
-     * @throws IOException
-     *             if there is a connection error.
+     * @param digOut "name" of the digOut.
+     * @param value New value for the digOut.
+     * @throws IOException if there is a connection error.
      */
     public void writeDigOut(int digOut, boolean value) throws IOException;
 
@@ -32,8 +34,7 @@ public interface MbtService {
      * @param outsToRead
      * @return {@linkplain List<Boolean>} The index of that list is shifted by
      *         parameter stardAddress
-     * @throws IOException
-     *             if there is a connection error.
+     * @throws IOException if there is a connection error.
      */
     public List<Boolean> readDigOuts(int startAddress, int outsToRead) throws IOException;
 
@@ -44,8 +45,7 @@ public interface MbtService {
      * @param insToRead
      * @return {@link List<Boolean>} The index of that list is shifted by
      *         parameter stardAddress.
-     * @throws IOException
-     *             if there is a connection error.
+     * @throws IOException if there is a connection error.
      */
     public List<Boolean> readDigIns(int stardAddress, int insToRead) throws IOException;
 

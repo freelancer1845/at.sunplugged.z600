@@ -276,6 +276,7 @@ public class MbtServiceImpl implements MbtService {
         return returnList;
     }
 
+    @Override
     public boolean isConnected() {
         if (connection == null) {
             return false;

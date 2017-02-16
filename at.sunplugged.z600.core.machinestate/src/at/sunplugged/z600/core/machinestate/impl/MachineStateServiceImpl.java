@@ -90,7 +90,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         this.gasFlowControl = new GasFlowControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
-
+        fillStateListsWithZeors();
     }
 
     @Deactivate
@@ -100,6 +100,10 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Override
     public void start() {
+        if (mbtService.isConnected() == false) {
+            logService.log(LogService.LOG_ERROR, "Can't start machineStateService since mbt is not connected!");
+            return;
+        }
         if (this.updaterThread == null) {
             this.updaterThread = new InputUpdaterThread();
             this.updaterThread.start();
@@ -343,6 +347,21 @@ public class MachineStateServiceImpl implements MachineStateService {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void fillStateListsWithZeors() {
+        for (int i = 0; i < WagoAddresses.ANALOG_INPUT_MAX_ADDRESS; i++) {
+            analogInputState.add(0);
+        }
+        for (int i = 0; i < WagoAddresses.ANALOG_OUTPUT_MAX_ADDRESS; i++) {
+            analogOutputState.add(0);
+        }
+        for (int i = 0; i < WagoAddresses.DIGITAL_INPUT_MAX_ADDRESS; i++) {
+            digitalInputState.add(false);
+        }
+        for (int i = 0; i < WagoAddresses.DIGITAL_OUTPUT_MAX_ADDRESS; i++) {
+            digitalOutputState.add(false);
         }
     }
 
