@@ -17,19 +17,20 @@ import at.sunplugged.z600.core.machinestate.impl.pumps.WaterPump;
 
 public class PumpRegisterImpl implements PumpRegistry {
 
-    private Map<PumpIds, Pump> pumpMap = new HashMap<PumpIds, Pump>();
+	private Map<PumpIds, Pump> pumpMap = new HashMap<PumpIds, Pump>();
 
-    public PumpRegisterImpl(MachineStateService machineStateService) {
+	public PumpRegisterImpl(MachineStateService machineStateService) {
         pumpMap.put(PumpIds.PRE_PUMP_ONE, new PrePumpOne(machineStateService));
         pumpMap.put(PumpIds.PRE_PUMP_TWO, new PrePumpTwo(machineStateService));
         pumpMap.put(PumpIds.PRE_PUMP_ROOTS, new PrePumpRoots(machineStateService));
         pumpMap.put(PumpIds.TURBO_PUMP, new TurboPump(machineStateService));
         pumpMap.put(PumpIds.WATER_PUMP, new WaterPump(machineStateService));
+        pumpMap.put(PumpIds.CRYO_ONE, new )
     }
 
-    @Override
-    public Pump getPump(PumpIds pumpId) {
-        return pumpMap.get(pumpId);
-    }
+	@Override
+	public Pump getPump(PumpIds pumpId) {
+		return pumpMap.get(pumpId);
+	}
 
 }

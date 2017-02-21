@@ -7,4 +7,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.osgi.services
 Service-Component: OSGI-INF/at.sunplugged.z600.backend.vaccum.impl.VacuumServiceImpl.xml
 Bundle-ActivationPolicy: lazy
-Import-Package: at.sunplugged.z600.core.machinestate.api
+Import-Package: at.sunplugged.z600.common.settings.api,
+ at.sunplugged.z600.core.machinestate.api,
+ at.sunplugged.z600.core.machinestate.api.eventhandling

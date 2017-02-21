@@ -33,6 +33,9 @@ public class FutureEvent implements MachineEventHandler {
             if (System.nanoTime() - startTime > arg1.toNanos(arg0)) {
                 throw new TimeoutException("Timeout reached while waiting for event.");
             }
+            if (Thread.interrupted() == true) {
+            	throw new InterruptedException();
+            }
         }
 
         return true;
