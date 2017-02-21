@@ -14,7 +14,7 @@ public class WagoAddresses {
      * Keep in mind that Outlet Seven and Eight are not controlled by modbus!
      * 
      * @author Jascha Riedel
-     *
+     * 
      */
     public enum DigitalOutput {
         OUTLET_ONE(0),
@@ -27,6 +27,8 @@ public class WagoAddresses {
         PRE_PUMP_ROOTS(25),
         TUROBO_PUMP(26),
         PRE_PUMP_TWO(27),
+        COMPRESSOR_ONE(28),
+        COMPRESSOR_TWO(29),
         WATER_TURBO_PUMP(31),
         WATER_KATH_ONE(32),
         WATER_KATH_TWO(33),
@@ -81,6 +83,10 @@ public class WagoAddresses {
         TURBO_PUMP_OK(14),
         TURBO_PUMP_HIGH_SPEED(15),
         PRE_PUMP_TWO_OK(16),
+        COMPRESSOR_ONE_OK(17),
+        COMPRESSOR_TWO_OK(18),
+        CRYO_ONE_LOW(20),
+        CRYO_TWO_LOW(22),
         WATER_KATH_ONE_ON(23),
         WATER_KATH_TWO_ON(24),
         WATER_KATH_THREE_ON(25),

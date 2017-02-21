@@ -7,12 +7,12 @@ import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 
-public class CryoPumpOne extends AbstractCryoPump {
+public class CryoPumpTwo extends AbstractCryoPump {
 
-    public CryoPumpOne(MachineStateService machineStateService) {
-        super(PumpIds.CRYO_ONE, machineStateService, DigitalOutput.COMPRESSOR_ONE, DigitalInput.COMPRESSOR_ONE_OK,
-                DigitalInput.CRYO_ONE_LOW, PressureMeasurementSite.CRYO_PUMP_ONE, Outlet.OUTLET_FIVE,
-                Outlet.OUTLET_SEVEN);
+    public CryoPumpTwo(MachineStateService machineStateService) {
+        super(PumpIds.CRYO_TWO, machineStateService, DigitalOutput.COMPRESSOR_TWO, DigitalInput.COMPRESSOR_TWO_OK,
+                DigitalInput.CRYO_TWO_LOW, PressureMeasurementSite.CRYO_PUMP_TWO, Outlet.OUTLET_SIX,
+                Outlet.OUTLET_EIGHT);
     }
 
 }
