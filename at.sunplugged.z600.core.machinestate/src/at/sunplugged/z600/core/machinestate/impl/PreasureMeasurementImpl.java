@@ -76,6 +76,8 @@ public class PreasureMeasurementImpl implements PressureMeasurement, MachineEven
                         .fireMachineStateEvent(new PressureChangedEvent(PressureMeasurementSite.CRYO_PUMP_TWO,
                                 tm201Site(PressureMeasurementSite.CRYO_PUMP_TWO, (int) event.getValue())));
                 break;
+            default:
+                break;
             }
         }
     }
