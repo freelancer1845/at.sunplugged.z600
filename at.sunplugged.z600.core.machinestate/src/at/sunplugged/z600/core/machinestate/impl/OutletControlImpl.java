@@ -35,9 +35,13 @@ public class OutletControlImpl implements OutletControl {
         this.logService = MachineStateServiceImpl.getLogService();
         try {
             this.vatSeven = new VatOutlet("COM3", machineStateService);
+        } catch (IllegalStateException e) {
+            logService.log(LogService.LOG_ERROR, "Couldn't connect to VAT Outlet Seven", e);
+        }
+        try {
             this.vatEight = new VatOutlet("COM4", machineStateService);
         } catch (IllegalStateException e) {
-            logService.log(LogService.LOG_ERROR, "Couldn't connect to VAT Outlet", e);
+            logService.log(LogService.LOG_ERROR, "Couldn't connect to VAT Outlet Eight", e);
         }
 
     }

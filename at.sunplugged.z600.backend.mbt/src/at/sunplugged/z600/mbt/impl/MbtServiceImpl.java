@@ -19,6 +19,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.mbt.api.MbtServiceException;
 import net.wimpi.modbus.Modbus;
@@ -291,7 +292,7 @@ public class MbtServiceImpl implements MbtService {
         if (!successful) {
             properties.put("Error", e);
         }
-        eventAdmin.postEvent(new Event("at/sunplugged/z600/mbt/connect", properties));
+        eventAdmin.postEvent(new Event(Events.MBT_CONNECT_EVENT, properties));
     }
 
     /** Bind method for LogService. */

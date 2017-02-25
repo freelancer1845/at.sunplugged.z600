@@ -1,6 +1,5 @@
 package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -16,8 +15,10 @@ public class FutureEvent implements MachineEventHandler {
 
     /**
      * 
-     * @param machineStateService that fires the desired event.
-     * @param event that should be waited for.
+     * @param machineStateService
+     *            that fires the desired event.
+     * @param event
+     *            that should be waited for.
      */
     public FutureEvent(MachineStateService machineStateService, MachineStateEvent event) {
         this.machineStateService = machineStateService;
@@ -31,10 +32,12 @@ public class FutureEvent implements MachineEventHandler {
         while (!eventCatched) {
             Thread.sleep(10);
             if (System.nanoTime() - startTime > arg1.toNanos(arg0)) {
+                unregister();
                 throw new TimeoutException("Timeout reached while waiting for event.");
             }
             if (Thread.interrupted() == true) {
-            	throw new InterruptedException();
+                unregister();
+                throw new InterruptedException();
             }
         }
 
@@ -47,11 +50,14 @@ public class FutureEvent implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
-        System.out.println("Future Event catched event: " + event.getType().name());
         if (event.equals(this.event)) {
             eventCatched = true;
-            machineStateService.unregisterMachineEventHandler(this);
+            unregister();
         }
+    }
+
+    private void unregister() {
+        machineStateService.unregisterMachineEventHandler(this);
     }
 
 }

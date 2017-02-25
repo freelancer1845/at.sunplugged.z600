@@ -2,6 +2,8 @@
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="at.sunplugged.z600.launcher.splash.SplashWindow">
    <property name="event.topics">at/sunplugged/z600/mbt/connect
 at/sunplugged/z600/sql/connect
+at/sunplugged/z600/core/conveyor/engine/connect
+at/sunplugged/z600/machineStateService/vat/connect
    </property>
    <service>
       <provide interface="org.osgi.service.event.EventHandler"/>

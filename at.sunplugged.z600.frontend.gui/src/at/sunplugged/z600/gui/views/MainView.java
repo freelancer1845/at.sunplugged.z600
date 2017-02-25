@@ -29,10 +29,12 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+import at.sunplugged.z600.backend.vaccum.api.VacuumService;
+import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
+import at.sunplugged.z600.backend.vaccum.api.VacuumService.State;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
@@ -63,6 +65,8 @@ public class MainView {
     private static ConveyorControlService conveyorControlService;
 
     private static StandardThreadPoolService threadPool;
+
+    private static VacuumService vacuumService;
 
     private static SettingsService settings;
 
@@ -358,24 +362,25 @@ public class MainView {
         Button btnEvakuieren = new Button(groupVacuum, SWT.NONE);
         btnEvakuieren.addSelectionListener(new SelectionAdapter() {
 
-            private EvacuateCommand evacuateCommand;
-
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (evacuateCommand == null) {
-                    evacuateCommand = new EvacuateCommand(threadPool, machineStateService, logService, settings);
-                }
-                if (btnEvakuieren.getText().equals("Evakuieren Secondary")) {
-                    evacuateCommand.executeRouteTwo();
+                if (vacuumService.getState() == State.READY) {
+                    vacuumService.setInterlock(Interlocks.CRYO_ONE, true);
+                    vacuumService.setInterlock(Interlocks.CRYO_TWO, true);
+                    vacuumService.start();
                     btnEvakuieren.setText("Cancel");
-                } else if (btnEvakuieren.getText().equals("Cancel")) {
-                    evacuateCommand.cancelRouteTwo();
-                    btnEvakuieren.setText("Evakuieren Secondary");
+                } else if (vacuumService.getState() == State.RUNNING) {
+                    vacuumService.stop();
+                    if (vacuumService.getState() == State.READY) {
+                        btnEvakuieren.setText("Start");
+                    } else {
+                        btnEvakuieren.setText("Error: " + vacuumService.getState().name());
+                    }
                 }
             }
         });
         btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        btnEvakuieren.setText("Evakuieren Secondary");
+        btnEvakuieren.setText("Start");
 
         Group grpBandlauf = ConveyorGroupFactory.createGroup(composite_1);
 
@@ -569,5 +574,20 @@ public class MainView {
         if (settings.equals(settingsService)) {
             settings = null;
         }
+    }
+
+    @Reference(unbind = "unbindVacuumService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindVacuumService(VacuumService service) {
+        vacuumService = service;
+    }
+
+    public synchronized void unbindVacuumService(VacuumService service) {
+        if (vacuumService == service) {
+            vacuumService = null;
+        }
+    }
+
+    public static VacuumService getVacuumService() {
+        return vacuumService;
     }
 }

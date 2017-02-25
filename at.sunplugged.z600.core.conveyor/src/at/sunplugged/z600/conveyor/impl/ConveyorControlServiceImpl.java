@@ -8,6 +8,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
@@ -35,6 +36,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     private static MachineStateService machineStateService;
 
     private static SettingsService settingsService;
+
+    private static EventAdmin eventAdmin;
 
     private EngineSerialCom engineOne;
 
@@ -171,6 +174,21 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     public static SettingsService getSettingsService() {
         return settingsService;
+    }
+
+    @Reference(unbind = "unbindEventAdmin")
+    public synchronized void bindEventAdmin(EventAdmin service) {
+        eventAdmin = service;
+    }
+
+    public synchronized void unbindEventAdmin(EventAdmin service) {
+        if (eventAdmin == service) {
+            eventAdmin = null;
+        }
+    }
+
+    public static EventAdmin getEventAdmin() {
+        return eventAdmin;
     }
 
     public static BundleContext getBundleContext() {

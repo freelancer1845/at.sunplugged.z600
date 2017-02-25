@@ -3,7 +3,7 @@ package at.sunplugged.z600.backend.vaccum.api;
 public interface VacuumService {
 
     public enum State {
-        STARTING, READY, FAILED, STOPPED;
+        STARTING, READY, FAILED, RUNNING;
     }
 
     public enum Interlocks {

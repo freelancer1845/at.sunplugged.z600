@@ -25,6 +25,7 @@ import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 
@@ -187,7 +188,7 @@ public class DataServiceImpl implements DataService {
         if (!successful) {
             properties.put("Error", e);
         }
-        eventAdmin.postEvent(new Event("at/sunplugged/z600/sql/connect", properties));
+        eventAdmin.postEvent(new Event(Events.SQL_CONNECT_EVENT, properties));
     }
 
     public static LogService getLogService() {

@@ -27,6 +27,7 @@
       <plugin id="at.sunplugged.z600.backend.dataservice"/>
       <plugin id="at.sunplugged.z600.backend.mbt"/>
       <plugin id="at.sunplugged.z600.backend.srm50"/>
+      <plugin id="at.sunplugged.z600.backend.vacuum"/>
       <plugin id="at.sunplugged.z600.common.settings"/>
       <plugin id="at.sunplugged.z600.common.utils"/>
       <plugin id="at.sunplugged.z600.core.conveyor"/>

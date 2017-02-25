@@ -7,8 +7,6 @@ import java.util.concurrent.TimeoutException;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
-import at.sunplugged.z600.common.settings.api.ParameterIds;
-import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
@@ -27,7 +25,6 @@ public class CryoPumpsThread extends Thread {
         EVACUATE_CRYO,
         EVACUATE_CHAMBER,
         START_COOLING,
-        START_PUMPS,
         WAIT_FOR_CRYO_COOL,
         CRYO_RUNNING,
         CANCELED;
@@ -43,8 +40,6 @@ public class CryoPumpsThread extends Thread {
 
     private LogService logService;
 
-    private SettingsService settings;
-
     private volatile boolean cancel = false;
 
     public CryoPumpsThread() {
@@ -52,7 +47,6 @@ public class CryoPumpsThread extends Thread {
 
         this.machineStateService = VacuumServiceImpl.getMachineStateService();
         this.logService = VacuumServiceImpl.getLogService();
-        this.settings = VacuumServiceImpl.getSettingsService();
 
         this.outletControl = machineStateService.getOutletControl();
         this.pumpRegistry = machineStateService.getPumpRegistry();
@@ -111,8 +105,14 @@ public class CryoPumpsThread extends Thread {
                     if (isCanceled()) {
                         break;
                     }
-                    openCryoOutlets();
-                    monitorCryos();
+                    try {
+                        openCryoOutlets();
+                        monitorCryos();
+                    } finally {
+                        outletControl.closeOutlet(Outlet.OUTLET_SEVEN);
+                        outletControl.closeOutlet(Outlet.OUTLET_EIGHT);
+                    }
+
                     break;
                 case CANCELED:
                     stopCryoPumpThread();
@@ -165,6 +165,8 @@ public class CryoPumpsThread extends Thread {
         case EVACUATE_CHAMBER:
             state = CryoPumpsThreadState.WAIT_FOR_CRYO_COOL;
             break;
+        default:
+            state = CryoPumpsThreadState.INIT_STATE;
         }
     }
 
@@ -179,34 +181,40 @@ public class CryoPumpsThread extends Thread {
     }
 
     private void evacuateCryos() throws IOException, InterruptedException, TimeoutException {
-        FuturePressureReachedEvent cryoOneEvacuated = null;
-        FuturePressureReachedEvent cryoTwoEvacuated = null;
-        if (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE) == true) {
-            outletControl.openOutlet(Outlet.OUTLET_FIVE);
-            cryoOneEvacuated = new FuturePressureReachedEvent(machineStateService,
-                    PressureMeasurementSite.CRYO_PUMP_ONE,
-                    Double.valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER)) * 0.6);
+        try {
+            FuturePressureReachedEvent cryoOneEvacuated = null;
+            FuturePressureReachedEvent cryoTwoEvacuated = null;
+            if (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE) == true
+                    && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_ONE) == false) {
+                outletControl.openOutlet(Outlet.OUTLET_FIVE);
+                cryoOneEvacuated = new FuturePressureReachedEvent(machineStateService,
+                        PressureMeasurementSite.CRYO_PUMP_ONE, VacuumUtils.getCryoPumpPressureTrigger() * 0.6);
+            }
+            if (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO) == true
+                    && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_TWO) == false) {
+                outletControl.openOutlet(Outlet.OUTLET_SIX);
+                cryoTwoEvacuated = new FuturePressureReachedEvent(machineStateService,
+                        PressureMeasurementSite.CRYO_PUMP_TWO, VacuumUtils.getCryoPumpPressureTrigger() * 0.6);
+            }
+            if (cryoOneEvacuated != null) {
+                cryoOneEvacuated.get(10, TimeUnit.MINUTES);
+            }
+            if (cryoTwoEvacuated != null) {
+                cryoTwoEvacuated.get(10, TimeUnit.MINUTES);
+            }
+            outletControl.closeOutlet(Outlet.OUTLET_FIVE);
+            outletControl.closeOutlet(Outlet.OUTLET_SIX);
+        } finally {
+            outletControl.closeOutlet(Outlet.OUTLET_FIVE);
+            outletControl.closeOutlet(Outlet.OUTLET_SIX);
         }
-        if (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO) == true) {
-            outletControl.openOutlet(Outlet.OUTLET_SIX);
-            cryoTwoEvacuated = new FuturePressureReachedEvent(machineStateService,
-                    PressureMeasurementSite.CRYO_PUMP_TWO,
-                    Double.valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER)) * 0.6);
-        }
-        if (cryoOneEvacuated != null) {
-            cryoOneEvacuated.get(10, TimeUnit.MINUTES);
-        }
-        if (cryoTwoEvacuated != null) {
-            cryoTwoEvacuated.get(10, TimeUnit.MINUTES);
-        }
-        outletControl.closeOutlet(Outlet.OUTLET_FIVE);
-        outletControl.closeOutlet(Outlet.OUTLET_SIX);
+
     }
 
     private void startCooling() {
         Pump cryoOne = pumpRegistry.getPump(PumpIds.CRYO_ONE);
         Pump cryoTwo = pumpRegistry.getPump(PumpIds.CRYO_TWO);
-        double triggerPressure = Double.valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER));
+        double triggerPressure = VacuumUtils.getCryoPumpPressureTrigger();
         if (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE) == true) {
             double pressureCryoOne = machineStateService.getPressureMeasurmentControl()
                     .getCurrentValue(PressureMeasurementSite.CRYO_PUMP_ONE);
@@ -226,30 +234,32 @@ public class CryoPumpsThread extends Thread {
     }
 
     private void evacuateChamber() throws IOException, InterruptedException, TimeoutException {
-        double chamberPressure = machineStateService.getPressureMeasurmentControl()
-                .getCurrentValue(PressureMeasurementSite.CHAMBER);
-        double desiredPressure = Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP));
-        if (chamberPressure > Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP))) {
-            outletControl.closeOutlet(Outlet.OUTLET_FIVE);
-            outletControl.closeOutlet(Outlet.OUTLET_SIX);
-            Thread.sleep(500);
-            outletControl.openOutlet(Outlet.OUTLET_FOUR);
+        if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger() == false) {
+            try {
+                outletControl.closeOutlet(Outlet.OUTLET_FIVE);
+                outletControl.closeOutlet(Outlet.OUTLET_SIX);
+                Thread.sleep(500);
+                outletControl.openOutlet(Outlet.OUTLET_FOUR);
 
-            FuturePressureReachedEvent turboPumpPressureReached = new FuturePressureReachedEvent(machineStateService,
-                    PressureMeasurementSite.CHAMBER, desiredPressure * 0.8);
-            turboPumpPressureReached.get(10, TimeUnit.MINUTES);
+                FuturePressureReachedEvent turboPumpPressureReached = new FuturePressureReachedEvent(
+                        machineStateService, PressureMeasurementSite.CHAMBER,
+                        VacuumUtils.getTurboPumpStartTrigger() * 0.8);
+                turboPumpPressureReached.get(10, TimeUnit.MINUTES);
+            } finally {
+                outletControl.closeOutlet(Outlet.OUTLET_FOUR);
+            }
+
         }
     }
 
     private void waitForCryoCool() throws InterruptedException {
         double cryoOnePressure;
         double cryoTwoPressure;
-        double chamberPressure;
 
         boolean cryoOneInterlock = VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE);
         boolean cryoTwoInterlock = VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO);
 
-        double cryoPressureTrigger = Double.valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER));
+        double cryoPressureTrigger = VacuumUtils.getCryoPumpPressureTrigger();
 
         Pump cryoOne = pumpRegistry.getPump(PumpIds.CRYO_ONE);
         Pump cryoTwo = pumpRegistry.getPump(PumpIds.CRYO_TWO);
@@ -288,9 +298,7 @@ public class CryoPumpsThread extends Thread {
                     return;
                 }
             }
-            chamberPressure = machineStateService.getPressureMeasurmentControl()
-                    .getCurrentValue(PressureMeasurementSite.CHAMBER);
-            if (chamberPressure > Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP))) {
+            if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger() == false) {
                 state = CryoPumpsThreadState.EVACUATE_CHAMBER;
                 return;
             }

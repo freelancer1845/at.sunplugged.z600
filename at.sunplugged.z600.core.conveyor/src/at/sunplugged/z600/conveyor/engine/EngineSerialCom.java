@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.osgi.service.event.Event;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.ParameterIds;
+import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.conveyor.api.Engine;
 import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl;
@@ -57,35 +61,51 @@ public class EngineSerialCom implements Engine {
 
         CommPortIdentifier portIdentifier = null;
         try {
-            portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-            this.commPort = portIdentifier.open(this.getClass().getName(), 2000);
-            if (this.commPort instanceof SerialPort) {
-                SerialPort serialPort = (SerialPort) commPort;
-                serialPort.setSerialPortParams(EngineConstants.SERIAL_BAUDRATE, SerialPort.DATABITS_8,
-                        SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-                inputStream = serialPort.getInputStream();
-                outputStream = serialPort.getOutputStream();
-            } else {
-                disconnect();
-                throw new IllegalStateException("Not a Serial Port specified");
-            }
+            try {
+                portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
+                this.commPort = portIdentifier.open(this.getClass().getName(), 2000);
+                if (this.commPort instanceof SerialPort) {
+                    SerialPort serialPort = (SerialPort) commPort;
+                    serialPort.setSerialPortParams(EngineConstants.SERIAL_BAUDRATE, SerialPort.DATABITS_8,
+                            SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+                    inputStream = serialPort.getInputStream();
+                    outputStream = serialPort.getOutputStream();
+                } else {
+                    disconnect();
+                    throw new IllegalStateException("Not a Serial Port specified");
+                }
 
-        } catch (NoSuchPortException e) {
-            disconnect();
-            throw new IllegalStateException("There is no port with name: " + portName);
-        } catch (PortInUseException e) {
-            disconnect();
-            throw new IllegalStateException("The port is already owned by: " + portIdentifier.getCurrentOwner());
-        } catch (UnsupportedCommOperationException e) {
-            disconnect();
-            throw new IllegalStateException(e);
-        } catch (IOException e) {
-            disconnect();
-            throw new IllegalStateException("Failed to open input and outputStream to serialPort!");
+            } catch (NoSuchPortException e) {
+                disconnect();
+                throw new IllegalStateException("There is no port with name: " + portName);
+            } catch (PortInUseException e) {
+                disconnect();
+                throw new IllegalStateException("The port is already owned by: " + portIdentifier.getCurrentOwner());
+            } catch (UnsupportedCommOperationException e) {
+                disconnect();
+                throw new IllegalStateException(e);
+            } catch (IOException e) {
+                disconnect();
+                throw new IllegalStateException("Failed to open input and outputStream to serialPort!");
+            }
+        } catch (Exception e) {
+            postConnectEvent(false, e);
+            throw e;
         }
+
         ignoreCommands = false;
+        postConnectEvent(true, null);
         initializeEngine();
 
+    }
+
+    private void postConnectEvent(boolean successful, Throwable e) {
+        Dictionary<String, Object> properties = new Hashtable<>();
+        properties.put("success", successful);
+        if (!successful) {
+            properties.put("Error", e);
+        }
+        ConveyorControlServiceImpl.getEventAdmin().postEvent(new Event(Events.ENGINE_CONNECT_EVENT, properties));
     }
 
     public void disconnect() {

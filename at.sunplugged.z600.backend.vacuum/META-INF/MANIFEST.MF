@@ -10,3 +10,4 @@ Bundle-ActivationPolicy: lazy
 Import-Package: at.sunplugged.z600.common.settings.api,
  at.sunplugged.z600.core.machinestate.api,
  at.sunplugged.z600.core.machinestate.api.eventhandling
+Export-Package: at.sunplugged.z600.backend.vaccum.api

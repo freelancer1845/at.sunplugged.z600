@@ -1,8 +1,6 @@
 package at.sunplugged.z600.launcher.splash;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -18,10 +16,18 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
 
+import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.launcher.ProgrammShutdownException;
+import at.sunplugged.z600.launcher.splash.checkgroups.CheckGroup;
+import at.sunplugged.z600.launcher.splash.checkgroups.EngineCheckGroup;
+import at.sunplugged.z600.launcher.splash.checkgroups.MbtCheckGroup;
+import at.sunplugged.z600.launcher.splash.checkgroups.SqlCheckGroup;
+import at.sunplugged.z600.launcher.splash.checkgroups.VatCheckGroup;
 
-@Component(immediate = true, property = { EventConstants.EVENT_TOPIC + "=at/sunplugged/z600/mbt/connect",
-        EventConstants.EVENT_TOPIC + "=at/sunplugged/z600/sql/connect" })
+@Component(immediate = true, property = { EventConstants.EVENT_TOPIC + "=" + Events.MBT_CONNECT_EVENT,
+        EventConstants.EVENT_TOPIC + "=" + Events.SQL_CONNECT_EVENT,
+        EventConstants.EVENT_TOPIC + "=" + Events.ENGINE_CONNECT_EVENT,
+        EventConstants.EVENT_TOPIC + "=" + Events.VAT_CONNECT_EVENT })
 public class SplashWindow implements EventHandler {
 
     private static Shell shell;
@@ -31,23 +37,11 @@ public class SplashWindow implements EventHandler {
     private static Label label;
     private static Composite information_composite;
 
-    private static Event mbtServiceEvent;
-    private static StyledText mbt_styled_text;
-    private static Button mbt_error_button;
-    private static ErrorSelectionListener mbtSelectionListener;
+    private static CheckGroup mbtCheckGroup = new MbtCheckGroup();
+    private static CheckGroup sqlCheckGroup = new SqlCheckGroup();
+    private static CheckGroup engineCheckGroup = new EngineCheckGroup();
+    private static CheckGroup vatCheckGroup = new VatCheckGroup();
 
-    private static Event sqlServiceEvent;
-    private static StyledText sql_styled_text;
-    private static Button sql_error_button;
-    private static ErrorSelectionListener sqlSelectionListener;
-
-    private static StyledText styledText_2;
-    private static StyledText styledText_3;
-    private static StyledText styledText_4;
-
-    private static Button button_1;
-    private static Button button_2;
-    private static Button button_3;
     private static Label label_1;
     private static Composite composite;
 
@@ -77,72 +71,10 @@ public class SplashWindow implements EventHandler {
         information_composite.setLayout(new GridLayout(2, false));
         information_composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 
-        mbt_styled_text = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
-        mbt_styled_text.setEnabled(false);
-        mbt_styled_text.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        mbt_styled_text.setText("Trying to connect to modbus...");
-        mbt_styled_text.setStyleRange(new StyleRange(0, mbt_styled_text.getText().length(),
-                SWTResourceManager.getColor(SWT.COLOR_DARK_YELLOW), null));
-        mbt_styled_text.setAlwaysShowScrollBars(false);
-        mbt_styled_text.setEditable(false);
-        mbt_styled_text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        mbt_error_button = new Button(information_composite, SWT.NONE);
-        mbt_error_button.setEnabled(false);
-        mbt_error_button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        mbt_error_button.setText("Fehler Anzeigen");
-        mbtSelectionListener = new ErrorSelectionListener(shell);
-        mbt_error_button.addSelectionListener(mbtSelectionListener);
-
-        sql_styled_text = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
-        sql_styled_text.setEnabled(false);
-        sql_styled_text.setText("Trying to connect to sql server...");
-        sql_styled_text.setEditable(false);
-        sql_styled_text.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        sql_styled_text.setAlwaysShowScrollBars(false);
-        sql_styled_text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-
-        sql_error_button = new Button(information_composite, SWT.NONE);
-        sql_error_button.setEnabled(false);
-        sql_error_button.setText("Fehler Anzeigen");
-        sqlSelectionListener = new ErrorSelectionListener(shell);
-        sql_error_button.addSelectionListener(sqlSelectionListener);
-
-        styledText_2 = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
-        styledText_2.setEnabled(false);
-        styledText_2.setText("Modbus Controller... connected");
-        styledText_2.setEditable(false);
-        styledText_2.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        styledText_2.setAlwaysShowScrollBars(false);
-        styledText_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-
-        button_1 = new Button(information_composite, SWT.NONE);
-        button_1.setEnabled(false);
-        button_1.setText("Fehler Anzeigen");
-
-        styledText_3 = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
-        styledText_3.setEnabled(false);
-        styledText_3.setText("Modbus Controller... connected");
-        styledText_3.setEditable(false);
-        styledText_3.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        styledText_3.setAlwaysShowScrollBars(false);
-        styledText_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-
-        button_2 = new Button(information_composite, SWT.NONE);
-        button_2.setEnabled(false);
-        button_2.setText("Fehler Anzeigen");
-
-        styledText_4 = new StyledText(information_composite, SWT.BORDER | SWT.READ_ONLY | SWT.SINGLE);
-        styledText_4.setEnabled(false);
-        styledText_4.setText("Modbus Controller... connected");
-        styledText_4.setEditable(false);
-        styledText_4.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-        styledText_4.setAlwaysShowScrollBars(false);
-        styledText_4.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-
-        button_3 = new Button(information_composite, SWT.NONE);
-        button_3.setEnabled(false);
-        button_3.setText("Fehler Anzeigen");
+        mbtCheckGroup.create(information_composite);
+        sqlCheckGroup.create(information_composite);
+        engineCheckGroup.create(information_composite);
+        vatCheckGroup.create(information_composite);
 
         progressBar = new ProgressBar(information_composite, SWT.NONE);
         progressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
@@ -190,36 +122,10 @@ public class SplashWindow implements EventHandler {
     }
 
     private static void updateSplashWindow() {
-        if (SplashWindow.mbtServiceEvent != null) {
-            if ((boolean) SplashWindow.mbtServiceEvent.getProperty("success") == true) {
-                mbt_styled_text.setText("Modbus verbunden!");
-                mbt_styled_text.setStyleRange(new StyleRange(0, mbt_styled_text.getText().length(),
-                        SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN), null));
-                mbt_error_button.setEnabled(false);
-            } else {
-                mbt_styled_text.setText("Modbus nicht verbunden...");
-                mbt_styled_text.setStyleRange(new StyleRange(0, mbt_styled_text.getText().length(),
-                        SWTResourceManager.getColor(SWT.COLOR_RED), null));
-                mbt_error_button.setEnabled(true);
-                mbtSelectionListener.setError((Throwable) SplashWindow.mbtServiceEvent.getProperty("Error"));
-            }
-            mbtServiceEvent = null;
-        }
-        if (SplashWindow.sqlServiceEvent != null) {
-            if ((boolean) sqlServiceEvent.getProperty("success") == true) {
-                sql_styled_text.setText("SQL Server verbunden!");
-                sql_styled_text.setStyleRange(new StyleRange(0, sql_styled_text.getText().length(),
-                        SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN), null));
-                sql_error_button.setEnabled(false);
-            } else {
-                sql_styled_text.setText("SQL Server nicht verbunden...");
-                sql_styled_text.setStyleRange(new StyleRange(0, sql_styled_text.getText().length(),
-                        SWTResourceManager.getColor(SWT.COLOR_RED), null));
-                sql_error_button.setEnabled(true);
-                sqlSelectionListener.setError((Throwable) sqlServiceEvent.getProperty("Error"));
-            }
-            sqlServiceEvent = null;
-        }
+        mbtCheckGroup.update();
+        sqlCheckGroup.update();
+        engineCheckGroup.update();
+        vatCheckGroup.update();
     }
 
     private static void initializeShell() {
@@ -232,10 +138,14 @@ public class SplashWindow implements EventHandler {
 
     @Override
     public void handleEvent(Event event) {
-        if (event.getTopic() == "at/sunplugged/z600/mbt/connect") {
-            SplashWindow.mbtServiceEvent = event;
-        } else if (event.getTopic() == "at/sunplugged/z600/sql/connect") {
-            SplashWindow.sqlServiceEvent = event;
+        if (event.getTopic() == Events.MBT_CONNECT_EVENT) {
+            mbtCheckGroup.setEvent(event);
+        } else if (event.getTopic() == Events.SQL_CONNECT_EVENT) {
+            sqlCheckGroup.setEvent(event);
+        } else if (event.getTopic() == Events.ENGINE_CONNECT_EVENT) {
+            engineCheckGroup.setEvent(event);
+        } else if (event.getTopic() == Events.VAT_CONNECT_EVENT) {
+            vatCheckGroup.setEvent(event);
         }
         if (shell != null) {
             shell.getDisplay().asyncExec(new Runnable() {

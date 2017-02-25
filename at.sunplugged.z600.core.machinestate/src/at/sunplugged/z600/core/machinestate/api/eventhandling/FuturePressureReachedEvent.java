@@ -33,10 +33,12 @@ public class FuturePressureReachedEvent implements MachineEventHandler {
         while (!pressureReached) {
             Thread.sleep(10);
             if (System.nanoTime() - startTime > arg1.toNanos(arg0)) {
+                unregister();
                 throw new TimeoutException("Timeout reached while waiting for event.");
             }
             if (Thread.interrupted()) {
-            	throw new InterruptedException();
+                unregister();
+                throw new InterruptedException();
             }
         }
         return true;
@@ -49,11 +51,15 @@ public class FuturePressureReachedEvent implements MachineEventHandler {
                 double currentPressure = (double) event.getValue();
                 if (currentPressure <= desiredPressure) {
                     pressureReached = true;
-                    machineStateService.unregisterMachineEventHandler(this);
+                    unregister();
                 }
             }
 
         }
+    }
+
+    private void unregister() {
+        machineStateService.unregisterMachineEventHandler(this);
     }
 
 }

@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Dictionary;
+import java.util.Hashtable;
 
+import org.osgi.service.event.Event;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
@@ -171,32 +175,38 @@ public class VatOutlet {
 
         CommPortIdentifier portIdentifier = null;
         try {
-            portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-            this.commPort = portIdentifier.open(this.getClass().getName(), 2000);
-            if (this.commPort instanceof SerialPort) {
-                SerialPort serialPort = (SerialPort) commPort;
-                serialPort.setSerialPortParams(BAUDRATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
-                        SerialPort.PARITY_ODD);
-                inputStream = serialPort.getInputStream();
-                outputStream = serialPort.getOutputStream();
-            } else {
-                disconnect();
-                throw new IllegalStateException("Not a Serial Port specified");
-            }
+            try {
+                portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
+                this.commPort = portIdentifier.open(this.getClass().getName(), 2000);
+                if (this.commPort instanceof SerialPort) {
+                    SerialPort serialPort = (SerialPort) commPort;
+                    serialPort.setSerialPortParams(BAUDRATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+                            SerialPort.PARITY_ODD);
+                    inputStream = serialPort.getInputStream();
+                    outputStream = serialPort.getOutputStream();
+                } else {
+                    disconnect();
+                    throw new IllegalStateException("Not a Serial Port specified");
+                }
 
-        } catch (NoSuchPortException e) {
-            disconnect();
-            throw new IllegalStateException("There is no port with name: " + portName);
-        } catch (PortInUseException e) {
-            disconnect();
-            throw new IllegalStateException("The port is already owned by: " + portIdentifier.getCurrentOwner());
-        } catch (UnsupportedCommOperationException e) {
-            disconnect();
-            throw new IllegalStateException(e);
-        } catch (IOException e) {
-            disconnect();
-            throw new IllegalStateException("Failed to open input and outputStream to serialPort!");
+            } catch (NoSuchPortException e) {
+                disconnect();
+                throw new IllegalStateException("There is no port with name: " + portName);
+            } catch (PortInUseException e) {
+                disconnect();
+                throw new IllegalStateException("The port is already owned by: " + portIdentifier.getCurrentOwner());
+            } catch (UnsupportedCommOperationException e) {
+                disconnect();
+                throw new IllegalStateException(e);
+            } catch (IOException e) {
+                disconnect();
+                throw new IllegalStateException("Failed to open input and outputStream to serialPort!");
+            }
+        } catch (Exception e) {
+            postConnectEvent(false, e);
+            throw e;
         }
+        postConnectEvent(true, null);
     }
 
     private void disconnect() {
@@ -204,5 +214,14 @@ public class VatOutlet {
             commPort.close();
         }
         commPort = null;
+    }
+
+    private void postConnectEvent(boolean successful, Throwable e) {
+        Dictionary<String, Object> properties = new Hashtable<>();
+        properties.put("success", successful);
+        if (!successful) {
+            properties.put("Error", e);
+        }
+        MachineStateServiceImpl.getEventAdmin().postEvent(new Event(Events.VAT_CONNECT_EVENT, properties));
     }
 }
