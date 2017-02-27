@@ -147,7 +147,6 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         }
         leftSpeedValue = speed;
         SpeedChangeUtilityClass.submitLeftSpeedChange(speed);
-        logService.log(LogService.LOG_DEBUG, "New Left Speed: " + leftSpeedValue);
     }
 
     private void addToRightMeasurementList(double tickDifference) {
@@ -164,7 +163,6 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         }
         rightSpeedValue = speed;
         SpeedChangeUtilityClass.submitRightSpeedChange(speed);
-        logService.log(LogService.LOG_DEBUG, "New Right Speed: " + rightSpeedValue);
     }
 
 }

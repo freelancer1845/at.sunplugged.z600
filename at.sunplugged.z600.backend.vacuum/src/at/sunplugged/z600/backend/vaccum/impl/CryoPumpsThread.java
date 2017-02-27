@@ -118,6 +118,7 @@ public class CryoPumpsThread extends Thread {
                     stopCryoPumpThread();
                     break;
                 }
+                Thread.sleep(100);
 
             } catch (IllegalStateException e1) {
                 logService.log(LogService.LOG_ERROR, "Error in CryoPumpThread. Starting again.", e1);
@@ -343,6 +344,9 @@ public class CryoPumpsThread extends Thread {
     }
 
     private boolean isCanceled() {
+        if (isInterrupted() == true) {
+            cancel = true;
+        }
         if (cancel == true) {
             state = CryoPumpsThreadState.CANCELED;
         }

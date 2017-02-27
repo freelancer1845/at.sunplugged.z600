@@ -46,6 +46,10 @@ public class VacuumServiceImpl implements VacuumService {
     @Override
     public void start() {
         if (state == State.READY) {
+            // cryoPumpThread = new CryoPumpsThread();
+            // cryoPumpThread.start();
+            turboPumpThread = new TurboPumpThread();
+            turboPumpThread.start();
             cryoPumpThread = new CryoPumpsThread();
             cryoPumpThread.start();
             state = State.RUNNING;
@@ -58,6 +62,8 @@ public class VacuumServiceImpl implements VacuumService {
     @Override
     public void stop() {
         if (state != State.FAILED) {
+            // cryoPumpThread.interrupt();
+            turboPumpThread.interrupt();
             cryoPumpThread.interrupt();
             state = State.READY;
         } else {

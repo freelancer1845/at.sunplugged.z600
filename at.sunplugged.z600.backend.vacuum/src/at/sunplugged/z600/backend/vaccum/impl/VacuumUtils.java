@@ -24,10 +24,25 @@ public class VacuumUtils {
     }
 
     public static boolean hasChamberPressureReachedTurboPumpStartTrigger() {
+        return hasChamberPressureReachedTurboPumpStartTrigger(1.0);
+    }
+
+    public static boolean hasChamberPressureReachedTurboPumpStartTrigger(double factor) {
         double chamberPressure = VacuumServiceImpl.getMachineStateService().getPressureMeasurmentControl()
                 .getCurrentValue(PressureMeasurementSite.CHAMBER);
 
-        return chamberPressure < getTurboPumpStartTrigger();
+        return chamberPressure < getTurboPumpStartTrigger() * factor;
+    }
+
+    public static boolean hasTurboPumpReachedTurboPumpStartTrigger(double factor) {
+        double turboPumpPressure = VacuumServiceImpl.getMachineStateService().getPressureMeasurmentControl()
+                .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);
+
+        return turboPumpPressure < getTurboPumpStartTrigger() * factor;
+    }
+
+    public static boolean hasTurboPumpReachedTurboPumpStartTrigger() {
+        return hasTurboPumpReachedTurboPumpStartTrigger(1.0);
     }
 
     public static double getCryoPumpPressureTrigger() {

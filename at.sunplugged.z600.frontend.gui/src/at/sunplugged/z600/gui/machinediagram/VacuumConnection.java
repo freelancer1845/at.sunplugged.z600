@@ -17,6 +17,11 @@ public class VacuumConnection extends Polyline implements MachineEventHandler {
         }
         this.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_RED));
         this.setLineWidth(2);
+        initSpecific();
+    }
+
+    protected void initSpecific() {
+
     }
 
     public void setState(boolean state) {
@@ -37,8 +42,7 @@ public class VacuumConnection extends Polyline implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
-        // TODO Auto-generated method stub
-
+        // Standard nothing
     }
 
 }

@@ -57,6 +57,7 @@ public class TurboPumpThread extends Thread {
     public void run() {
         while (cancel == false) {
             try {
+                logService.log(LogService.LOG_DEBUG, "New TurboPumpThread State: \"" + state.name() + "\"");
                 switch (state) {
                 case START_PRE_PUMPS:
                     if (isCanceled()) {
@@ -87,6 +88,7 @@ public class TurboPumpThread extends Thread {
                     stateSelector();
                     break;
                 case TURBO_PUMP_RUNNING:
+                    outletControl.openOutlet(Outlet.OUTLET_ONE);
                     while (true) {
                         Thread.sleep(100);
                         if (!state.equals(TurboPumpThreadState.TURBO_PUMP_RUNNING)) {
@@ -98,6 +100,7 @@ public class TurboPumpThread extends Thread {
                     cancelProcess();
                     break;
                 }
+                Thread.sleep(100);
             } catch (Exception e) {
                 logService.log(LogService.LOG_ERROR, "Unhandled Exception in TurboPumpThread!", e);
                 state = TurboPumpThreadState.CANCELED;
@@ -111,17 +114,9 @@ public class TurboPumpThread extends Thread {
         }
         switch (state) {
         case START_PRE_PUMPS:
-            double chamberPressure = machineStateService.getPressureMeasurmentControl()
-                    .getCurrentValue(PressureMeasurementSite.CHAMBER);
-            double turboPumpTriggerLowered = Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP))
-                    * 0.8;
-
-            double turboPumpPressure = machineStateService.getPressureMeasurmentControl()
-                    .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);
-
-            if (chamberPressure > turboPumpTriggerLowered) {
+            if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger(0.8) == false) {
                 state = TurboPumpThreadState.EVACUATE_CHAMBER;
-            } else if (turboPumpPressure > turboPumpTriggerLowered) {
+            } else if (VacuumUtils.hasTurboPumpReachedTurboPumpStartTrigger(0.8) == false) {
                 state = TurboPumpThreadState.EVACUATE_TURBO_PUMP;
             } else {
                 state = TurboPumpThreadState.START_TURBO_PUMP;
@@ -131,10 +126,7 @@ public class TurboPumpThread extends Thread {
             state = TurboPumpThreadState.EVACUATE_TURBO_PUMP;
             break;
         case EVACUATE_TURBO_PUMP:
-            chamberPressure = machineStateService.getPressureMeasurmentControl()
-                    .getCurrentValue(PressureMeasurementSite.CHAMBER);
-            double turboPumpTrigger = Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP));
-            if (chamberPressure > turboPumpTrigger) {
+            if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger() == false) {
                 state = TurboPumpThreadState.EVACUATE_CHAMBER;
             } else {
                 state = TurboPumpThreadState.START_TURBO_PUMP;
@@ -158,7 +150,6 @@ public class TurboPumpThread extends Thread {
     private void startPumps() throws IOException, InterruptedException, TimeoutException {
         VacuumUtils.closeAllOutlets(outletControl);
         startPrePumpOne();
-        startPrePumpTwo();
         startPrePumpRoots();
 
     }
@@ -171,16 +162,11 @@ public class TurboPumpThread extends Thread {
         prePumpOne.startPump().get(10, TimeUnit.SECONDS);
     }
 
-    private void startPrePumpTwo() throws InterruptedException, TimeoutException {
-        Pump prePumpTwo = pumpRegistry.getPump(PumpIds.PRE_PUMP_TWO);
-        if (prePumpTwo.getState().equals(PumpState.ON)) {
-            return;
-        }
-        prePumpTwo.startPump().get(10, TimeUnit.SECONDS);
-    }
-
     private void startPrePumpRoots() throws InterruptedException, TimeoutException {
         Pump prePumpRoots = pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS);
+        if (prePumpRoots.getState() == PumpState.ON) {
+            return;
+        }
         if (machineStateService.getDigitalInputState(DigitalInput.P_120_MBAR) == false) {
             FutureEvent p120TriggerEvent = new FutureEvent(machineStateService,
                     new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.P_120_MBAR, true));
@@ -217,14 +203,18 @@ public class TurboPumpThread extends Thread {
 
     }
 
-    private void startTurboPump() throws InterruptedException, TimeoutException {
+    private void startTurboPump() throws InterruptedException, TimeoutException, IOException {
         Pump turboPump = pumpRegistry.getPump(PumpIds.TURBO_PUMP);
         if (turboPump.getState().equals(PumpState.OFF)) {
+            outletControl.openOutlet(Outlet.OUTLET_TWO);
             turboPump.startPump().get(3, TimeUnit.MINUTES);
         }
     }
 
     private boolean isCanceled() {
+        if (this.isInterrupted() == true) {
+            cancel = true;
+        }
         if (cancel == true) {
             state = TurboPumpThreadState.CANCELED;
         }

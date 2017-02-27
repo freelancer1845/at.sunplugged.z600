@@ -147,7 +147,7 @@ public class SplashWindow implements EventHandler {
         } else if (event.getTopic() == Events.VAT_CONNECT_EVENT) {
             vatCheckGroup.setEvent(event);
         }
-        if (shell != null) {
+        if (shell != null && shell.isDisposed() == false) {
             shell.getDisplay().asyncExec(new Runnable() {
 
                 @Override

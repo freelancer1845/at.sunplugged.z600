@@ -103,6 +103,9 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
             logService.log(LogService.LOG_ERROR, "Failed to start compressor: \"" + compressorOutput.name() + "\".");
             throw new IllegalPumpConditionsException("Failed because compressor couldn't be started.");
         }
+        if (machineStateService.getDigitalInputState(lowInput) == true) {
+            changeState(PumpState.ON);
+        }
 
         return startEvent;
     }

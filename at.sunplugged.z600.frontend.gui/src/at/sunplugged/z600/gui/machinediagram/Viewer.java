@@ -25,6 +25,7 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.gui.views.MainView;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 
@@ -111,8 +112,8 @@ public class Viewer implements MachineEventHandler {
         outletFigures[3] = new OutletFigure("V4", 250, 220, Outlet.OUTLET_FOUR, false);
         outletFigures[4] = new OutletFigure("V5", 90, 280, Outlet.OUTLET_FIVE, true);
         outletFigures[5] = new OutletFigure("V6", 390, 280, Outlet.OUTLET_SIX, true);
-        outletFigures[6] = new OutletFigure("V7", 30, 220, null, false);
-        outletFigures[7] = new OutletFigure("V8", 420, 220, null, false);
+        outletFigures[6] = new OutletFigure("V7", 30, 220, Outlet.OUTLET_SEVEN, false);
+        outletFigures[7] = new OutletFigure("V8", 420, 220, Outlet.OUTLET_EIGHT, false);
 
         outletFigures[8] = new OutletFigure("V9", 300, 140, Outlet.OUTLET_NINE, false);
 
@@ -168,6 +169,17 @@ public class Viewer implements MachineEventHandler {
                         }
                     }
 
+                    @Override
+                    protected void initSpecific() {
+                        PumpState state = MainView.getMachineStateService().getPumpRegistry()
+                                .getPump(PumpIds.PRE_PUMP_ONE).getState();
+                        if (state == PumpState.ON) {
+                            this.setState(true);
+                        } else {
+                            this.setState(false);
+                        }
+                    }
+
                 });
         connections.put("1M2-V2",
                 new VacuumConnection(pumpFigures[1].getBounds().getCenter(), outletFigures[1].getBounds().getCenter(),
@@ -186,6 +198,17 @@ public class Viewer implements MachineEventHandler {
                                     this.setState(false);
                                 }
                             }
+                        }
+                    }
+
+                    @Override
+                    protected void initSpecific() {
+                        PumpState state = MainView.getMachineStateService().getPumpRegistry()
+                                .getPump(PumpIds.PRE_PUMP_ROOTS).getState();
+                        if (state == PumpState.ON) {
+                            this.setState(true);
+                        } else {
+                            this.setState(false);
                         }
                     }
 
@@ -208,6 +231,17 @@ public class Viewer implements MachineEventHandler {
                             this.setState(false);
                         }
                     }
+                }
+            }
+
+            @Override
+            protected void initSpecific() {
+                PumpState state = MainView.getMachineStateService().getPumpRegistry().getPump(PumpIds.PRE_PUMP_TWO)
+                        .getState();
+                if (state == PumpState.ON) {
+                    this.setState(true);
+                } else {
+                    this.setState(false);
                 }
             }
 
