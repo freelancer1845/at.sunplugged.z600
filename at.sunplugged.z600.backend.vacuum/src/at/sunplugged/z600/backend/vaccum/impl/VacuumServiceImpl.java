@@ -8,7 +8,10 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.vaccum.api.VacuumService;
+import at.sunplugged.z600.backend.vaccum.impl.starting.CryoPumpsStartThread;
+import at.sunplugged.z600.backend.vaccum.impl.starting.TurboPumpStartThread;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 
 @Component
@@ -20,13 +23,17 @@ public class VacuumServiceImpl implements VacuumService {
 
     private static SettingsService settingsService;
 
-    private volatile State state = State.READY;
+    private static volatile State state = State.READY;
+
+    private static CryoPumpsThreadState cryoState = CryoPumpsThreadState.INIT_STATE;
+
+    private static TurboPumpThreadState turboState = TurboPumpThreadState.INIT_STATE;
 
     private static Map<Interlocks, Boolean> interlocksMap = new HashMap<>();
 
-    private Thread cryoPumpThread;
+    private CryoPumpsStartThread cryoPumpThread;
 
-    private Thread turboPumpThread;
+    private TurboPumpStartThread turboPumpThread;
 
     public VacuumServiceImpl() {
         initInterlocksMap();
@@ -38,21 +45,50 @@ public class VacuumServiceImpl implements VacuumService {
 
     }
 
+    public static void transmitState(CryoPumpsThreadState state) {
+        cryoState = state;
+        updateState();
+    }
+
+    public static void transmitState(TurboPumpThreadState state) {
+        turboState = state;
+        updateState();
+    }
+
+    private static void updateState() {
+        if (cryoState == CryoPumpsThreadState.CRYO_RUNNING && turboState == TurboPumpThreadState.TURBO_PUMP_RUNNING) {
+            state = State.EVACUATING;
+            if (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING) {
+                state = State.PRESSURE_CONTROL_RUNNING;
+            }
+            return;
+        }
+        if (cryoState == CryoPumpsThreadState.CANCELED || turboState == TurboPumpThreadState.CANCELED) {
+            state = State.FAILED;
+            return;
+        }
+        if (cryoState == CryoPumpsThreadState.INIT_STATE && turboState == TurboPumpThreadState.INIT_STATE) {
+            state = State.READY;
+            return;
+        }
+        state = State.STARTING;
+    }
+
     @Override
     public void setInterlock(Interlocks interlock, boolean value) {
         interlocksMap.put(interlock, value);
     }
 
     @Override
-    public void start() {
+    public void startEvacuation() {
         if (state == State.READY) {
             // cryoPumpThread = new CryoPumpsThread();
             // cryoPumpThread.start();
-            turboPumpThread = new TurboPumpThread();
+            turboPumpThread = new TurboPumpStartThread();
             turboPumpThread.start();
-            cryoPumpThread = new CryoPumpsThread();
+            cryoPumpThread = new CryoPumpsStartThread();
             cryoPumpThread.start();
-            state = State.RUNNING;
+            state = State.STARTING;
         } else {
             logService.log(LogService.LOG_WARNING,
                     "Tried to start vacuum thread but is not in acceptable state: \"" + state.name() + "\"");
@@ -60,11 +96,11 @@ public class VacuumServiceImpl implements VacuumService {
     }
 
     @Override
-    public void stop() {
+    public void stopEvacuation() {
         if (state != State.FAILED) {
-            // cryoPumpThread.interrupt();
             turboPumpThread.interrupt();
             cryoPumpThread.interrupt();
+
             state = State.READY;
         } else {
             logService.log(LogService.LOG_WARNING,
@@ -126,6 +162,44 @@ public class VacuumServiceImpl implements VacuumService {
 
     public static Map<Interlocks, Boolean> getInterlocksMap() {
         return interlocksMap;
+    }
+
+    @Override
+    public void startPressureControl(double setPointPressure) {
+        if (VacuumUtils.isPressureControlLimitReached() == true) {
+            machineStateService.getGasFlowControl().startGasFlowControl();
+            machineStateService.getGasFlowControl().setGasflowDesiredPressure(setPointPressure);
+        } else {
+            logService.log(LogService.LOG_WARNING, "PressureControl Limit not reached!");
+        }
+    }
+
+    @Override
+    public void setSetpointPressure(double setPoint) {
+        machineStateService.getGasFlowControl().setGasflowDesiredPressure(setPoint);
+    }
+
+    @Override
+    public void stopPressureControl() {
+        machineStateService.getGasFlowControl().stopGasFlowControl();
+    }
+
+    @Override
+    public CryoPumpsThreadState getCryoPumpThreadState() {
+        return cryoState;
+    }
+
+    @Override
+    public TurboPumpThreadState getTurboPumpThreadState() {
+        return turboState;
+    }
+
+    @Override
+    public void shutdown() {
+        stopPressureControl();
+        cryoPumpThread.shutdown();
+        turboPumpThread.shutdown();
+
     }
 
 }

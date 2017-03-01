@@ -23,6 +23,9 @@ public class ParameterIds {
     /** Gas flow hysteresis control parameter. */
     public static final String GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER = "Gas_Flow_Hysteresis_Control_Parameter";
 
+    /** Limit for starting the pressure control. */
+    public static final String PRESSURE_CONTROL_LOWER_LIMIT = "Pressure_Control_Lower_Limit";
+
     /** Initial Power Kathode One. */
     public static final String INITIAL_POWER_KATHODE_ONE = "Initial_Power_Kathode_One";
 

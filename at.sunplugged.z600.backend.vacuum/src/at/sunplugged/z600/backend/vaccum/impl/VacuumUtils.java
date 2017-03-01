@@ -10,6 +10,14 @@ import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 
 public class VacuumUtils {
 
+    public static boolean isPressureControlLimitReached() {
+        double chamberPressure = VacuumServiceImpl.getMachineStateService().getPressureMeasurmentControl()
+                .getCurrentValue(PressureMeasurementSite.CHAMBER);
+        double allowedPressure = Double
+                .valueOf(VacuumServiceImpl.getSettingsService().getProperty(ParameterIds.PRESSURE_CONTROL_LOWER_LIMIT));
+        return (chamberPressure <= allowedPressure) == true;
+    }
+
     public static boolean isCryoEvacuated(PumpIds pump) {
         switch (pump) {
         case CRYO_ONE:

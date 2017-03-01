@@ -46,6 +46,8 @@ import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
+import org.eclipse.swt.layout.RowLayout;
+import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 
 @Component
 public class MainView {
@@ -399,17 +401,7 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (vacuumService.getState() == State.READY) {
-                    vacuumService.start();
-                    btnEvakuieren.setText("Cancel");
-                } else if (vacuumService.getState() == State.RUNNING) {
-                    vacuumService.stop();
-                    if (vacuumService.getState() == State.READY) {
-                        btnEvakuieren.setText("Start");
-                    } else {
-                        btnEvakuieren.setText("Error: " + vacuumService.getState().name());
-                    }
-                }
+
             }
         });
         btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -512,6 +504,14 @@ public class MainView {
             }
         });
         buttonSendStatement.setText("Send");
+
+        TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
+        tbtmVacuum.setText("Vacuum");
+
+        Composite VacuumComposite = VacuumTabitemFactory.createComposite(tabFolder);
+        tbtmVacuum.setControl(VacuumComposite);
+        VacuumComposite.setLayout(new GridLayout(1, false));
+
         new Label(shell, SWT.NONE);
 
         return shell;

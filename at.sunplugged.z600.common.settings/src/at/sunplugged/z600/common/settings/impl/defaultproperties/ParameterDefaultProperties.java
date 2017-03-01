@@ -20,7 +20,8 @@ public class ParameterDefaultProperties extends Properties {
         this.put(ParameterIds.INITIAL_DESIRED_PRESSURE_GAS_FLOW, "0.003");
         this.put(ParameterIds.INITIAL_GAS_FLOW_PARAMETER, "0");
         this.put(ParameterIds.GAS_FLOW_CONTROL_PARAMETER, "1");
-        this.put(ParameterIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER, "0.0001");
+        this.put(ParameterIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER, "0.00001");
+        this.put(ParameterIds.PRESSURE_CONTROL_LOWER_LIMIT, "5E-05");
         this.put(ParameterIds.INITIAL_POWER_KATHODE_ONE, "0.1");
         this.put(ParameterIds.INITIAL_CURRENT_KATHODE_TWO, "0.4");
         this.put(ParameterIds.INITIAL_CURRENT_KATHODE_THREE, "0.4");

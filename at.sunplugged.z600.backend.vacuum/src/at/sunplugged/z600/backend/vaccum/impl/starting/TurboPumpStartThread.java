@@ -1,4 +1,4 @@
-package at.sunplugged.z600.backend.vaccum.impl;
+package at.sunplugged.z600.backend.vaccum.impl.starting;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -6,6 +6,9 @@ import java.util.concurrent.TimeoutException;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.vaccum.api.VacuumService.TurboPumpThreadState;
+import at.sunplugged.z600.backend.vaccum.impl.VacuumServiceImpl;
+import at.sunplugged.z600.backend.vaccum.impl.VacuumUtils;
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -22,11 +25,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.FuturePressureReac
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
-public class TurboPumpThread extends Thread {
-
-    private enum TurboPumpThreadState {
-        START_PRE_PUMPS, EVACUATE_CHAMBER, EVACUATE_TURBO_PUMP, START_TURBO_PUMP, TURBO_PUMP_RUNNING, CANCELED;
-    }
+public class TurboPumpStartThread extends Thread {
 
     private TurboPumpThreadState state = TurboPumpThreadState.START_PRE_PUMPS;
 
@@ -42,7 +41,7 @@ public class TurboPumpThread extends Thread {
 
     private volatile boolean cancel = false;
 
-    public TurboPumpThread() {
+    public TurboPumpStartThread() {
         this.machineStateService = VacuumServiceImpl.getMachineStateService();
         this.logService = VacuumServiceImpl.getLogService();
         this.settings = VacuumServiceImpl.getSettingsService();
@@ -53,12 +52,28 @@ public class TurboPumpThread extends Thread {
         this.setName("TurboPumpThread");
     }
 
+    private void cancel() {
+        this.interrupt();
+        if (state != TurboPumpThreadState.SHUTDOWN) {
+            state = TurboPumpThreadState.CANCELED;
+        }
+    }
+
+    public void shutdown() {
+        this.interrupt();
+        state = TurboPumpThreadState.SHUTDOWN;
+    }
+
     @Override
     public void run() {
         while (cancel == false) {
             try {
                 logService.log(LogService.LOG_DEBUG, "New TurboPumpThread State: \"" + state.name() + "\"");
+                VacuumServiceImpl.transmitState(state);
                 switch (state) {
+                case INIT_STATE:
+                    state = TurboPumpThreadState.START_PRE_PUMPS;
+                    break;
                 case START_PRE_PUMPS:
                     if (isCanceled()) {
                         break;
@@ -96,11 +111,16 @@ public class TurboPumpThread extends Thread {
                         }
                     }
                     break;
+                case SHUTDOWN:
+                    shutdownCase();
+                    break;
                 case CANCELED:
                     cancelProcess();
                     break;
                 }
                 Thread.sleep(100);
+            } catch (InterruptedException e1) {
+                cancel();
             } catch (Exception e) {
                 logService.log(LogService.LOG_ERROR, "Unhandled Exception in TurboPumpThread!", e);
                 state = TurboPumpThreadState.CANCELED;
@@ -204,9 +224,9 @@ public class TurboPumpThread extends Thread {
     }
 
     private void startTurboPump() throws InterruptedException, TimeoutException, IOException {
+        outletControl.openOutlet(Outlet.OUTLET_TWO);
         Pump turboPump = pumpRegistry.getPump(PumpIds.TURBO_PUMP);
         if (turboPump.getState().equals(PumpState.OFF)) {
-            outletControl.openOutlet(Outlet.OUTLET_TWO);
             turboPump.startPump().get(3, TimeUnit.MINUTES);
         }
     }
@@ -221,16 +241,36 @@ public class TurboPumpThread extends Thread {
         return cancel;
     }
 
-    private void cancelProcess() throws IOException, InterruptedException {
+    private void cancelProcess() throws InterruptedException {
+        Thread.interrupted();
+        try {
+            outletControl.closeOutlet(Outlet.OUTLET_ONE);
+            outletControl.closeOutlet(Outlet.OUTLET_THREE);
+            pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
+            Thread.sleep(1000);
+            outletControl.closeOutlet(Outlet.OUTLET_TWO);
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
+            Thread.sleep(500);
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE);
+
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Error during cancel turboPumpThread!!!", e);
+        } finally {
+            cancel = true;
+        }
+
+    }
+
+    private void shutdownCase() throws IOException, InterruptedException, TimeoutException {
+        Thread.interrupted();
         outletControl.closeOutlet(Outlet.OUTLET_ONE);
         outletControl.closeOutlet(Outlet.OUTLET_THREE);
-        pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
-        Thread.sleep(1000);
+        pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump().get(5, TimeUnit.MINUTES);
         outletControl.closeOutlet(Outlet.OUTLET_TWO);
-        pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
-        Thread.sleep(500);
-        pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE);
-
+        pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump().get(30, TimeUnit.SECONDS);
+        pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump().get(30, TimeUnit.SECONDS);
+        state = TurboPumpThreadState.INIT_STATE;
+        VacuumServiceImpl.transmitState(state);
         cancel = true;
     }
 

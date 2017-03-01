@@ -1,4 +1,4 @@
-package at.sunplugged.z600.backend.vaccum.impl;
+package at.sunplugged.z600.backend.vaccum.impl.starting;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -6,7 +6,10 @@ import java.util.concurrent.TimeoutException;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.vaccum.api.VacuumService.CryoPumpsThreadState;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
+import at.sunplugged.z600.backend.vaccum.impl.VacuumServiceImpl;
+import at.sunplugged.z600.backend.vaccum.impl.VacuumUtils;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
@@ -17,18 +20,7 @@ import at.sunplugged.z600.core.machinestate.api.PumpRegistry;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.FuturePressureReachedEvent;
 
-public class CryoPumpsThread extends Thread {
-
-    private enum CryoPumpsThreadState {
-        INIT_STATE,
-        START_PRE_PUMP,
-        EVACUATE_CRYO,
-        EVACUATE_CHAMBER,
-        START_COOLING,
-        WAIT_FOR_CRYO_COOL,
-        CRYO_RUNNING,
-        CANCELED;
-    }
+public class CryoPumpsStartThread extends Thread {
 
     private CryoPumpsThreadState state = CryoPumpsThreadState.INIT_STATE;
 
@@ -42,7 +34,7 @@ public class CryoPumpsThread extends Thread {
 
     private volatile boolean cancel = false;
 
-    public CryoPumpsThread() {
+    public CryoPumpsStartThread() {
         this.setName("CryoPumpsThread");
 
         this.machineStateService = VacuumServiceImpl.getMachineStateService();
@@ -55,7 +47,14 @@ public class CryoPumpsThread extends Thread {
 
     public void cancel() {
         this.interrupt();
-        cancel = true;
+        if (state != CryoPumpsThreadState.SHUTDOWN) {
+            state = CryoPumpsThreadState.CANCELED;
+        }
+    }
+
+    public void shutdown() {
+        this.interrupt();
+        state = CryoPumpsThreadState.SHUTDOWN;
     }
 
     @Override
@@ -63,6 +62,7 @@ public class CryoPumpsThread extends Thread {
         while (cancel == false) {
             try {
                 logService.log(LogService.LOG_DEBUG, "CrypPumpThread new state: " + state.name());
+                VacuumServiceImpl.transmitState(state);
                 switch (state) {
                 case INIT_STATE:
                     stateSelector();
@@ -114,6 +114,12 @@ public class CryoPumpsThread extends Thread {
                     }
 
                     break;
+                case SHUTDOWN:
+                    if (isCanceled()) {
+                        break;
+                    }
+                    shutdownCase();
+                    break;
                 case CANCELED:
                     stopCryoPumpThread();
                     break;
@@ -124,7 +130,7 @@ public class CryoPumpsThread extends Thread {
                 logService.log(LogService.LOG_ERROR, "Error in CryoPumpThread. Starting again.", e1);
                 state = CryoPumpsThreadState.INIT_STATE;
             } catch (InterruptedException et) {
-                cancel = true;
+                cancel();
             } catch (Exception e) {
                 logService.log(LogService.LOG_ERROR, "Unhandled Exception in CryoPumpsThread. Canceling...", e);
                 cancel();
@@ -134,16 +140,24 @@ public class CryoPumpsThread extends Thread {
 
     }
 
-    private void stopCryoPumpThread() throws IOException {
-        outletControl.closeOutlet(Outlet.OUTLET_SEVEN);
-        outletControl.closeOutlet(Outlet.OUTLET_EIGHT);
-        outletControl.closeOutlet(Outlet.OUTLET_FOUR);
-        outletControl.closeOutlet(Outlet.OUTLET_FIVE);
-        outletControl.closeOutlet(Outlet.OUTLET_SIX);
+    private void stopCryoPumpThread() {
+        Thread.interrupted();
+        try {
+            outletControl.closeOutlet(Outlet.OUTLET_SEVEN);
+            outletControl.closeOutlet(Outlet.OUTLET_EIGHT);
+            outletControl.closeOutlet(Outlet.OUTLET_FOUR);
+            outletControl.closeOutlet(Outlet.OUTLET_FIVE);
+            outletControl.closeOutlet(Outlet.OUTLET_SIX);
 
-        pumpRegistry.getPump(PumpIds.CRYO_ONE).stopPump();
-        pumpRegistry.getPump(PumpIds.CRYO_TWO).stopPump();
-        pumpRegistry.getPump(PumpIds.PRE_PUMP_TWO).stopPump();
+            pumpRegistry.getPump(PumpIds.CRYO_ONE).stopPump();
+            pumpRegistry.getPump(PumpIds.CRYO_TWO).stopPump();
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_TWO).stopPump();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Error while stopping CryoPumpThread!!!", e);
+        } finally {
+            cancel = true;
+        }
+
     }
 
     private void stateSelector() {
@@ -345,12 +359,33 @@ public class CryoPumpsThread extends Thread {
 
     private boolean isCanceled() {
         if (isInterrupted() == true) {
-            cancel = true;
+            if (state != CryoPumpsThreadState.SHUTDOWN) {
+                state = CryoPumpsThreadState.CANCELED;
+            }
         }
         if (cancel == true) {
-            state = CryoPumpsThreadState.CANCELED;
+            if (state != CryoPumpsThreadState.SHUTDOWN) {
+                state = CryoPumpsThreadState.CANCELED;
+            }
         }
-        return cancel;
+        return state == CryoPumpsThreadState.CANCELED;
+    }
+
+    private void shutdownCase() throws IOException, InterruptedException {
+        Thread.interrupted();
+        outletControl.closeOutlet(Outlet.OUTLET_EIGHT);
+        outletControl.closeOutlet(Outlet.OUTLET_SEVEN);
+        Thread.sleep(500);
+        machineStateService.getPumpRegistry().getPump(PumpIds.CRYO_ONE).stopPump();
+        machineStateService.getPumpRegistry().getPump(PumpIds.CRYO_TWO).stopPump();
+        outletControl.closeOutlet(Outlet.OUTLET_FIVE);
+        outletControl.closeOutlet(Outlet.OUTLET_FOUR);
+
+        Thread.sleep(500);
+        machineStateService.getPumpRegistry().getPump(PumpIds.PRE_PUMP_TWO).stopPump();
+        cancel = true;
+        state = CryoPumpsThreadState.INIT_STATE;
+        VacuumServiceImpl.transmitState(state);
     }
 
 }
