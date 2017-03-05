@@ -5,6 +5,7 @@ import java.security.InvalidParameterException;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -34,12 +35,14 @@ public class OutletControlImpl implements OutletControl {
         this.settingsService = MachineStateServiceImpl.getSettingsService();
         this.logService = MachineStateServiceImpl.getLogService();
         try {
-            this.vatSeven = new VatOutlet("COM3", machineStateService);
+            this.vatSeven = new VatOutlet(settingsService.getProperty(NetworkComIds.VAT_SEVEN_COM_PORT),
+                    machineStateService);
         } catch (IllegalStateException e) {
             logService.log(LogService.LOG_ERROR, "Couldn't connect to VAT Outlet Seven", e);
         }
         try {
-            this.vatEight = new VatOutlet("COM4", machineStateService);
+            this.vatEight = new VatOutlet(settingsService.getProperty(NetworkComIds.VAT_EIGHT_COM_PORT),
+                    machineStateService);
         } catch (IllegalStateException e) {
             logService.log(LogService.LOG_ERROR, "Couldn't connect to VAT Outlet Eight", e);
         }
@@ -161,7 +164,7 @@ public class OutletControlImpl implements OutletControl {
     }
 
     private boolean IsSafetyProtocolEnabeld() {
-        return Boolean.getBoolean(settingsService.getProperty(ParameterIds.SAFETY_PROTOCOLS_OUTLETS));
+        return Boolean.valueOf(settingsService.getProperty(ParameterIds.SAFETY_PROTOCOLS_OUTLETS));
     }
 
     private boolean checkSafetyProtocol(Outlet outlet, boolean newState) {
@@ -179,9 +182,9 @@ public class OutletControlImpl implements OutletControl {
                             safetyProtocolMessage(outlet, newState, "Pressures were negative!"));
                     return false;
                 }
-                if (chamberPressure < turboPumpPressure) {
-                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
-                            "Pressure in Chamber is lower than pressure at the Turbo Pump!"));
+                if (isOutletOpen(Outlet.OUTLET_THREE)) {
+                    logService.log(LogService.LOG_INFO,
+                            safetyProtocolMessage(outlet, newState, "Outlet Three is open!"));
                     return false;
                 }
             }
@@ -193,18 +196,50 @@ public class OutletControlImpl implements OutletControl {
                             "Opening Outlet Two when Outlet One is open is forbidden. Could result in rapid pressure decrease at Pre Pumps!"));
                     return false;
                 }
+                if (isOutletOpen(Outlet.OUTLET_THREE) == true) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Can't open outlet two when outlet three is open!"));
+                    return false;
+                }
             }
             break;
         case OUTLET_THREE:
+            if (newState == true) {
+                double chamberPressure = machineStateService.getPressureMeasurmentControl()
+                        .getCurrentValue(PressureMeasurementSite.CHAMBER);
+                double turboPumpTrigger = Double
+                        .valueOf(settingsService.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP));
+                if (chamberPressure < 0.8 * turboPumpTrigger) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Chamer pressure is lower than 80% of turbo pump trigger pressure. Won't open outlet three."));
+                    return false;
+                }
+                if (isOutletOpen(Outlet.OUTLET_ONE) == true) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Opening Outlet Three when Outlet One is open is forbidden!"));
+                    return false;
+                }
+                if (isOutletOpen(Outlet.OUTLET_TWO) == true) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Can't open outlet three when outlet two is open!"));
+                    return false;
+                }
+            }
+            break;
         case OUTLET_FOUR:
             if (newState == true) {
                 double chamberPressure = machineStateService.getPressureMeasurmentControl()
                         .getCurrentValue(PressureMeasurementSite.CHAMBER);
-                double turboPumpPressure = machineStateService.getPressureMeasurmentControl()
-                        .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);
-                if (chamberPressure < turboPumpPressure) {
+                double turboPumpTrigger = Double
+                        .valueOf(settingsService.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP));
+                if (chamberPressure < 0.8 * turboPumpTrigger) {
                     logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
-                            "Pressure in chamber is potentially lower than at pre Pumps!"));
+                            "Chamer pressure is lower than 80% of turbo pump trigger pressure. Won't open outlet four."));
+                    return false;
+                }
+                if (isOutletOpen(Outlet.OUTLET_FIVE) == true || isOutletOpen(Outlet.OUTLET_SIX) == true) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Opening outlet four when outlet five or six is open is forbidden for safety reasons!"));
                     return false;
                 }
             }
@@ -213,11 +248,16 @@ public class OutletControlImpl implements OutletControl {
             if (newState == true) {
                 double cryoOnePressure = machineStateService.getPressureMeasurmentControl()
                         .getCurrentValue(PressureMeasurementSite.CRYO_PUMP_ONE);
-                double turboPumpPressure = machineStateService.getPressureMeasurmentControl()
-                        .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);
-                if (cryoOnePressure < turboPumpPressure) {
+                double cryoTriggerPressure = Double
+                        .valueOf(settingsService.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER));
+                if (cryoOnePressure < cryoTriggerPressure) {
                     logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
-                            "Pressure in at CryoPump One is potentially lower than at pre Pumps!"));
+                            "Pressure at CryoPump One is low than trigger pressure. No reason to open Outlet Five!"));
+                    return false;
+                }
+                if (isOutletOpen(Outlet.OUTLET_FOUR) == true) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Opening outlet five when outlet four is open is forbidden for safety reasons!"));
                     return false;
                 }
             }
@@ -226,16 +266,38 @@ public class OutletControlImpl implements OutletControl {
             if (newState == true) {
                 double cryoTwoPressure = machineStateService.getPressureMeasurmentControl()
                         .getCurrentValue(PressureMeasurementSite.CRYO_PUMP_TWO);
-                double turboPumpPressure = machineStateService.getPressureMeasurmentControl()
-                        .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);
-                if (cryoTwoPressure < turboPumpPressure) {
+                double cryoTriggerPressure = Double
+                        .valueOf(settingsService.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER));
+                if (cryoTwoPressure < cryoTriggerPressure) {
                     logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
-                            "Pressure in at CryoPump Two is potentially lower than at pre Pumps!"));
+                            "Pressure at CryoPump Two is low than trigger pressure. No reason to open Outlet Six!"));
+                    return false;
+                }
+                if (isOutletOpen(Outlet.OUTLET_FOUR) == true) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Opening outlet six when outlet four is open is forbidden for safety reasons!"));
                     return false;
                 }
             }
             break;
-
+        case OUTLET_SEVEN:
+            if (newState == true) {
+                if (isOutletOpen(Outlet.OUTLET_FIVE)) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Outlet five needs to be closed to open outlet seven!"));
+                    return false;
+                }
+            }
+            break;
+        case OUTLET_EIGHT:
+            if (newState == true) {
+                if (isOutletOpen(Outlet.OUTLET_SIX)) {
+                    logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
+                            "Outlet six needs to be closed to open outlet eight!"));
+                    return false;
+                }
+            }
+            break;
         default:
             break;
         }
@@ -252,7 +314,7 @@ public class OutletControlImpl implements OutletControl {
         message += "Outlet: ";
         message += outlet.name();
         message += " . Reason: \"";
-        message += "reason" + "\"";
+        message += reason + "\"";
         return message;
     }
 

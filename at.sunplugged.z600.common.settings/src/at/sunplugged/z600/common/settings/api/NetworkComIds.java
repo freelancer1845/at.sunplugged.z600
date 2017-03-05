@@ -18,6 +18,11 @@ public class NetworkComIds {
     public static final String LEFT_ENGINE_COM_PORT = "Motor_Links_Port";
 
     /** Right Engine Port. */
-    public static final String RIGHT_ENGINE_COMP_PORT = "Motor_Rechts_Port";
+    public static final String RIGHT_ENGINE_COM_PORT = "Motor_Rechts_Port";
 
+    /** Vat Seven Port. */
+    public static final String VAT_SEVEN_COM_PORT = "Vat_Seven_Port";
+
+    /** Vat Eight Port. */
+    public static final String VAT_EIGHT_COM_PORT = "Vat_Eight_Port";
 }

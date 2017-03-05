@@ -1,5 +1,7 @@
 package at.sunplugged.z600.gui.views;
 
+import java.io.IOException;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -37,6 +39,10 @@ import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
+import at.sunplugged.z600.core.machinestate.api.Pump;
+import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
@@ -75,8 +81,6 @@ public class MainView {
     private static BundleContext context;
 
     private static Viewer diagramViewer;
-    private static Text text_left_to_right_speed;
-    private static Text text_right_to_left_speed;
     private static Text text;
     private static Text textAddress;
     private static Text textUsername;
@@ -142,212 +146,6 @@ public class MainView {
         gdTabFolder.heightHint = 718;
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
-
-        TabItem tbtmConveyorDebug = new TabItem(tabFolder, SWT.NONE);
-        tbtmConveyorDebug.setText("Conveyor Debug");
-
-        Composite composite = new Composite(tabFolder, SWT.NONE);
-        tbtmConveyorDebug.setControl(composite);
-        composite.setLayout(new GridLayout(1, true));
-
-        Group grpLeftToRight = new Group(composite, SWT.NONE);
-        grpLeftToRight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        grpLeftToRight.setText("Left To Right");
-        grpLeftToRight.setLayout(new GridLayout(3, true));
-
-        Label lblSpeedInMms = new Label(grpLeftToRight, SWT.NONE);
-        lblSpeedInMms.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblSpeedInMms.setText("Speed in mm/s");
-
-        text_left_to_right_speed = new Text(grpLeftToRight, SWT.BORDER);
-        text_left_to_right_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-
-        Button button_left_to_right = new Button(grpLeftToRight, SWT.NONE);
-        button_left_to_right.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_left_to_right.setText("START");
-        button_left_to_right.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int speedToSet = Integer.valueOf(text_left_to_right_speed.getText());
-                conveyorControlService.getEngineTwo().setDirection(0);
-                conveyorControlService.getEngineTwo().setMaximumSpeed(speedToSet);
-                conveyorControlService.getEngineOne().setLoose();
-                conveyorControlService.getEngineTwo().startEngine();
-
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
-
-        Group grpRightToLeft = new Group(composite, SWT.NONE);
-        grpRightToLeft.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        grpRightToLeft.setText("Right To Left");
-        grpRightToLeft.setLayout(new GridLayout(3, true));
-
-        Label label = new Label(grpRightToLeft, SWT.NONE);
-        label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        label.setText("Speed in mm/s");
-
-        text_right_to_left_speed = new Text(grpRightToLeft, SWT.BORDER);
-        text_right_to_left_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-
-        Button button_right_to_left = new Button(grpRightToLeft, SWT.NONE);
-        button_right_to_left.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        button_right_to_left.setText("START");
-        button_right_to_left.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int speedToSet = Integer.valueOf(text_left_to_right_speed.getText());
-                conveyorControlService.getEngineOne().setDirection(1);
-                conveyorControlService.getEngineOne().setMaximumSpeed(speedToSet);
-                conveyorControlService.getEngineTwo().setLoose();
-                conveyorControlService.getEngineOne().startEngine();
-
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-
-        });
-
-        Group grpMonitoring = new Group(composite, SWT.NONE);
-        grpMonitoring.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        grpMonitoring.setText("Monitoring");
-        grpMonitoring.setLayout(new GridLayout(2, true));
-
-        Label lblLeftSpeed = new Label(grpMonitoring, SWT.NONE);
-        lblLeftSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblLeftSpeed.setText("Left Speed in mm/s");
-
-        Label label_left_speed = new Label(grpMonitoring, SWT.BORDER);
-        label_left_speed.setAlignment(SWT.RIGHT);
-        label_left_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        label_left_speed.setText("0.00");
-        machineStateService.registerMachineEventHandler(new MachineEventHandler() {
-
-            @Override
-            public void handleEvent(MachineStateEvent event) {
-                if (event.getType().equals(Type.CONVEYOR_EVENT)) {
-                    if (((ConveyorMachineEvent) event).getConveyorEventType()
-                            .equals(ConveyorMachineEvent.Type.LEFT_SPEED_CHANGED)) {
-                        Display.getDefault().asyncExec(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                label_left_speed.setText("" + (Double) event.getValue() * 1000);
-                            }
-
-                        });
-
-                    }
-                }
-            }
-        });
-
-        Label lblRightSpeedIn = new Label(grpMonitoring, SWT.NONE);
-        lblRightSpeedIn.setText("Right Speed in mm/s");
-
-        Label label__right_speed = new Label(grpMonitoring, SWT.BORDER);
-        label__right_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        label__right_speed.setText("0.00");
-        label__right_speed.setAlignment(SWT.RIGHT);
-        machineStateService.registerMachineEventHandler(new MachineEventHandler() {
-
-            @Override
-            public void handleEvent(MachineStateEvent event) {
-                if (event.getType().equals(Type.CONVEYOR_EVENT)) {
-                    if (((ConveyorMachineEvent) event).getConveyorEventType()
-                            .equals(ConveyorMachineEvent.Type.RIGHT_SPEED_CHANGED)) {
-                        Display.getDefault().asyncExec(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                label__right_speed.setText("" + ((Double) event.getValue() * 1000.0));
-                            }
-
-                        });
-                    }
-                }
-            }
-        });
-
-        Label lblLeftMotorMaximum = new Label(grpMonitoring, SWT.NONE);
-        lblLeftMotorMaximum.setText("Left Motor Maximum Speed");
-
-        Label label_left_engine_maximum_speed = new Label(grpMonitoring, SWT.BORDER);
-        label_left_engine_maximum_speed.setAlignment(SWT.RIGHT);
-        label_left_engine_maximum_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        label_left_engine_maximum_speed.setText("0");
-        threadPool.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                int currentMaximumSpeed = conveyorControlService.getEngineOne().getCurrentMaximumSpeed();
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        label_left_engine_maximum_speed.setText("" + currentMaximumSpeed);
-                    }
-
-                });
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-                threadPool.execute(this);
-            }
-
-        });
-
-        Label lblRightMotorMaximum = new Label(grpMonitoring, SWT.NONE);
-        lblRightMotorMaximum.setText("Right Motor Maximum Speed");
-
-        Label label_right_engine_maximum_speed = new Label(grpMonitoring, SWT.BORDER);
-        label_right_engine_maximum_speed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        label_right_engine_maximum_speed.setText("0");
-        label_right_engine_maximum_speed.setAlignment(SWT.RIGHT);
-        threadPool.execute(new Runnable() {
-
-            @Override
-            public void run() {
-                int currentMaximumSpeed = conveyorControlService.getEngineTwo().getCurrentMaximumSpeed();
-                Display.getDefault().asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        label_right_engine_maximum_speed.setText("" + currentMaximumSpeed);
-                    }
-
-                });
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-                threadPool.execute(this);
-            }
-
-        });
-
-        Button buttonStop = new Button(composite, SWT.NONE);
-        buttonStop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        buttonStop.setText("STOP");
-        buttonStop.addSelectionListener(new SelectionListener() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorControlService.stop();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
 
         TabItem tbtmMain = new TabItem(tabFolder, SWT.NONE);
         tbtmMain.setText("Main");
@@ -512,7 +310,87 @@ public class MainView {
         tbtmVacuum.setControl(VacuumComposite);
         VacuumComposite.setLayout(new GridLayout(1, false));
 
-        new Label(shell, SWT.NONE);
+        TabItem tbtmMachinedebug = new TabItem(tabFolder, SWT.NONE);
+        tbtmMachinedebug.setText("MachineDebug");
+
+        Composite composite = new Composite(tabFolder, SWT.NONE);
+        tbtmMachinedebug.setControl(composite);
+        composite.setLayout(new GridLayout(3, true));
+
+        Button toggelOutletOne = new Button(composite, SWT.NONE);
+        toggelOutletOne.addSelectionListener(new OutletAdapter(Outlet.OUTLET_ONE));
+        toggelOutletOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        toggelOutletOne.setText("V1");
+
+        Button toggelOutletTwo = new Button(composite, SWT.NONE);
+        toggelOutletTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggelOutletTwo.setText("V2");
+        toggelOutletTwo.addSelectionListener(new OutletAdapter(Outlet.OUTLET_TWO));
+
+        Button toggelOutletThree = new Button(composite, SWT.NONE);
+        toggelOutletThree.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggelOutletThree.setText("V3");
+        toggelOutletThree.addSelectionListener(new OutletAdapter(Outlet.OUTLET_THREE));
+
+        Button toggleOutletFour = new Button(composite, SWT.NONE);
+        toggleOutletFour.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleOutletFour.setText("V4");
+        toggleOutletFour.addSelectionListener(new OutletAdapter(Outlet.OUTLET_FOUR));
+
+        Button toggelOutletFive = new Button(composite, SWT.NONE);
+        toggelOutletFive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggelOutletFive.setText("V5");
+        toggelOutletFive.addSelectionListener(new OutletAdapter(Outlet.OUTLET_FIVE));
+
+        Button toggleOutletSix = new Button(composite, SWT.NONE);
+        toggleOutletSix.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleOutletSix.setText("V6");
+        toggleOutletSix.addSelectionListener(new OutletAdapter(Outlet.OUTLET_SIX));
+
+        Button toggleOutletSeven = new Button(composite, SWT.NONE);
+        toggleOutletSeven.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleOutletSeven.setText("V7");
+        toggleOutletSeven.addSelectionListener(new OutletAdapter(Outlet.OUTLET_SEVEN));
+
+        Button toggleOutletEight = new Button(composite, SWT.NONE);
+        toggleOutletEight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleOutletEight.setText("V8");
+        toggleOutletEight.addSelectionListener(new OutletAdapter(Outlet.OUTLET_EIGHT));
+
+        Button toggelOutletNine = new Button(composite, SWT.NONE);
+        toggelOutletNine.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggelOutletNine.setText("V9");
+        toggelOutletNine.addSelectionListener(new OutletAdapter(Outlet.OUTLET_NINE));
+
+        Button togglePrePumpOne = new Button(composite, SWT.NONE);
+        togglePrePumpOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        togglePrePumpOne.setText("Toggle Pre Pump Pone");
+        togglePrePumpOne.addSelectionListener(new PumpAdapter(PumpIds.PRE_PUMP_ONE));
+
+        Button togglePrePumpRoots = new Button(composite, SWT.NONE);
+        togglePrePumpRoots.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        togglePrePumpRoots.setText("Toggle Pre Pump Roots");
+        togglePrePumpRoots.addSelectionListener(new PumpAdapter(PumpIds.PRE_PUMP_ROOTS));
+
+        Button togglepPrePumpTwo = new Button(composite, SWT.NONE);
+        togglepPrePumpTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        togglepPrePumpTwo.setText("Toggle Pre Pump Two");
+        togglepPrePumpTwo.addSelectionListener(new PumpAdapter(PumpIds.PRE_PUMP_TWO));
+
+        Button toggleTurboPump = new Button(composite, SWT.NONE);
+        toggleTurboPump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleTurboPump.setText("Toggle Turbo Pump");
+        toggleTurboPump.addSelectionListener(new PumpAdapter(PumpIds.TURBO_PUMP));
+
+        Button toggleCryoOne = new Button(composite, SWT.NONE);
+        toggleCryoOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleCryoOne.setText("Toggle Cryo One");
+        toggleCryoOne.addSelectionListener(new PumpAdapter(PumpIds.CRYO_ONE));
+
+        Button toggleCryoTwo = new Button(composite, SWT.NONE);
+        toggleCryoTwo.setText("Toggle Cryo Two");
+        toggleCryoTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleCryoTwo.addSelectionListener(new PumpAdapter(PumpIds.CRYO_TWO));
 
         return shell;
     }
@@ -622,5 +500,49 @@ public class MainView {
 
     public static VacuumService getVacuumService() {
         return vacuumService;
+    }
+
+    private final static class OutletAdapter extends SelectionAdapter {
+
+        private final Outlet outlet;
+
+        public OutletAdapter(Outlet outlet) {
+            this.outlet = outlet;
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            try {
+                if (machineStateService.getOutletControl().isOutletOpen(outlet)) {
+
+                    machineStateService.getOutletControl().closeOutlet(outlet);
+
+                } else {
+                    machineStateService.getOutletControl().openOutlet(outlet);
+                }
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    private final static class PumpAdapter extends SelectionAdapter {
+
+        private final Pump pump;
+
+        public PumpAdapter(PumpIds pumpId) {
+            this.pump = machineStateService.getPumpRegistry().getPump(pumpId);
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            if (pump.getState() == PumpState.OFF) {
+                pump.startPump();
+            } else if (pump.getState() == PumpState.ON) {
+                pump.stopPump();
+            }
+        }
+
     }
 }

@@ -59,10 +59,11 @@ public class VatOutlet {
     }
 
     public void open() {
+        sendCommand(COMMAND_OPEN);
     }
 
     public void close() {
-
+        sendCommand(COMMAND_CLOSE);
     }
 
     public void setPosition(int position) {

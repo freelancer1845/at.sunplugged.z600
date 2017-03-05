@@ -11,6 +11,7 @@ import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeas
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.WaterControl.FlowCheckPoint;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.FutureEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
@@ -51,11 +52,13 @@ public class TurboPump implements Pump, MachineEventHandler {
     @Override
     public FutureEvent startPump() {
         FutureEvent startEvent = new FutureEvent(machineStateService, new PumpStateEvent(PUMP_ID, PumpState.ON));
-        Pump waterPump = machineStateService.getPumpRegistry().getPump(PumpIds.WATER_PUMP);
-        if (waterPump.getState() != PumpState.ON) {
 
-            throw new IllegalPumpConditionsException(
-                    "Turbo Pump not started, because water pump is not on or could not be started!");
+        if (machineStateService.getWaterControl().getOutletState(WaterOutlet.TURBO_PUMP) == false) {
+            try {
+                machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, true);
+            } catch (IOException e) {
+                throw new IllegalPumpConditionsException("Couldn't open water outlet for turbo pump!", e);
+            }
         }
         double pressure = machineStateService.getPressureMeasurmentControl()
                 .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);

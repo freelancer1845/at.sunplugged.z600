@@ -22,7 +22,9 @@ public class NetworkComDefaultProperties extends Properties {
         this.put(NetworkComIds.SQL_USERNAME, "Z600");
         this.put(NetworkComIds.SQL_PASSWORD, "alwhrh29035uafpue9ru3AWU");
         this.put(NetworkComIds.LEFT_ENGINE_COM_PORT, "COM6");
-        this.put(NetworkComIds.RIGHT_ENGINE_COMP_PORT, "COM5");
+        this.put(NetworkComIds.RIGHT_ENGINE_COM_PORT, "COM5");
+        this.put(NetworkComIds.VAT_SEVEN_COM_PORT, "COM3");
+        this.put(NetworkComIds.VAT_EIGHT_COM_PORT, "COM4");
     }
 
 }
