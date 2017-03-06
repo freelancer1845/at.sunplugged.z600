@@ -124,7 +124,7 @@ public class CryoPumpsStartThread extends Thread {
                     stopCryoPumpThread();
                     break;
                 }
-                Thread.sleep(100);
+                Thread.sleep(500);
 
             } catch (IllegalStateException e1) {
                 logService.log(LogService.LOG_ERROR, "Error in CryoPumpThread. Starting again.", e1);
@@ -203,19 +203,19 @@ public class CryoPumpsStartThread extends Thread {
                     && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_ONE) == false) {
                 outletControl.openOutlet(Outlet.OUTLET_FIVE);
                 cryoOneEvacuated = new FuturePressureReachedEvent(machineStateService,
-                        PressureMeasurementSite.CRYO_PUMP_ONE, VacuumUtils.getCryoPumpPressureTrigger() * 0.6);
+                        PressureMeasurementSite.CRYO_PUMP_ONE, VacuumUtils.getCryoPumpPressureTrigger() * 0.8);
             }
             if (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO) == true
                     && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_TWO) == false) {
                 outletControl.openOutlet(Outlet.OUTLET_SIX);
                 cryoTwoEvacuated = new FuturePressureReachedEvent(machineStateService,
-                        PressureMeasurementSite.CRYO_PUMP_TWO, VacuumUtils.getCryoPumpPressureTrigger() * 0.6);
+                        PressureMeasurementSite.CRYO_PUMP_TWO, VacuumUtils.getCryoPumpPressureTrigger() * 0.8);
             }
             if (cryoOneEvacuated != null) {
-                cryoOneEvacuated.get(10, TimeUnit.MINUTES);
+                cryoOneEvacuated.get(1, TimeUnit.HOURS);
             }
             if (cryoTwoEvacuated != null) {
-                cryoTwoEvacuated.get(10, TimeUnit.MINUTES);
+                cryoTwoEvacuated.get(1, TimeUnit.HOURS);
             }
             outletControl.closeOutlet(Outlet.OUTLET_FIVE);
             outletControl.closeOutlet(Outlet.OUTLET_SIX);
@@ -255,11 +255,20 @@ public class CryoPumpsStartThread extends Thread {
                 outletControl.closeOutlet(Outlet.OUTLET_SIX);
                 Thread.sleep(500);
                 outletControl.openOutlet(Outlet.OUTLET_FOUR);
-
-                FuturePressureReachedEvent turboPumpPressureReached = new FuturePressureReachedEvent(
-                        machineStateService, PressureMeasurementSite.CHAMBER,
-                        VacuumUtils.getTurboPumpStartTrigger() * 0.8);
-                turboPumpPressureReached.get(10, TimeUnit.MINUTES);
+                while (!VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger(0.8)) {
+                    Thread.sleep(500);
+                    boolean cryoOneInterlock = VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE);
+                    boolean cryoTwoInterlock = VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO);
+                    if (cryoTwoInterlock && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_TWO)) {
+                        break;
+                    }
+                    if (cryoOneInterlock && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_ONE)) {
+                        break;
+                    }
+                    if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger(0.8)) {
+                        break;
+                    }
+                }
             } finally {
                 outletControl.closeOutlet(Outlet.OUTLET_FOUR);
             }

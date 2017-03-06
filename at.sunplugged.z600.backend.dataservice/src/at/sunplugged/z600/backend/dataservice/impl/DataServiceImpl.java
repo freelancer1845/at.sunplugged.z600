@@ -68,7 +68,8 @@ public class DataServiceImpl implements DataService {
             public void run() {
                 try {
                     connectToSqlServer(settings.getProperty(NetworkComIds.SQL_CONNECTION_STRING),
-                            NetworkComIds.SQL_USERNAME, NetworkComIds.SQL_PASSWORD);
+                            settings.getProperty(NetworkComIds.SQL_USERNAME),
+                            settings.getProperty(NetworkComIds.SQL_PASSWORD));
                     postConnectEvent(true, null);
                 } catch (DataServiceException e) {
                     logService.log(LogService.LOG_ERROR, "Failed to connect to sql server specified in settings file.",

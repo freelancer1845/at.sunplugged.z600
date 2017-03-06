@@ -68,6 +68,7 @@ public class TurboPumpStartThread extends Thread {
     public void run() {
         while (cancel == false) {
             try {
+
                 logService.log(LogService.LOG_DEBUG, "New TurboPumpThread State: \"" + state.name() + "\"");
                 VacuumServiceImpl.transmitState(state);
                 switch (state) {
@@ -118,7 +119,7 @@ public class TurboPumpStartThread extends Thread {
                     cancelProcess();
                     break;
                 }
-                Thread.sleep(100);
+                Thread.sleep(500);
             } catch (InterruptedException e1) {
                 cancel();
             } catch (Exception e) {
@@ -206,7 +207,7 @@ public class TurboPumpStartThread extends Thread {
         FuturePressureReachedEvent turboPumpPressureTrigger = new FuturePressureReachedEvent(machineStateService,
                 PressureMeasurementSite.CHAMBER,
                 Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.8);
-        turboPumpPressureTrigger.get(10, TimeUnit.MINUTES);
+        turboPumpPressureTrigger.get(2, TimeUnit.HOURS);
     }
 
     private void evacuateTurboPump() throws IOException, InterruptedException, TimeoutException {
@@ -219,15 +220,16 @@ public class TurboPumpStartThread extends Thread {
         FuturePressureReachedEvent turboPumpChamberPressureTrigger = new FuturePressureReachedEvent(machineStateService,
                 PressureMeasurementSite.TURBO_PUMP,
                 Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.8);
-        turboPumpChamberPressureTrigger.get(10, TimeUnit.MINUTES);
+        turboPumpChamberPressureTrigger.get(20, TimeUnit.MINUTES);
 
     }
 
     private void startTurboPump() throws InterruptedException, TimeoutException, IOException {
         outletControl.openOutlet(Outlet.OUTLET_TWO);
+        Thread.sleep(500);
         Pump turboPump = pumpRegistry.getPump(PumpIds.TURBO_PUMP);
         if (turboPump.getState().equals(PumpState.OFF)) {
-            turboPump.startPump().get(3, TimeUnit.MINUTES);
+            turboPump.startPump().get(5, TimeUnit.MINUTES);
         }
     }
 
@@ -246,12 +248,12 @@ public class TurboPumpStartThread extends Thread {
         try {
             outletControl.closeOutlet(Outlet.OUTLET_ONE);
             outletControl.closeOutlet(Outlet.OUTLET_THREE);
-            pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
-            Thread.sleep(1000);
-            outletControl.closeOutlet(Outlet.OUTLET_TWO);
-            pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
-            Thread.sleep(500);
-            pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE);
+            // pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
+            // Thread.sleep(1000);
+            // outletControl.closeOutlet(Outlet.OUTLET_TWO);
+            // pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
+            // Thread.sleep(500);
+            // pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump();
 
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Error during cancel turboPumpThread!!!", e);
@@ -265,7 +267,7 @@ public class TurboPumpStartThread extends Thread {
         Thread.interrupted();
         outletControl.closeOutlet(Outlet.OUTLET_ONE);
         outletControl.closeOutlet(Outlet.OUTLET_THREE);
-        pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump().get(5, TimeUnit.MINUTES);
+        pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump().get(6, TimeUnit.MINUTES);
         outletControl.closeOutlet(Outlet.OUTLET_TWO);
         pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump().get(30, TimeUnit.SECONDS);
         pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump().get(30, TimeUnit.SECONDS);

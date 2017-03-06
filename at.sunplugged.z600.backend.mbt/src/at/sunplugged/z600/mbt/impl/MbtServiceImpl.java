@@ -218,7 +218,7 @@ public class MbtServiceImpl implements MbtService {
         readInputRegistersResponse = (net.wimpi.modbus.msg.ReadInputRegistersResponse) modbusTransaction.getResponse();
         List<Integer> returnList = new ShiftedArrayList<>(startAddress);
         for (int i = 0; i < readInputRegistersResponse.getWordCount(); i++) {
-            returnList.add(readInputRegistersResponse.getRegisterValue(i));
+            returnList.add((int) (readInputRegistersResponse.getRegisterValue(i) / 8.0));
         }
         return returnList;
     }
@@ -230,7 +230,7 @@ public class MbtServiceImpl implements MbtService {
         }
 
         ModbusTCPTransaction modbusTransaction = new ModbusTCPTransaction(connection);
-        Register registerValue = new SimpleRegister(value);
+        Register registerValue = new SimpleRegister(value * 8);
         WriteSingleRegisterRequest writeSingleRegisterRequest = new WriteSingleRegisterRequest(anaOut, registerValue);
         WriteSingleRegisterResponse writeSingleRegisterResponse;
 
@@ -272,7 +272,7 @@ public class MbtServiceImpl implements MbtService {
         readMultipleRegistersResponse = (ReadMultipleRegistersResponse) modbusTransaction.getResponse();
         List<Integer> returnList = new ShiftedArrayList<>(startAddress);
         for (int i = 0; i < readMultipleRegistersResponse.getWordCount(); i++) {
-            returnList.add(readMultipleRegistersResponse.getRegisterValue(i));
+            returnList.add((int) (readMultipleRegistersResponse.getRegisterValue(i) / 8.0));
         }
         return returnList;
     }

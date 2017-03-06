@@ -75,9 +75,8 @@ public class WagoAddresses {
     public enum DigitalInput {
 
         OUTLET_ONE_CLOSED(0),
-        OUTLET_TWO_OPEN(1),
-        OUTLET_TWO_CLOSED(2),
-        OUTLET_THREE_OPEN(3),
+        OUTLET_TWO_CLOSED(3),
+        OUTLET_THREE_OPEN(4),
         PRE_PUMP_ONE_OK(12),
         PRE_PUMP_ROOTS_OK(13),
         TURBO_PUMP_OK(14),
@@ -130,16 +129,16 @@ public class WagoAddresses {
 
         VOLTAGE_KATHODE_TWO(0),
         CURRENT_KATHODE_TWO(1),
-        GAS_FLOW(3),
-        PREASURE_TURBO_PUMP(4),
-        CONVEYOR_POSITION_L_R(5),
-        PREASURE_CRYO_ONE(6),
-        PREASURE_CRYO_TWO(7),
-        VOLTAGE_KATHODE_ONE(8),
-        POWER_KATHODE_ONE(9),
-        PREASURE_CHAMBER(10),
-        VOLTAGE_KATHODE_THREE(11),
-        CURRENT_KATHODE_THREE(12);
+        GAS_FLOW(2),
+        PREASURE_TURBO_PUMP(3),
+        CONVEYOR_POSITION_L_R(4),
+        PREASURE_CRYO_ONE(5),
+        PREASURE_CRYO_TWO(6),
+        VOLTAGE_KATHODE_ONE(7),
+        POWER_KATHODE_ONE(8),
+        PREASURE_CHAMBER(9),
+        VOLTAGE_KATHODE_THREE(10),
+        CURRENT_KATHODE_THREE(11);
 
         private final int address;
 
@@ -164,7 +163,7 @@ public class WagoAddresses {
     }
 
     public enum AnalogOutput {
-        GAS_FLOW_SETPOINT(2), KATHODE_TWO_SETPOINT(3), KATHODE_THREE_SETPOINT(4), KATHODE_ONE_SETPOINT(5);
+        UNKOWN(0), GAS_FLOW_SETPOINT(2), KATHODE_TWO_SETPOINT(3), KATHODE_THREE_SETPOINT(4), KATHODE_ONE_SETPOINT(5);
 
         private final int address;
 

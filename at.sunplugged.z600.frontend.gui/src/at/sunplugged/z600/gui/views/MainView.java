@@ -506,6 +506,8 @@ public class MainView {
 
         private final Outlet outlet;
 
+        private int lastClick = 0;
+
         public OutletAdapter(Outlet outlet) {
             this.outlet = outlet;
         }
@@ -513,12 +515,13 @@ public class MainView {
         @Override
         public void widgetSelected(SelectionEvent e) {
             try {
-                if (machineStateService.getOutletControl().isOutletOpen(outlet)) {
+                if (lastClick == 0) {
 
                     machineStateService.getOutletControl().closeOutlet(outlet);
-
+                    lastClick = 1;
                 } else {
                     machineStateService.getOutletControl().openOutlet(outlet);
+                    lastClick = 0;
                 }
             } catch (IOException e1) {
                 // TODO Auto-generated catch block
@@ -539,7 +542,7 @@ public class MainView {
         public void widgetSelected(SelectionEvent e) {
             if (pump.getState() == PumpState.OFF) {
                 pump.startPump();
-            } else if (pump.getState() == PumpState.ON) {
+            } else {
                 pump.stopPump();
             }
         }

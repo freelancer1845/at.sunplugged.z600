@@ -117,10 +117,9 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
             mbtService.writeDigOut(compressorOutput.getAddress(), false);
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Failed to stop compressor: \"" + compressorOutput.name() + "\".", e);
-            changeState(PumpState.STOPPING);
             throw new IllegalPumpConditionsException("Failed because compressor couldn't be stopped.");
         }
-
+        changeState(PumpState.STOPPING);
         return stopEvent;
     }
 
@@ -141,8 +140,6 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
             if (pressureEvent.getSite().equals(pressureSite)) {
                 if ((double) pressureEvent.getValue() > Double
                         .valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER))) {
-                    stopPump();
-                } else {
                     if (machineStateService.getDigitalInputState(lowInput) == true) {
                         changeState(PumpState.ON);
                     }
@@ -158,7 +155,11 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
                 } else if (state != PumpState.STARTING) {
                     changeState(PumpState.OFF);
                 }
-
+            }
+            if (event.getDigitalInput().equals(compressorInput)) {
+                if ((boolean) event.getValue() == false) {
+                    changeState(PumpState.OFF);
+                }
             }
         }
     }

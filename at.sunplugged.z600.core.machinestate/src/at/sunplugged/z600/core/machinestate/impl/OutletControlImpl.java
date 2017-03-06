@@ -11,6 +11,7 @@ import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 import at.sunplugged.z600.core.machinestate.impl.outlets.vat.VatOutlet;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -63,7 +64,9 @@ public class OutletControlImpl implements OutletControl {
             }
             return vatEight.isOpen();
         case OUTLET_ONE:
+            return !machineStateService.getDigitalInputState(DigitalInput.OUTLET_ONE_CLOSED);
         case OUTLET_TWO:
+            return !machineStateService.getDigitalInputState(DigitalInput.OUTLET_TWO_CLOSED);
         case OUTLET_THREE:
         case OUTLET_FOUR:
         case OUTLET_FIVE:
@@ -237,7 +240,7 @@ public class OutletControlImpl implements OutletControl {
                             "Chamer pressure is lower than 80% of turbo pump trigger pressure. Won't open outlet four."));
                     return false;
                 }
-                if (isOutletOpen(Outlet.OUTLET_FIVE) == true || isOutletOpen(Outlet.OUTLET_SIX) == true) {
+                if (isOutletOpen(Outlet.OUTLET_SIX) == true) {
                     logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
                             "Opening outlet four when outlet five or six is open is forbidden for safety reasons!"));
                     return false;
@@ -250,7 +253,7 @@ public class OutletControlImpl implements OutletControl {
                         .getCurrentValue(PressureMeasurementSite.CRYO_PUMP_ONE);
                 double cryoTriggerPressure = Double
                         .valueOf(settingsService.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER));
-                if (cryoOnePressure < cryoTriggerPressure) {
+                if (cryoOnePressure < cryoTriggerPressure * 0.6) {
                     logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
                             "Pressure at CryoPump One is low than trigger pressure. No reason to open Outlet Five!"));
                     return false;
@@ -268,7 +271,7 @@ public class OutletControlImpl implements OutletControl {
                         .getCurrentValue(PressureMeasurementSite.CRYO_PUMP_TWO);
                 double cryoTriggerPressure = Double
                         .valueOf(settingsService.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER));
-                if (cryoTwoPressure < cryoTriggerPressure) {
+                if (cryoTwoPressure < cryoTriggerPressure * 0.6) {
                     logService.log(LogService.LOG_INFO, safetyProtocolMessage(outlet, newState,
                             "Pressure at CryoPump Two is low than trigger pressure. No reason to open Outlet Six!"));
                     return false;

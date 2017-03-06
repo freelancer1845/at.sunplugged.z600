@@ -30,7 +30,7 @@ public class ParameterDefaultProperties extends Properties {
         this.put(ParameterIds.DELTA_CURRENT_KATHODE_THREE, "0.02");
         this.put(ParameterIds.VACUUM_LOWER_LIMIT_MBAR, "0.001");
         this.put(ParameterIds.VACUUM_UPPER_LIMIT_MBAR, "0.007");
-        this.put(ParameterIds.START_TRIGGER_TURBO_PUMP, "0.2");
+        this.put(ParameterIds.START_TRIGGER_TURBO_PUMP, "0.025");
         this.put(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER, "0.03");
         this.put(ParameterIds.ENGINE_MAXIMUM_SPEED, "6000");
     }
