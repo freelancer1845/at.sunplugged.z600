@@ -249,7 +249,7 @@ public class CryoPumpsStartThread extends Thread {
     }
 
     private void evacuateChamber() throws IOException, InterruptedException, TimeoutException {
-        if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger() == false) {
+        if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger(0.8) == false) {
             try {
                 outletControl.closeOutlet(Outlet.OUTLET_FIVE);
                 outletControl.closeOutlet(Outlet.OUTLET_SIX);
@@ -259,10 +259,10 @@ public class CryoPumpsStartThread extends Thread {
                     Thread.sleep(500);
                     boolean cryoOneInterlock = VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE);
                     boolean cryoTwoInterlock = VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO);
-                    if (cryoTwoInterlock && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_TWO)) {
+                    if (cryoTwoInterlock && !VacuumUtils.isCryoEvacuated(PumpIds.CRYO_TWO)) {
                         break;
                     }
-                    if (cryoOneInterlock && VacuumUtils.isCryoEvacuated(PumpIds.CRYO_ONE)) {
+                    if (cryoOneInterlock && !VacuumUtils.isCryoEvacuated(PumpIds.CRYO_ONE)) {
                         break;
                     }
                     if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger(0.8)) {
@@ -322,7 +322,7 @@ public class CryoPumpsStartThread extends Thread {
                     return;
                 }
             }
-            if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger() == false) {
+            if (VacuumUtils.hasChamberPressureReachedTurboPumpStartTrigger(0.8) == false) {
                 state = CryoPumpsThreadState.EVACUATE_CHAMBER;
                 return;
             }
@@ -384,13 +384,13 @@ public class CryoPumpsStartThread extends Thread {
         Thread.interrupted();
         outletControl.closeOutlet(Outlet.OUTLET_EIGHT);
         outletControl.closeOutlet(Outlet.OUTLET_SEVEN);
+        outletControl.closeOutlet(Outlet.OUTLET_FIVE);
+        outletControl.closeOutlet(Outlet.OUTLET_FOUR);
         Thread.sleep(500);
         machineStateService.getPumpRegistry().getPump(PumpIds.CRYO_ONE).stopPump();
         machineStateService.getPumpRegistry().getPump(PumpIds.CRYO_TWO).stopPump();
-        outletControl.closeOutlet(Outlet.OUTLET_FIVE);
-        outletControl.closeOutlet(Outlet.OUTLET_FOUR);
 
-        Thread.sleep(500);
+        Thread.sleep(1000);
         machineStateService.getPumpRegistry().getPump(PumpIds.PRE_PUMP_TWO).stopPump();
         cancel = true;
         state = CryoPumpsThreadState.INIT_STATE;

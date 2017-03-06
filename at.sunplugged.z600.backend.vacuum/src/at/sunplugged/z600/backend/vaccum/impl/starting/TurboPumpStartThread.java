@@ -267,10 +267,18 @@ public class TurboPumpStartThread extends Thread {
         Thread.interrupted();
         outletControl.closeOutlet(Outlet.OUTLET_ONE);
         outletControl.closeOutlet(Outlet.OUTLET_THREE);
-        pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump().get(6, TimeUnit.MINUTES);
+        Thread.sleep(1000);
+        if (!pumpRegistry.getPump(PumpIds.TURBO_PUMP).getState().equals(PumpState.OFF)) {
+            pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump().get(15, TimeUnit.MINUTES);
+        }
+
         outletControl.closeOutlet(Outlet.OUTLET_TWO);
-        pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump().get(30, TimeUnit.SECONDS);
-        pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump().get(30, TimeUnit.SECONDS);
+        if (!pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).getState().equals(PumpState.OFF)) {
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump().get(30, TimeUnit.SECONDS);
+        }
+        if (!pumpRegistry.getPump(PumpIds.PRE_PUMP_TWO).getState().equals(PumpState.OFF)) {
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump().get(30, TimeUnit.SECONDS);
+        }
         state = TurboPumpThreadState.INIT_STATE;
         VacuumServiceImpl.transmitState(state);
         cancel = true;

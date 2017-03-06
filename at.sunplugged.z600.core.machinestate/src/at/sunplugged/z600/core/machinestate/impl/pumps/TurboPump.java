@@ -6,12 +6,11 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
-import at.sunplugged.z600.core.machinestate.api.GasFlowControl.State;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
-import at.sunplugged.z600.core.machinestate.api.Pump;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
+import at.sunplugged.z600.core.machinestate.api.Pump;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
@@ -104,17 +103,16 @@ public class TurboPump implements Pump, MachineEventHandler {
 
                 @Override
                 public void run() {
+                    MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                            "Turbo Pump stopping. Waiting 10 minutes for high speed to drop!");
                     try {
-                        Thread.sleep(4500);
+                        Thread.sleep(600000);
                     } catch (InterruptedException e) {
-
+                        MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                                "Turbo Pump stopping interrupted!!! This is not recommended!", e);
                     }
-
                     if (state == PumpState.STOPPING) {
-                        if (machineStateService.getDigitalInputState(DigitalInput.TURBO_PUMP_HIGH_SPEED) == false
-                                && machineStateService.getDigitalInputState(DigitalInput.TURBO_PUMP_OK) == false) {
-                            changeState(PumpState.OFF);
-                        }
+                        changeState(PumpState.OFF);
                     }
                 }
 
@@ -140,24 +138,6 @@ public class TurboPump implements Pump, MachineEventHandler {
                 boolean highSpeedState = machineStateService.getDigitalInputState(HIGH_SPEED_INPUT);
                 if (okState == true && highSpeedState == false) {
                     changeState(PumpState.ON);
-                } else if (okState == false && highSpeedState == true && state.equals(PumpState.ON)) {
-                    changeState(PumpState.STOPPING);
-                    MachineStateServiceImpl.getStandardThreadPoolService().execute(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
-                                    "Turbo Pump stopping. Waiting 5 miniutes for high speed to drop!");
-                            try {
-                                Thread.sleep(3000);
-                            } catch (InterruptedException e) {
-                                MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                                        "Turbo Pump stopping interrupted!!! This is not recommended!", e);
-                            }
-                            changeState(PumpState.OFF);
-                        }
-
-                    });
                 }
             }
         }
