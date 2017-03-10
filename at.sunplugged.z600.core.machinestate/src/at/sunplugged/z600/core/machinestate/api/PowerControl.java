@@ -19,15 +19,6 @@ public interface PowerControl {
      */
     public void stop(PowerUnit powerUnit);
 
-    /**
-     * Sets the interlock of the unit to the provided value if the powerunit has
-     * an interlock.
-     * 
-     * @param {@linkplain PowerUnit} powerUnit
-     * @param interlock
-     */
-    public void setInterlock(PowerUnit powerUnit, boolean interlock);
-
     public boolean getState(PowerUnit powerUnit);
 
     public enum PowerUnit {
