@@ -3,17 +3,11 @@ package at.sunplugged.z600.backend.logging;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -21,10 +15,10 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.KathodeStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.PowerSourceEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PressureChangedEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
 
@@ -102,10 +96,6 @@ public class MachineEventLogger implements MachineEventHandler {
             case GAS_FLOW_STATE_CHANGED:
                 logEntry += event.getValue().toString();
                 break;
-            case KATHODE_STATUS_CHANGED:
-                KathodeStateEvent kathodeEvent = (KathodeStateEvent) event;
-                logEntry += kathodeEvent.getKathode().name() + " State: " + kathodeEvent.getState();
-                break;
             case OUTLET_CHANGED:
                 OutletChangedEvent outletEvent = (OutletChangedEvent) event;
                 logEntry += outletEvent.getOutlet().name() + " New State: " + outletEvent.getValue().toString();
@@ -118,6 +108,10 @@ public class MachineEventLogger implements MachineEventHandler {
             case PUMP_STATUS_CHANGED:
                 PumpStateEvent pumpStateEvent = (PumpStateEvent) event;
                 logEntry += pumpStateEvent.getOrigin().name() + " New State: " + pumpStateEvent.getValue().name();
+                break;
+            case POWER_SOURCE_STATE_CHANGED:
+                PowerSourceEvent powerSourceEvent = (PowerSourceEvent) event;
+                logEntry += powerSourceEvent.getOrigin().name() + " New State: " + powerSourceEvent.getValue().name();
                 break;
             default:
                 logEntry += "Unlogged Event...";

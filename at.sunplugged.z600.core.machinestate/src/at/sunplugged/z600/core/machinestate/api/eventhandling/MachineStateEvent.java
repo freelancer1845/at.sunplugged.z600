@@ -1,10 +1,5 @@
 package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
-
 public class MachineStateEvent {
 
     public enum Type {
@@ -13,7 +8,6 @@ public class MachineStateEvent {
         DIGITAL_INPUT_CHANGED,
         ANALOG_INPUT_CHANGED,
         PUMP_STATUS_CHANGED,
-        KATHODE_STATUS_CHANGED,
         PRESSURE_CHANGED,
         POWER_SOURCE_STATE_CHANGED,
         GAS_FLOW_STATE_CHANGED,

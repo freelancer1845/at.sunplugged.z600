@@ -21,18 +21,16 @@ public class ParameterDefaultProperties extends Properties {
         this.put(ParameterIds.INITIAL_GAS_FLOW_PARAMETER, "0");
         this.put(ParameterIds.GAS_FLOW_CONTROL_PARAMETER, "1");
         this.put(ParameterIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER, "0.00001");
-        this.put(ParameterIds.PRESSURE_CONTROL_LOWER_LIMIT, "5E-05");
-        this.put(ParameterIds.INITIAL_POWER_KATHODE_ONE, "0.1");
-        this.put(ParameterIds.INITIAL_CURRENT_KATHODE_TWO, "0.4");
-        this.put(ParameterIds.INITIAL_CURRENT_KATHODE_THREE, "0.4");
-        this.put(ParameterIds.DELTA_CURRENT_KATHODE_ONE, "0.05");
-        this.put(ParameterIds.DELTA_CURRENT_KATHODE_TWO, "0.02");
-        this.put(ParameterIds.DELTA_CURRENT_KATHODE_THREE, "0.02");
+        this.put(ParameterIds.PRESSURE_CONTROL_LOWER_LIMIT, "5E-04");
         this.put(ParameterIds.VACUUM_LOWER_LIMIT_MBAR, "0.001");
         this.put(ParameterIds.VACUUM_UPPER_LIMIT_MBAR, "0.007");
         this.put(ParameterIds.START_TRIGGER_TURBO_PUMP, "0.025");
         this.put(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER, "0.03");
         this.put(ParameterIds.ENGINE_MAXIMUM_SPEED, "6000");
+        this.put(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE, "0.03");
+        this.put(ParameterIds.INITIAL_POWER_PINNACLE, "0.5");
+        this.put(ParameterIds.MAX_POWER_PINNACLE, "1.6");
+        this.put(ParameterIds.CURRENT_CHANGE_PINNACLE, "0.002");
     }
 
 }

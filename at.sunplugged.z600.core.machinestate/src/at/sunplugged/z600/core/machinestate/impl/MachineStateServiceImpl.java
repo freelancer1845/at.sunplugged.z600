@@ -17,10 +17,9 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
-import at.sunplugged.z600.core.machinestate.api.KathodeControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
-import at.sunplugged.z600.core.machinestate.api.PowerControl;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
@@ -60,9 +59,7 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     private WaterControl waterControl;
 
-    private KathodeControl kathodeControl;
-
-    private PowerControl powerControl;
+    private PowerSourceRegistry powerSourceRegistry;
 
     private PressureMeasurement preasureMeasurement;
 
@@ -87,8 +84,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         this.outletControl = new OutletControlImpl(this);
         this.pumpControl = new PumpRegisterImpl(this);
         this.waterControl = new WaterControlImpl(this);
-        this.kathodeControl = new KathodeControlImpl(this);
-        this.powerControl = new PowerControlImpl(this);
+        this.powerSourceRegistry = new PowerSourceRegistryImpl(this);
         this.preasureMeasurement = new PreasureMeasurementImpl(this);
         this.gasFlowControl = new GasFlowControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
@@ -147,13 +143,8 @@ public class MachineStateServiceImpl implements MachineStateService {
     }
 
     @Override
-    public PowerControl getPowerControl() {
-        return powerControl;
-    }
-
-    @Override
-    public KathodeControl getKathodeControl() {
-        return kathodeControl;
+    public PowerSourceRegistry getPowerSourceRegistry() {
+        return powerSourceRegistry;
     }
 
     @Override

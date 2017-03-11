@@ -47,18 +47,6 @@ public interface MachineStateService {
 
     /**
      * 
-     * @return the {@linkplain PowerControl} Interface.
-     */
-    public PowerControl getPowerControl();
-
-    /**
-     * 
-     * @return the {@linkplain KathodeControl} Interface.
-     */
-    public KathodeControl getKathodeControl();
-
-    /**
-     * 
      * @return the {@linkplain PressureMeasurement} Interface.
      */
     public PressureMeasurement getPressureMeasurmentControl();
@@ -68,6 +56,12 @@ public interface MachineStateService {
      * @return the {@linkplain GasFlowControl} Interface.
      */
     public GasFlowControl getGasFlowControl();
+
+    /**
+     * 
+     * @return the {@linkplain PowerSourceRegistry} Interface.
+     */
+    public PowerSourceRegistry getPowerSourceRegistry();
 
     public boolean getDigitalOutputState(DigitalOutput digitalOutput);
 

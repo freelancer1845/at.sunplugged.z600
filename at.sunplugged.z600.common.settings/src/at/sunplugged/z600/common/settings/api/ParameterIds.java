@@ -26,24 +26,6 @@ public class ParameterIds {
     /** Limit for starting the pressure control. */
     public static final String PRESSURE_CONTROL_LOWER_LIMIT = "Pressure_Control_Lower_Limit";
 
-    /** Initial Power Kathode One. */
-    public static final String INITIAL_POWER_KATHODE_ONE = "Initial_Power_Kathode_One";
-
-    /** Initial Current Kathode Two. */
-    public static final String INITIAL_CURRENT_KATHODE_TWO = "Initial_Current_Kathode_Two";
-
-    /** Initial Current Kathode Three. */
-    public static final String INITIAL_CURRENT_KATHODE_THREE = "Initial_Current_Kahtode_Three";
-
-    /** Delta Current Kathode One per 10ms. */
-    public static final String DELTA_CURRENT_KATHODE_ONE = "Delta_Current_Kathode_One_Per_Ten_Milliseconds";
-
-    /** Delta Current Kathode Two per 10ms. */
-    public static final String DELTA_CURRENT_KATHODE_TWO = "Delta_Current_Kathode_Two_Per_Ten_Milliseconds";
-
-    /** Delta Current Kathode Three per 10ms. */
-    public static final String DELTA_CURRENT_KATHODE_THREE = "Delta_Current_kathode_Three_Per_Ten_Milliseconds";
-
     /** Vacuum lower limit. */
     public static final String VACUUM_LOWER_LIMIT_MBAR = "Vacuum_Lower_Limit_mbar";
 
@@ -58,5 +40,17 @@ public class ParameterIds {
 
     /** Maximum Speed Setting. */
     public static final String ENGINE_MAXIMUM_SPEED = "Engine_Maximum_Speed";
+
+    /** Lower Safety Limit PowerSource in kW. */
+    public static final String LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE = "Lower_Safety_Limit_Power_At_Power_Source";
+
+    /** Initial Power Pinnacle. */
+    public static final String INITIAL_POWER_PINNACLE = "Initial_Power_Pinnacle";
+
+    /** Max Power Pinnacle. */
+    public static final String MAX_POWER_PINNACLE = "Max_Power_Pinnacle";
+
+    /** Power Change per 0.1s pinnacle. */
+    public static final String CURRENT_CHANGE_PINNACLE = "Current_Change_Pinnacle_per_0.1s";
 
 }

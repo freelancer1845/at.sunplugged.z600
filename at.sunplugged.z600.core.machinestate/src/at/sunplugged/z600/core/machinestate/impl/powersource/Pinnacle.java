@@ -2,12 +2,17 @@ package at.sunplugged.z600.core.machinestate.impl.powersource;
 
 import java.io.IOException;
 
+import org.osgi.service.log.LogService;
+
+import at.sunplugged.z600.common.settings.api.ParameterIds;
+import at.sunplugged.z600.common.utils.Conversion;
+import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.PowerSource;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.exceptions.InvalidPowerSourceStateException;
 
 public class Pinnacle extends AbstractPowerSource {
 
@@ -15,35 +20,96 @@ public class Pinnacle extends AbstractPowerSource {
 
     private static final DigitalOutput OFF_OUTPUT = DigitalOutput.PINNACLE_OFF;
 
-    private static final DigitalInput OK_INPUT = DigitalInput.PINNACLE_OUT;
+    private static final DigitalOutput REG_ONE_OUTPUT = DigitalOutput.PINNACLE_REG_ONE;
+
+    private static final DigitalOutput REG_TWO_OUTPUT = DigitalOutput.PINNACLE_REG_TWO;
+
+    private static final DigitalOutput INTERLOCK = DigitalOutput.PINNACLE_INTERLOCK;
+
+    private static final AnalogOutput POWER_OUTPUT = AnalogOutput.KATHODE_ONE_SETPOINT;
+
+    private static final double ANALOG_OUTPUT_MAX = 5;
+
+    private static final double ANALOG_POWER_INPUT_MAX = 6;
+
+    private static final double ANALOG_VOLTAGE_INPUT_MAX = 1500;
 
     public Pinnacle(MachineStateService machineStateService) {
         super(machineStateService, PowerSourceId.PINNACLE);
     }
 
     @Override
-    protected void powerSourceSpecificOn() throws IOException {
+    protected void powerSourceSpecificOn() throws Exception {
+        checkPowerSourceStartConditions();
+
+        double initialPower = settings.getPropertAsDouble(ParameterIds.INITIAL_POWER_PINNACLE);
+        writeCurrentValue(initialPower);
+
+        mbtService.writeDigOut(INTERLOCK.getAddress(), true);
+        mbtService.writeDigOut(REG_ONE_OUTPUT.getAddress(), false);
+        mbtService.writeDigOut(REG_TWO_OUTPUT.getAddress(), true);
         mbtService.writeDigOut(OFF_OUTPUT.getAddress(), false);
         mbtService.writeDigOut(ON_OUTPUT.getAddress(), true);
+
+        Thread.sleep(2000);
+
+        mbtService.writeDigOut(ON_OUTPUT.getAddress(), false);
+
+    }
+
+    private void checkPowerSourceStartConditions() throws InvalidPowerSourceStateException {
+        if (!machineStateService.getGasFlowControl().getState().equals(GasFlowControl.State.RUNNING)) {
+            throw new InvalidPowerSourceStateException(
+                    "GasflowControl is not running! Won't start powersource pinnacle.");
+        }
+        if (machineStateService.getWaterControl().isWaterOnAllCheckpoints() == false) {
+            throw new InvalidPowerSourceStateException("Not every kathode is cooled. Wont start powersource pinnacle!");
+        }
     }
 
     @Override
     protected void powerSourceSpecificOff() throws IOException {
-        setPower(0);
         mbtService.writeDigOut(ON_OUTPUT.getAddress(), false);
         mbtService.writeDigOut(OFF_OUTPUT.getAddress(), true);
+        mbtService.writeDigOut(INTERLOCK.getAddress(), false);
     }
 
     @Override
-    protected void powerSourceSpecificControlTick() {
-        // TODO Auto-generated method stub
+    protected void powerSourceSpecificControlTick() throws Exception {
+        double currentPower = getPower();
+        if (currentPower < (setPoint - 0.01)) {
+            writeCurrentValue(currentOutputValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_PINNACLE));
+        } else if (currentPower > (setPoint + 0.01)) {
+            writeCurrentValue(currentOutputValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_PINNACLE));
+        }
+    }
 
+    @Override
+    protected void writeCurrentSourceSpecificPowerValue(double value) throws IOException {
+        if (value > settings.getPropertAsDouble(ParameterIds.MAX_POWER_PINNACLE)) {
+            logService.log(LogService.LOG_WARNING, "Setting setpoint power of pinnacle to \"" + value
+                    + "\" is not allowed (too high)! Ignoring value...");
+            return;
+        }
+        double convertedValue = Conversion.clipConversionOut(value, 0, ANALOG_OUTPUT_MAX);
+        mbtService.writeOutputRegister(POWER_OUTPUT.getAddress(), (int) convertedValue);
     }
 
     @Override
     public double getPower() {
-        // TODO Auto-generated method stub
-        return 0;
+        int analogPowerValue = machineStateService.getAnalogInputState(AnalogInput.POWER_PINNACLE);
+        return Conversion.clipConversionIn(analogPowerValue, 0.0, ANALOG_POWER_INPUT_MAX);
+    }
+
+    @Override
+    public double getCurrent() {
+        return 1000 * getPower() / getVoltage();
+    }
+
+    @Override
+    public double getVoltage() {
+        int analogVoltageValue = machineStateService.getAnalogInputState(AnalogInput.VOLTAGE_PINNACLE);
+        return Conversion.clipConversionIn(analogVoltageValue, 0.0, ANALOG_VOLTAGE_INPUT_MAX);
     }
 
 }

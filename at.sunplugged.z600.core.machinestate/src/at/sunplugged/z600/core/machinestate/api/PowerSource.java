@@ -11,12 +11,14 @@ import java.util.concurrent.TimeUnit;
  */
 public interface PowerSource {
 
-    public static final long STEPSPEED = 500;
+    public static final long STEPSPEED = 100;
+
+    public static final long INITIAL_DELAY = 100;
 
     public static final TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
 
     public enum State {
-        ON_ADJUSTING, ON, OFF;
+        STARTING, ON_ADJUSTING, ON, OFF;
     }
 
     /**
@@ -44,6 +46,10 @@ public interface PowerSource {
      * @return double value of power in kW.
      */
     public double getPower();
+
+    public double getCurrent();
+
+    public double getVoltage();
 
     /**
      * Returns the state of the power source.

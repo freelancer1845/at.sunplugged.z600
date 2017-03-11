@@ -29,4 +29,17 @@ public class WaterControlImpl implements WaterControl {
         return machineStateService.getDigitalInputState(checkPoint.getDigitalInput());
     }
 
+    @Override
+    public boolean isWaterOnAllCheckpoints() {
+        if (getFlowCheckPointState(FlowCheckPoint.KATH_ONE) == true
+                && getFlowCheckPointState(FlowCheckPoint.KATH_TWO) == true
+                && getFlowCheckPointState(FlowCheckPoint.KATH_THREE) == true
+                && getFlowCheckPointState(FlowCheckPoint.KATH_FOUR) == true) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
 }

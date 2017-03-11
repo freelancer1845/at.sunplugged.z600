@@ -9,20 +9,15 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
-
 public class KathodeFigure extends Figure {
 
     private static final int WIDTH = 65;
 
     private static final int HEIGHT = 22;
 
-    private final Kathode kathode;
-
     private RectangleFigure innerRectangle;
 
-    public KathodeFigure(int x, int y, Kathode kathode, String name) {
-        this.kathode = kathode;
+    public KathodeFigure(int x, int y, String name) {
         this.setBounds(new Rectangle(x, y, WIDTH, HEIGHT));
         createShape();
         createLabel(name);

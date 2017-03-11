@@ -134,8 +134,8 @@ public class WagoAddresses {
         CONVEYOR_POSITION_L_R(4),
         PREASURE_CRYO_ONE(5),
         PREASURE_CRYO_TWO(6),
-        VOLTAGE_KATHODE_ONE(7),
-        POWER_KATHODE_ONE(8),
+        VOLTAGE_PINNACLE(7),
+        POWER_PINNACLE(8),
         PREASURE_CHAMBER(9),
         VOLTAGE_KATHODE_THREE(10),
         CURRENT_KATHODE_THREE(11);

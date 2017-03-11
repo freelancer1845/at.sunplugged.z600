@@ -6,7 +6,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.wb.swt.SWTResourceManager;
 
-import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
@@ -38,10 +37,10 @@ public class ChamberFigure extends Figure implements MachineEventHandler {
 
     private void createKathodeFigures() {
         Rectangle bounds = getBounds().getCopy();
-        this.add(new KathodeFigure(bounds.x + 8, bounds.y + 10, Kathode.KATHODE_ONE, "Kathode 1"));
-        this.add(new KathodeFigure(bounds.x + 88, bounds.y + 10, Kathode.KATHODE_TWO, "Kathode 2"));
-        this.add(new KathodeFigure(bounds.x + 168, bounds.y + 10, Kathode.KATHODE_THREE, "Kathode 3"));
-        this.add(new KathodeFigure(bounds.x + 248, bounds.y + 10, null, "Kathode 4"));
+        this.add(new KathodeFigure(bounds.x + 8, bounds.y + 10, "Kathode 1"));
+        this.add(new KathodeFigure(bounds.x + 88, bounds.y + 10, "Kathode 2"));
+        this.add(new KathodeFigure(bounds.x + 168, bounds.y + 10, "Kathode 3"));
+        this.add(new KathodeFigure(bounds.x + 248, bounds.y + 10, "Kathode 4"));
     }
 
     @Override

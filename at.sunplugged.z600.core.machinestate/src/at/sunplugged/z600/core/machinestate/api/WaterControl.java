@@ -49,4 +49,6 @@ public interface WaterControl {
 
     public boolean getFlowCheckPointState(FlowCheckPoint checkPoint);
 
+    public boolean isWaterOnAllCheckpoints();
+
 }

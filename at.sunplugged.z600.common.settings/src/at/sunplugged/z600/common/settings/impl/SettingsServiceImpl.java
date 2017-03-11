@@ -69,4 +69,10 @@ public class SettingsServiceImpl implements SettingsService {
         networkPropertiesFile.save();
         parameterPropertiesFile.save();
     }
+
+    @Override
+    public double getPropertAsDouble(String id) {
+        String stringValue = getProperty(id);
+        return Double.valueOf(stringValue);
+    }
 }

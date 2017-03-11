@@ -1,22 +1,16 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import at.sunplugged.z600.backend.dataservice.api.DataColumnNames;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.core.machinestate.api.KathodeControl;
-import at.sunplugged.z600.core.machinestate.api.KathodeControl.Kathode;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.PowerControl;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 
@@ -113,18 +107,12 @@ public class WriteDataTableUtils {
 
     private static Map<String, Object> getPowerSnapShot(MachineStateService machine) {
         Map<String, Object> dataMap = new HashMap<>();
-        PowerControl powerControl = machine.getPowerControl();
         // TODO : Mapping of Cathodes to Power is unclear
         return dataMap;
     }
 
     private static Map<String, Object> getCathodeSettingsSnapShot(MachineStateService machine) {
         Map<String, Object> dataMap = new HashMap<>();
-        KathodeControl kathodeControl = machine.getKathodeControl();
-
-        dataMap.put(DataColumnNames.CATHODE_ONE_SETPOINT, kathodeControl.getPowerSetpoint(Kathode.KATHODE_ONE));
-        dataMap.put(DataColumnNames.CATHODE_TWO_SETPOINT, kathodeControl.getPowerSetpoint(Kathode.KATHODE_TWO));
-        dataMap.put(DataColumnNames.CATHODE_THREE_SETPOINT, kathodeControl.getPowerSetpoint(Kathode.KATHODE_THREE));
 
         return dataMap;
     }
