@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -27,9 +29,23 @@ public class MachineEventLogger implements MachineEventHandler {
 
     private static final String EVENT_LOG_FILENAME = "eventLog.txt";
 
+    private static final String EVENT_LOG_FILENAME_LAST_SESSION = "eventLogLastSession.txt";
+
     private MachineStateService machineStateService;
 
     private StandardThreadPoolService threadPool;
+
+    @Activate
+    public void activate() {
+        File logFile = new File(EVENT_LOG_FILENAME);
+        File lastSessionLogFile = new File(EVENT_LOG_FILENAME_LAST_SESSION);
+        if (lastSessionLogFile.exists()) {
+            lastSessionLogFile.delete();
+        }
+        if (logFile.exists()) {
+            logFile.renameTo(lastSessionLogFile);
+        }
+    }
 
     @Reference(unbind = "unbindStandardThreadPoolService")
     public synchronized void bindStandardThreadPoolService(StandardThreadPoolService threadPool) {
