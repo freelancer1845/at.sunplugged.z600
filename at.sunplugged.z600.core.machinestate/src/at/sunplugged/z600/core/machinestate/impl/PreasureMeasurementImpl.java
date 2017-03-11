@@ -2,6 +2,7 @@ package at.sunplugged.z600.core.machinestate.impl;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
@@ -57,7 +58,7 @@ public class PreasureMeasurementImpl implements PressureMeasurement, MachineEven
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType() == Type.ANALOG_INPUT_CHANGED) {
-            switch (event.getAnalogInput()) {
+            switch ((AnalogInput) event.getOrigin()) {
             case PREASURE_CHAMBER:
                 machineStateService.fireMachineStateEvent(new PressureChangedEvent(PressureMeasurementSite.CHAMBER,
                         mks979bSite(PressureMeasurementSite.CHAMBER, (int) event.getValue())));

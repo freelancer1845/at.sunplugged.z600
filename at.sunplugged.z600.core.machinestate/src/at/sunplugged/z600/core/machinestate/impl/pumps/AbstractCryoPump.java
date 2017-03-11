@@ -137,7 +137,7 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(Type.PRESSURE_CHANGED)) {
             PressureChangedEvent pressureEvent = (PressureChangedEvent) event;
-            if (pressureEvent.getSite().equals(pressureSite)) {
+            if (pressureEvent.getOrigin().equals(pressureSite)) {
                 if ((double) pressureEvent.getValue() > Double
                         .valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER))) {
                     if (machineStateService.getDigitalInputState(lowInput) == true) {
@@ -146,7 +146,7 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
                 }
             }
         } else if (event.getType().equals(Type.DIGITAL_INPUT_CHANGED)) {
-            if (event.getDigitalInput().equals(lowInput)) {
+            if (event.getOrigin().equals(lowInput)) {
                 if ((boolean) event.getValue() == true) {
                     if (machineStateService.getPressureMeasurmentControl().getCurrentValue(pressureSite) < Double
                             .valueOf(settings.getProperty(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER))) {
@@ -156,7 +156,7 @@ public class AbstractCryoPump implements Pump, MachineEventHandler {
                     changeState(PumpState.OFF);
                 }
             }
-            if (event.getDigitalInput().equals(compressorInput)) {
+            if (event.getOrigin().equals(compressorInput)) {
                 if ((boolean) event.getValue() == false) {
                     changeState(PumpState.OFF);
                 }

@@ -94,7 +94,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         if (state == State.RUNNING) {
             if (event.getType().equals(Type.PRESSURE_CHANGED)) {
                 PressureChangedEvent pressureEvent = (PressureChangedEvent) event;
-                if (pressureEvent.getSite().equals(PressureMeasurementSite.CHAMBER)) {
+                if (pressureEvent.getOrigin().equals(PressureMeasurementSite.CHAMBER)) {
                     if ((double) pressureEvent.getValue() > 0.03) {
                         setState(State.STOPPED);
                     }

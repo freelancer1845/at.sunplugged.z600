@@ -15,7 +15,7 @@ public class MachineStateEvent {
         PUMP_STATUS_CHANGED,
         KATHODE_STATUS_CHANGED,
         PRESSURE_CHANGED,
-        POWER_UNIT_CHANGED,
+        POWER_SOURCE_STATE_CHANGED,
         GAS_FLOW_STATE_CHANGED,
         CONVEYOR_EVENT,
         OUTLET_CHANGED;
@@ -23,67 +23,25 @@ public class MachineStateEvent {
 
     private final Type type;
 
-    private final DigitalInput digitalInput;
-
-    private final DigitalOutput digitalOutput;
-
-    private final AnalogInput analogInput;
-
-    private final AnalogOutput analogOutput;
-
     private final Object value;
+
+    private final Object origin;
 
     public MachineStateEvent(Type type) {
         this.type = type;
-        this.digitalInput = null;
-        this.digitalOutput = null;
-        this.analogInput = null;
-        this.analogOutput = null;
+        this.origin = null;
         this.value = null;
     }
 
     public MachineStateEvent(Type type, Object value) {
         this.type = type;
-        this.digitalInput = null;
-        this.digitalOutput = null;
-        this.analogInput = null;
-        this.analogOutput = null;
+        this.origin = null;
         this.value = value;
     }
 
-    public MachineStateEvent(Type type, DigitalInput digitalInput, boolean value) {
+    public MachineStateEvent(Type type, Object origin, Object value) {
         this.type = type;
-        this.digitalInput = digitalInput;
-        this.digitalOutput = null;
-        this.analogInput = null;
-        this.analogOutput = null;
-        this.value = value;
-    }
-
-    public MachineStateEvent(Type type, AnalogInput analogInput, int value) {
-        this.type = type;
-        this.digitalInput = null;
-        this.digitalOutput = null;
-        this.analogInput = analogInput;
-        this.analogOutput = null;
-        this.value = value;
-    }
-
-    public MachineStateEvent(Type type, DigitalOutput digitalOutput, boolean value) {
-        this.type = type;
-        this.digitalInput = null;
-        this.digitalOutput = digitalOutput;
-        this.analogInput = null;
-        this.analogOutput = null;
-        this.value = value;
-    }
-
-    public MachineStateEvent(Type type, AnalogOutput analogOutput, int value) {
-        this.type = type;
-        this.digitalInput = null;
-        this.digitalOutput = null;
-        this.analogInput = null;
-        this.analogOutput = analogOutput;
+        this.origin = origin;
         this.value = value;
     }
 
@@ -91,20 +49,8 @@ public class MachineStateEvent {
         return type;
     }
 
-    public DigitalInput getDigitalInput() {
-        return digitalInput;
-    }
-
-    public DigitalOutput getDigitalOutput() {
-        return digitalOutput;
-    }
-
-    public AnalogInput getAnalogInput() {
-        return analogInput;
-    }
-
-    public AnalogOutput getAnalogOutput() {
-        return analogOutput;
+    public Object getOrigin() {
+        return origin;
     }
 
     public Object getValue() {
@@ -115,10 +61,7 @@ public class MachineStateEvent {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((analogInput == null) ? 0 : analogInput.hashCode());
-        result = prime * result + ((analogOutput == null) ? 0 : analogOutput.hashCode());
-        result = prime * result + ((digitalInput == null) ? 0 : digitalInput.hashCode());
-        result = prime * result + ((digitalOutput == null) ? 0 : digitalOutput.hashCode());
+        result = prime * result + ((origin == null) ? 0 : origin.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
@@ -133,13 +76,10 @@ public class MachineStateEvent {
         if (getClass() != obj.getClass())
             return false;
         MachineStateEvent other = (MachineStateEvent) obj;
-        if (analogInput != other.analogInput)
-            return false;
-        if (analogOutput != other.analogOutput)
-            return false;
-        if (digitalInput != other.digitalInput)
-            return false;
-        if (digitalOutput != other.digitalOutput)
+        if (origin == null) {
+            if (other.origin != null)
+                return false;
+        } else if (!origin.equals(other.origin))
             return false;
         if (type != other.type)
             return false;

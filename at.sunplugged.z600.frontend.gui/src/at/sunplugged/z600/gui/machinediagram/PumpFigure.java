@@ -100,8 +100,8 @@ public class PumpFigure extends Figure implements MachineEventHandler {
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType() == Type.PUMP_STATUS_CHANGED) {
-            if (((PumpStateEvent) event).getPump() == pump) {
-                setState(((PumpStateEvent) event).getState());
+            if (((PumpStateEvent) event).getOrigin() == pump) {
+                setState(((PumpStateEvent) event).getValue());
             }
         }
     }

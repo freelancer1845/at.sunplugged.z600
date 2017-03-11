@@ -133,7 +133,7 @@ public class TurboPump implements Pump, MachineEventHandler {
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(Type.DIGITAL_INPUT_CHANGED)) {
-            if (event.getDigitalInput().equals(OK_INPUT) || event.getDigitalInput().equals(HIGH_SPEED_INPUT)) {
+            if (event.getOrigin().equals(OK_INPUT) || event.getOrigin().equals(HIGH_SPEED_INPUT)) {
                 boolean okState = machineStateService.getDigitalInputState(OK_INPUT);
                 boolean highSpeedState = machineStateService.getDigitalInputState(HIGH_SPEED_INPUT);
                 if (okState == true && highSpeedState == false) {

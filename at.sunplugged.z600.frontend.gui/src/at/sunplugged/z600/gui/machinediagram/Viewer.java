@@ -131,7 +131,7 @@ public class Viewer implements MachineEventHandler {
             @Override
             public void handleEvent(MachineStateEvent event) {
                 if (event.getType() == Type.DIGITAL_OUTPUT_CHANGED) {
-                    if (event.getDigitalOutput().equals(DigitalOutput.WATERPUMP)) {
+                    if (event.getOrigin().equals(DigitalOutput.WATERPUMP)) {
                         if ((boolean) event.getValue() == true) {
                             setState(PumpState.ON);
                         } else {
@@ -159,10 +159,10 @@ public class Viewer implements MachineEventHandler {
                     public void handleEvent(MachineStateEvent event) {
                         if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
                             PumpStateEvent pumpEvent = (PumpStateEvent) event;
-                            if (pumpEvent.getPump().equals(PumpIds.PRE_PUMP_ONE)) {
-                                if (pumpEvent.getState().equals(PumpState.ON)) {
+                            if (pumpEvent.getOrigin().equals(PumpIds.PRE_PUMP_ONE)) {
+                                if (pumpEvent.getValue().equals(PumpState.ON)) {
                                     this.setState(true);
-                                } else if (pumpEvent.getState().equals(PumpState.OFF)) {
+                                } else if (pumpEvent.getValue().equals(PumpState.OFF)) {
                                     this.setState(false);
                                 }
                             }
@@ -191,10 +191,10 @@ public class Viewer implements MachineEventHandler {
                     public void handleEvent(MachineStateEvent event) {
                         if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
                             PumpStateEvent pumpEvent = (PumpStateEvent) event;
-                            if (pumpEvent.getPump().equals(PumpIds.PRE_PUMP_ROOTS)) {
-                                if (pumpEvent.getState().equals(PumpState.ON)) {
+                            if (pumpEvent.getOrigin().equals(PumpIds.PRE_PUMP_ROOTS)) {
+                                if (pumpEvent.getValue().equals(PumpState.ON)) {
                                     this.setState(true);
-                                } else if (pumpEvent.getState().equals(PumpState.OFF)) {
+                                } else if (pumpEvent.getValue().equals(PumpState.OFF)) {
                                     this.setState(false);
                                 }
                             }
@@ -224,10 +224,10 @@ public class Viewer implements MachineEventHandler {
             public void handleEvent(MachineStateEvent event) {
                 if (event.getType().equals(Type.PUMP_STATUS_CHANGED)) {
                     PumpStateEvent pumpEvent = (PumpStateEvent) event;
-                    if (pumpEvent.getPump().equals(PumpIds.PRE_PUMP_TWO)) {
-                        if (pumpEvent.getState().equals(PumpState.ON)) {
+                    if (pumpEvent.getOrigin().equals(PumpIds.PRE_PUMP_TWO)) {
+                        if (pumpEvent.getValue().equals(PumpState.ON)) {
                             this.setState(true);
-                        } else if (pumpEvent.getState().equals(PumpState.OFF)) {
+                        } else if (pumpEvent.getValue().equals(PumpState.OFF)) {
                             this.setState(false);
                         }
                     }

@@ -40,4 +40,8 @@ public abstract class AbstractPowerSource implements PowerSource, MachineEventHa
         return state;
     }
 
+    protected void changeState(State newState) {
+
+    }
+
 }

@@ -47,7 +47,7 @@ public class FuturePressureReachedEvent implements MachineEventHandler {
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(Type.PRESSURE_CHANGED)) {
-            if (((PressureChangedEvent) event).getSite().equals(site)) {
+            if (((PressureChangedEvent) event).getOrigin().equals(site)) {
                 double currentPressure = (double) event.getValue();
                 if (currentPressure <= desiredPressure) {
                     pressureReached = true;

@@ -91,16 +91,10 @@ public class MachineEventLogger implements MachineEventHandler {
             logEntry += "\" - ";
             switch (event.getType()) {
             case ANALOG_INPUT_CHANGED:
-                logEntry += event.getAnalogInput().name() + " Value: \"" + event.getValue() + "\"";
-                break;
             case ANALOG_OUTPUT_CHANGED:
-                logEntry += event.getAnalogOutput().name() + " Value: \"" + event.getValue() + "\"";
-                break;
             case DIGITAL_INPUT_CHANGED:
-                logEntry += event.getDigitalInput().name() + " Value: \"" + event.getValue() + "\"";
-                break;
             case DIGITAL_OUTPUT_CHANGED:
-                logEntry += event.getDigitalOutput().name() + " Value: \"" + event.getValue() + "\"";
+                logEntry += ((Enum<?>) event.getOrigin()).name() + " Value: \"" + event.getValue() + "\"";
                 break;
             case CONVEYOR_EVENT:
                 logEntry += event.getValue().toString();
@@ -118,12 +112,12 @@ public class MachineEventLogger implements MachineEventHandler {
                 break;
             case PRESSURE_CHANGED:
                 PressureChangedEvent pressureChangedEvent = (PressureChangedEvent) event;
-                logEntry += pressureChangedEvent.getSite().name() + " New Pressure: "
+                logEntry += pressureChangedEvent.getOrigin().name() + " New Pressure: "
                         + String.valueOf(pressureChangedEvent.getValue());
                 break;
             case PUMP_STATUS_CHANGED:
                 PumpStateEvent pumpStateEvent = (PumpStateEvent) event;
-                logEntry += pumpStateEvent.getPump().name() + " New State: " + pumpStateEvent.getState().name();
+                logEntry += pumpStateEvent.getOrigin().name() + " New State: " + pumpStateEvent.getValue().name();
                 break;
             default:
                 logEntry += "Unlogged Event...";

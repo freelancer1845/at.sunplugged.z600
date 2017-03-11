@@ -90,7 +90,7 @@ public abstract class AbstractPrePump implements Pump, MachineEventHandler {
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(Type.DIGITAL_INPUT_CHANGED)) {
-            if (event.getDigitalInput() == controlInput) {
+            if (event.getOrigin() == controlInput) {
                 if ((boolean) event.getValue() == true) {
                     machineStateService.fireMachineStateEvent(new PumpStateEvent(pump, PumpState.ON));
                 } else if ((boolean) event.getValue() == false) {

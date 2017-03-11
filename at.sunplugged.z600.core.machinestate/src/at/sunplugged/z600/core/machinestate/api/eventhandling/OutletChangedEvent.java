@@ -4,23 +4,19 @@ import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 
 public class OutletChangedEvent extends MachineStateEvent {
 
-    private final Outlet outlet;
-
     private Integer position = null;
 
     public OutletChangedEvent(Outlet outlet, boolean newState) {
-        super(Type.OUTLET_CHANGED, newState);
-        this.outlet = outlet;
+        super(Type.OUTLET_CHANGED, outlet, newState);
     }
 
     public OutletChangedEvent(Outlet outlet, boolean newState, int position) {
-        super(Type.OUTLET_CHANGED, newState);
-        this.outlet = outlet;
+        super(Type.OUTLET_CHANGED, outlet, newState);
         this.position = position;
     }
 
     public Outlet getOutlet() {
-        return outlet;
+        return (Outlet) super.getOrigin();
     }
 
     public int getPosition() {
@@ -31,7 +27,6 @@ public class OutletChangedEvent extends MachineStateEvent {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((outlet == null) ? 0 : outlet.hashCode());
         result = prime * result + ((position == null) ? 0 : position.hashCode());
         return result;
     }
@@ -45,8 +40,6 @@ public class OutletChangedEvent extends MachineStateEvent {
         if (getClass() != obj.getClass())
             return false;
         OutletChangedEvent other = (OutletChangedEvent) obj;
-        if (outlet != other.outlet)
-            return false;
         if (position == null) {
             if (other.position != null)
                 return false;

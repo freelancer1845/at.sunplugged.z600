@@ -37,7 +37,7 @@ public class WaterPump implements Pump, MachineEventHandler {
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(Type.DIGITAL_INPUT_CHANGED)) {
-            if (event.getDigitalInput().equals(INPUT_OK)) {
+            if (event.getOrigin().equals(INPUT_OK)) {
                 if ((boolean) event.getValue() == true) {
                     machineStateService.fireMachineStateEvent(new PumpStateEvent(ID, PumpState.ON));
                 } else {
