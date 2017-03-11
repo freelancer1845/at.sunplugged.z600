@@ -35,7 +35,7 @@ public abstract class AbstractPowerSource implements PowerSource {
 
     protected double setPoint = 0;
 
-    protected double currentOutputValue = 0;
+    protected double currentControlValue = 0;
 
     private ScheduledFuture<?> controlFuture;
 
@@ -107,6 +107,11 @@ public abstract class AbstractPowerSource implements PowerSource {
 
     @Override
     public void setPower(double power) {
+        if (power > settings.getPropertAsDouble(ParameterIds.MAX_POWER)) {
+            logService.log(LogService.LOG_WARNING, "Setting setpoint power of pinnacle to \"" + power
+                    + "\" is not allowed (too high)! Ignoring value...");
+            return;
+        }
         this.setPoint = power;
     }
 
@@ -123,12 +128,12 @@ public abstract class AbstractPowerSource implements PowerSource {
         machineStateService.fireMachineStateEvent(new PowerSourceEvent(id, newState));
     }
 
-    protected void writeCurrentValue(double value) throws IOException {
-        writeCurrentSourceSpecificPowerValue(value);
-        currentOutputValue = value;
+    protected void writeControlValue(double value) throws IOException {
+        writeSourceSpecificControlValue(value);
+        currentControlValue = value;
     }
 
-    protected abstract void writeCurrentSourceSpecificPowerValue(double value) throws IOException;
+    protected abstract void writeSourceSpecificControlValue(double value) throws IOException;
 
     protected abstract void powerSourceSpecificControlTick() throws Exception;
 

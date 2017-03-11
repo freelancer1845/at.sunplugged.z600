@@ -45,12 +45,17 @@ public class ParameterIds {
     public static final String LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE = "Lower_Safety_Limit_Power_At_Power_Source";
 
     /** Initial Power Pinnacle. */
-    public static final String INITIAL_POWER_PINNACLE = "Initial_Power_Pinnacle";
+    public static final String INITIAL_CURRENT_PINNACLE = "Initial_Current_Pinnacle";
 
     /** Max Power Pinnacle. */
-    public static final String MAX_POWER_PINNACLE = "Max_Power_Pinnacle";
+    public static final String MAX_POWER = "Max_Power";
 
     /** Power Change per 0.1s pinnacle. */
-    public static final String CURRENT_CHANGE_PINNACLE = "Current_Change_Pinnacle_per_0.1s";
+    public static final String POWER_CHANGE_PINNACLE = "Power_Change_Pinnacle_per_0.1s";
 
+    /** Initial Current SSV. */
+    public static final String INITIAL_CURRENT_SSV = "Initial_Current_SSV";
+
+    /** Current change per 0.1s SSV. */
+    public static final String CURRENT_CHANGE_SSV = "Current_Change_SSV_per_0.1s";
 }

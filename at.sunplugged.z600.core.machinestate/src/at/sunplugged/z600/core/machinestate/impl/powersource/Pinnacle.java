@@ -2,8 +2,6 @@ package at.sunplugged.z600.core.machinestate.impl.powersource;
 
 import java.io.IOException;
 
-import org.osgi.service.log.LogService;
-
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.utils.Conversion;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
@@ -26,7 +24,7 @@ public class Pinnacle extends AbstractPowerSource {
 
     private static final DigitalOutput INTERLOCK = DigitalOutput.PINNACLE_INTERLOCK;
 
-    private static final AnalogOutput POWER_OUTPUT = AnalogOutput.KATHODE_ONE_SETPOINT;
+    private static final AnalogOutput POWER_OUTPUT = AnalogOutput.PINNACLE_SETPOINT;
 
     private static final double ANALOG_OUTPUT_MAX = 5;
 
@@ -42,8 +40,8 @@ public class Pinnacle extends AbstractPowerSource {
     protected void powerSourceSpecificOn() throws Exception {
         checkPowerSourceStartConditions();
 
-        double initialPower = settings.getPropertAsDouble(ParameterIds.INITIAL_POWER_PINNACLE);
-        writeCurrentValue(initialPower);
+        double initialCurrent = settings.getPropertAsDouble(ParameterIds.INITIAL_CURRENT_PINNACLE);
+        writeControlValue(initialCurrent);
 
         mbtService.writeDigOut(INTERLOCK.getAddress(), true);
         mbtService.writeDigOut(REG_ONE_OUTPUT.getAddress(), false);
@@ -78,19 +76,14 @@ public class Pinnacle extends AbstractPowerSource {
     protected void powerSourceSpecificControlTick() throws Exception {
         double currentPower = getPower();
         if (currentPower < (setPoint - 0.01)) {
-            writeCurrentValue(currentOutputValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_PINNACLE));
+            writeControlValue(currentControlValue + settings.getPropertAsDouble(ParameterIds.POWER_CHANGE_PINNACLE));
         } else if (currentPower > (setPoint + 0.01)) {
-            writeCurrentValue(currentOutputValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_PINNACLE));
+            writeControlValue(currentControlValue + settings.getPropertAsDouble(ParameterIds.POWER_CHANGE_PINNACLE));
         }
     }
 
     @Override
-    protected void writeCurrentSourceSpecificPowerValue(double value) throws IOException {
-        if (value > settings.getPropertAsDouble(ParameterIds.MAX_POWER_PINNACLE)) {
-            logService.log(LogService.LOG_WARNING, "Setting setpoint power of pinnacle to \"" + value
-                    + "\" is not allowed (too high)! Ignoring value...");
-            return;
-        }
+    protected void writeSourceSpecificControlValue(double value) throws IOException {
         double convertedValue = Conversion.clipConversionOut(value, 0, ANALOG_OUTPUT_MAX);
         mbtService.writeOutputRegister(POWER_OUTPUT.getAddress(), (int) convertedValue);
     }

@@ -127,8 +127,8 @@ public class WagoAddresses {
 
     public enum AnalogInput {
 
-        VOLTAGE_KATHODE_TWO(0),
-        CURRENT_KATHODE_TWO(1),
+        VOLTAGE_SVV_ONE(0),
+        CURRENT_SVV_ONE(1),
         GAS_FLOW(2),
         PREASURE_TURBO_PUMP(3),
         CONVEYOR_POSITION_L_R(4),
@@ -137,8 +137,8 @@ public class WagoAddresses {
         VOLTAGE_PINNACLE(7),
         POWER_PINNACLE(8),
         PREASURE_CHAMBER(9),
-        VOLTAGE_KATHODE_THREE(10),
-        CURRENT_KATHODE_THREE(11);
+        VOLTAGE_SSV_TWO(10),
+        CURRENT_SSV_TWO(11);
 
         private final int address;
 
@@ -163,7 +163,7 @@ public class WagoAddresses {
     }
 
     public enum AnalogOutput {
-        UNKOWN(0), GAS_FLOW_SETPOINT(2), KATHODE_TWO_SETPOINT(3), KATHODE_THREE_SETPOINT(4), KATHODE_ONE_SETPOINT(5);
+        UNKOWN(0), GAS_FLOW_SETPOINT(2), SSV_ONE_SETPOINT(3), SSV_TWO_SETPOINT(4), PINNACLE_SETPOINT(5);
 
         private final int address;
 
