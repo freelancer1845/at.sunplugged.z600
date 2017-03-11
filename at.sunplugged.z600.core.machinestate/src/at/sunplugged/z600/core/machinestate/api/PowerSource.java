@@ -1,5 +1,7 @@
 package at.sunplugged.z600.core.machinestate.api;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Interface every power source should implement.
  * 
@@ -9,8 +11,12 @@ package at.sunplugged.z600.core.machinestate.api;
  */
 public interface PowerSource {
 
+    public static final long STEPSPEED = 500;
+
+    public static final TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
+
     public enum State {
-        ON_STARTING, ON, OFF;
+        ON_ADJUSTING, ON, OFF;
     }
 
     /**
@@ -31,6 +37,13 @@ public interface PowerSource {
      * @param power in kW.
      */
     public void setPower(double power);
+
+    /**
+     * Returns the currently measured power at the power source.
+     * 
+     * @return double value of power in kW.
+     */
+    public double getPower();
 
     /**
      * Returns the state of the power source.
