@@ -42,6 +42,20 @@ public interface ConveyorControlService {
     public SpeedLogger getSpeedLogger();
 
     /**
+     * This returns the relative position of the conveyor belt in "m".
+     * 
+     * @return
+     */
+    public double getPosition();
+
+    /**
+     * This sets the relative position of the conveyor belt in "m".
+     * 
+     * @param value
+     */
+    public void setPosition(double value);
+
+    /**
      * This starts a calibration routine. The data obtained is saved in an
      * bundle specific file with name "speed_calibration.cfg".
      * 

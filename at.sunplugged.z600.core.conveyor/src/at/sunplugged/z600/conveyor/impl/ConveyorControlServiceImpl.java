@@ -12,11 +12,11 @@ import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
 import at.sunplugged.z600.conveyor.api.SpeedLogger;
-import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.engine.EngineSerialCom;
 import at.sunplugged.z600.conveyor.speedlogging.SpeedLoggerImpl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -47,13 +47,13 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     private SpeedControl speedControl;
 
+    private RelativePositionMeasurement relativePositionMeasurement;
+
     @Activate
     protected void activate(BundleContext context) {
-        ConveyorControlServiceImpl.context = context;
         try {
-            engineOne = new EngineSerialCom(EngineConstants.ENGINE_ONE_PORT, 2);
-            engineTwo = new EngineSerialCom(EngineConstants.ENGINE_TWO_PORT, 1);
-            engineOne.connect();
+            engineOne = new EngineSerialCom(settingsService.getProperty(NetworkComIds.LEFT_ENGINE_COM_PORT), 2);
+            engineTwo = new EngineSerialCom(settingsService.getProperty(NetworkComIds.RIGHT_ENGINE_COM_PORT), 1);
             engineTwo.connect();
         } catch (IllegalStateException e) {
             logService.log(LogService.LOG_ERROR, "Couldnt connect engines!!!", e);
@@ -61,6 +61,10 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
         speedLogger = new SpeedLoggerImpl();
         speedControl = new SpeedControl(this);
+        machineStateService.registerMachineEventHandler(speedControl);
+
+        relativePositionMeasurement = new RelativePositionMeasurement(this);
+        machineStateService.registerMachineEventHandler(relativePositionMeasurement);
     }
 
     @Deactivate
@@ -86,14 +90,12 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Override
     public double getSetpointSpeed() {
-        // TODO Auto-generated method stub
-        return 0;
+        return speedControl.getSetpoint();
     }
 
     @Override
     public Mode getActiveMode() {
-        // TODO Auto-generated method stub
-        return null;
+        return speedControl.getMode();
     }
 
     @Override
@@ -207,8 +209,17 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Override
     public SpeedLogger getSpeedLogger() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.speedLogger;
+    }
+
+    @Override
+    public double getPosition() {
+        return relativePositionMeasurement.getPosition();
+    }
+
+    @Override
+    public void setPosition(double value) {
+        relativePositionMeasurement.setPosition(value);
     }
 
 }

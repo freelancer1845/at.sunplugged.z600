@@ -22,12 +22,13 @@ import org.swtchart.Range;
 public abstract class UpdatableChart {
 
     /** Update Rate for the charts. */
-    private final static int UPDATE_TICKRATE = 10;
+    private static final int UPDATE_TICKRATE = 10;
 
     /**
-     * The time the charts wait to set the Range to the standard values (end of chart).
+     * The time the charts wait to set the Range to the standard values (end of
+     * chart).
      */
-    private final static int MOVE_TICKER_TIME = UPDATE_TICKRATE * 3;
+    private static final int MOVE_TICKER_TIME = UPDATE_TICKRATE * 3;
 
     /** The underlying Chart. */
     private final Chart chart;
@@ -64,13 +65,15 @@ public abstract class UpdatableChart {
     }
 
     /**
-     * The implementation of this method should add new data to the "dataList" variable. You may
-     * leave that empty. Then no new data is added to the chart.
+     * The implementation of this method should add new data to the "dataList"
+     * variable. You may leave that empty. Then no new data is added to the
+     * chart.
      */
     protected abstract void addNewData();
 
     /**
-     * Implement this method if you want to have more than 1000 DataPoints in one Chart.
+     * Implement this method if you want to have more than 1000 DataPoints in
+     * one Chart.
      */
     protected void removeOldData() {
         if (dataList.size() > 1000) {

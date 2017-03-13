@@ -17,4 +17,3 @@ Import-Package: org.eclipse.swt,
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: at.sunplugged.z600.frontend.gui.utils.Activator
 Require-Bundle: org.eclipse.osgi.services
-Service-Component: OSGI-INF/at.sunplugged.z600.frontend.gui.utils.impl.SettingsServiceImpl.xml

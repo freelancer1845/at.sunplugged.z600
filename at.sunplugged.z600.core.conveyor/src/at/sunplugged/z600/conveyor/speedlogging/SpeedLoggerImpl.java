@@ -12,35 +12,14 @@ import at.sunplugged.z600.mbt.api.MbtService;
 
 public class SpeedLoggerImpl extends Thread implements SpeedLogger {
 
-    private static final int LEFT_DIGITAL_IN_ADDRESS = 39;
-
-    private static final int RIGHT_DIGITAL_IN_ADDRESS = 40;
-
-    private static final double LEFT_HOLE_PLATE_RADIUS = 0.05;
-
-    private static final double LEFT_DRUM_RADIUS = 0.08;
-
-    private static final int LEFT_NUMBER_OF_HOLES = 30;
-
-    private static final double LEFT_DISTANCE_PER_HOLE = LEFT_HOLE_PLATE_RADIUS * 2 * Math.PI / LEFT_NUMBER_OF_HOLES;
-
-    private static final double LEFT_TRANSMISSION_RATIO = LEFT_DRUM_RADIUS / LEFT_HOLE_PLATE_RADIUS;
-
-    private static final double RIGHT_HOLE_PLATE_RADIUS = 0.05;
-
-    private static final double RIGHT_DRUM_RADIUS = 0.08;
-
-    private static final int RIGHT_NUMBER_OF_HOLES = 30;
-
-    private static final double RIGHT_DISTANCE_PER_HOLE = RIGHT_HOLE_PLATE_RADIUS * 2 * Math.PI / RIGHT_NUMBER_OF_HOLES;
-
-    private static final double RIGHT_TRANSMISSION_RATION = RIGHT_DRUM_RADIUS / RIGHT_HOLE_PLATE_RADIUS;
-
     private boolean running = false;
 
     private MbtService mbtService;
 
     private LogService logService;
+
+    /** This value represents the distance the conveyor has traveled. */
+    private double distanceTraveled = 0;
 
     private List<Double> leftSpeedMeasurements = new ArrayList<>();
 
@@ -110,11 +89,11 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
                     rightLastTickTime = now;
                     addToRightMeasurementList(rightTickDifference);
                 }
-                if (now - leftLastTickTime > 10000000000L) {
+                if (now - leftLastTickTime > 20000000000L) {
                     leftLastTickTime = now;
                     addToLeftMeasurementList(-1);
                 }
-                if (now - rightLastTickTime > 10000000000L) {
+                if (now - rightLastTickTime > 20000000000L) {
                     rightLastTickTime = now;
                     addToRightMeasurementList(-1);
                 }
@@ -139,7 +118,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         if (tickDifference < 0) {
             speed = 0;
         } else {
-            speed = LEFT_DISTANCE_PER_HOLE / tickDifference * LEFT_TRANSMISSION_RATIO;
+            speed = LEFT_DISTANCE_PER_HOLE / tickDifference;
         }
         leftSpeedMeasurements.add(0, speed);
         if (leftSpeedMeasurements.size() > 30) {
@@ -154,7 +133,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         if (tickDifference < 0) {
             speed = 0;
         } else {
-            speed = RIGHT_DISTANCE_PER_HOLE / tickDifference * RIGHT_TRANSMISSION_RATION;
+            speed = RIGHT_DISTANCE_PER_HOLE / tickDifference;
 
         }
         rightSpeedMeasurements.add(0, speed);
@@ -163,6 +142,14 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         }
         rightSpeedValue = speed;
         SpeedChangeUtilityClass.submitRightSpeedChange(speed);
+    }
+
+    public double getDistanceTraveled() {
+        return distanceTraveled;
+    }
+
+    public void setDistanceTraveled(double distanceTraveled) {
+        this.distanceTraveled = distanceTraveled;
     }
 
 }

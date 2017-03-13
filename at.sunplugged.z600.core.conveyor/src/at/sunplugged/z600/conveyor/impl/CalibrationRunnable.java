@@ -17,10 +17,6 @@ public class CalibrationRunnable implements Runnable {
 
     private ConveyorControlService conveyorControlService;
 
-    private volatile boolean cancel = false;
-
-    private long traveldStepsInDirectionOne = 0;
-
     private Engine engineOne = conveyorControlService.getEngineOne();
 
     private Engine engineTwo = conveyorControlService.getEngineTwo();
@@ -48,7 +44,7 @@ public class CalibrationRunnable implements Runnable {
             logService.log(LogService.LOG_DEBUG, "Calibration interrupted!");
         } finally {
             engineOne.stopEngine();
-            engineTwo.startEngine();
+            engineTwo.stopEngine();
         }
 
     }
@@ -61,25 +57,17 @@ public class CalibrationRunnable implements Runnable {
             engineOne.setDirection(1);
             engineOne.setMaximumSpeed(maximumFrequency);
 
-            long startTime = System.currentTimeMillis();
             engineOne.startEngine();
 
-            // wait 10s
-
             Thread.sleep(delay);
-            long runTime = System.currentTimeMillis() - startTime;
-            traveldStepsInDirectionOne += runTime / 1000.0 * maximumFrequency;
         } else if (direction == 0) {
             engineOne.setLoose();
             engineTwo.setDirection(0);
             engineTwo.setMaximumSpeed(maximumFrequency);
 
-            long startTime = System.currentTimeMillis();
             engineTwo.startEngine();
 
             Thread.sleep(delay);
-            long runTime = System.currentTimeMillis() - startTime;
-            traveldStepsInDirectionOne -= runTime / 1000.0 * maximumFrequency;
         }
         writeNewDataPoint(maximumFrequency, conveyorControlService.getCurrentSpeed());
         engineOne.stopEngine();
