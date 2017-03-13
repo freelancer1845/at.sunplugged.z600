@@ -25,4 +25,7 @@ public class NetworkComIds {
 
     /** Vat Eight Port. */
     public static final String VAT_EIGHT_COM_PORT = "Vat_Eight_Port";
+
+    /** XPLAINED Port (belt position). */
+    public static final String XPLAINED_COM_PORT = "Xplained_Com_Port";
 }

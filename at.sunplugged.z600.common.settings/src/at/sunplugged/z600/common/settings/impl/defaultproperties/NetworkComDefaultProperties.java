@@ -25,6 +25,7 @@ public class NetworkComDefaultProperties extends Properties {
         this.put(NetworkComIds.RIGHT_ENGINE_COM_PORT, "COM5");
         this.put(NetworkComIds.VAT_SEVEN_COM_PORT, "COM3");
         this.put(NetworkComIds.VAT_EIGHT_COM_PORT, "COM4");
+        this.put(NetworkComIds.XPLAINED_COM_PORT, "COM9");
     }
 
 }
