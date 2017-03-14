@@ -45,7 +45,7 @@ public class ParameterIds {
     public static final String LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE = "Lower_Safety_Limit_Power_At_Power_Source";
 
     /** Initial Power Pinnacle. */
-    public static final String INITIAL_CURRENT_PINNACLE = "Initial_Current_Pinnacle";
+    public static final String INITIAL_POWER_PINNACLE = "Initial_Current_Pinnacle";
 
     /** Max Power Pinnacle. */
     public static final String MAX_POWER = "Max_Power";

@@ -244,7 +244,7 @@ public class MbtServiceImpl implements MbtService {
             }
         }
         writeSingleRegisterResponse = (WriteSingleRegisterResponse) modbusTransaction.getResponse();
-        if (writeSingleRegisterResponse.getRegisterValue() != value) {
+        if (writeSingleRegisterResponse.getRegisterValue() / 8 != value) {
             throw new MbtServiceException("Failed to write Analog Out. AnOut: " + anaOut + ". Value: " + value
                     + ". Repsone value is unequal desired value.");
         }

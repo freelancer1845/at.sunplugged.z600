@@ -40,8 +40,8 @@ public class SpeedControl implements MachineEventHandler {
 
         switch (mode) {
         case LEFT_TO_RIGHT:
-            engineOne.setDirection(1);
-            engineTwo.setDirection(1);
+            engineOne.setDirection(0);
+            engineTwo.setDirection(0);
             engineTwo.setLoose();
             // TODO : For now this is only copy paste from previous program.
             // Implement some calibration
@@ -49,8 +49,8 @@ public class SpeedControl implements MachineEventHandler {
             engineOne.startEngine();
             break;
         case RIGHT_TO_LEFT:
-            engineOne.setDirection(0);
-            engineTwo.setDirection(0);
+            engineOne.setDirection(1);
+            engineTwo.setDirection(1);
             engineOne.setLoose();
             // TODO : For now this is only copy paste from previous program.
             // Implement some calibration

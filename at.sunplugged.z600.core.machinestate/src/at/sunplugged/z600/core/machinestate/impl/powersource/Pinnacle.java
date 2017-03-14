@@ -40,8 +40,8 @@ public class Pinnacle extends AbstractPowerSource {
     protected void powerSourceSpecificOn() throws Exception {
         checkPowerSourceStartConditions();
 
-        double initialCurrent = settings.getPropertAsDouble(ParameterIds.INITIAL_CURRENT_PINNACLE);
-        writeControlValue(initialCurrent);
+        double initialPower = settings.getPropertAsDouble(ParameterIds.INITIAL_POWER_PINNACLE);
+        writeControlValue(initialPower);
 
         mbtService.writeDigOut(INTERLOCK.getAddress(), true);
         mbtService.writeDigOut(REG_ONE_OUTPUT.getAddress(), false);

@@ -70,7 +70,7 @@ public abstract class AbstractPowerSource implements PowerSource {
                 } catch (Exception e) {
                     logService.log(LogService.LOG_ERROR,
                             "Unexpected Exception when starting power source: \"" + id.name() + "\"", e);
-                    changeState(State.OFF);
+                    off();
                 }
             }
 
@@ -163,7 +163,7 @@ public abstract class AbstractPowerSource implements PowerSource {
             logService.log(LogService.LOG_WARNING, "Control was already running, cancelling it and restarting!");
             controlFuture.cancel(false);
         }
-        threadPool.timedPeriodicExecute(new Runnable() {
+        controlFuture = threadPool.timedPeriodicExecute(new Runnable() {
 
             @Override
             public void run() {
@@ -195,6 +195,7 @@ public abstract class AbstractPowerSource implements PowerSource {
         } else {
             controlFuture.cancel(false);
         }
+        controlFuture = null;
     }
 
 }

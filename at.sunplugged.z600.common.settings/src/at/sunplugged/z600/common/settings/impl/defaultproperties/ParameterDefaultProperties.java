@@ -28,7 +28,8 @@ public class ParameterDefaultProperties extends Properties {
         this.put(ParameterIds.CRYO_PUMP_PRESSURE_TRIGGER, "0.03");
         this.put(ParameterIds.ENGINE_MAXIMUM_SPEED, "6000");
         this.put(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE, "0.03");
-        this.put(ParameterIds.INITIAL_CURRENT_PINNACLE, "0.5");
+        this.put(ParameterIds.INITIAL_POWER_PINNACLE, "0.1");
+        this.put(ParameterIds.INITIAL_CURRENT_SSV, "0.4");
         this.put(ParameterIds.MAX_POWER, "1.6");
         this.put(ParameterIds.POWER_CHANGE_PINNACLE, "0.002");
     }

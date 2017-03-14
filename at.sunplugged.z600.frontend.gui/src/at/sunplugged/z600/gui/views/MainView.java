@@ -40,6 +40,7 @@ import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.Pump;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
@@ -48,6 +49,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.InterlocksGroupFactory;
+import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -86,6 +88,7 @@ public class MainView {
     private static Text textUsername;
     private static Text textPassword;
     private static Text textStatement;
+    private static Text text_1;
 
     public static LogService getLogService() {
         return logService;
@@ -390,6 +393,19 @@ public class MainView {
         Button toggleCryoTwo = new Button(composite, SWT.NONE);
         toggleCryoTwo.setText("Toggle Cryo Two");
         toggleCryoTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        TabItem tbtmPowerSupply = new TabItem(tabFolder, SWT.NONE);
+        tbtmPowerSupply.setText("Power Supply");
+        Composite powerSupplyComposite = new Composite(tabFolder, SWT.NONE);
+
+        powerSupplyComposite.setLayout(new GridLayout(1, false));
+        tbtmPowerSupply.setControl(powerSupplyComposite);
+
+        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.PINNACLE);
+        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV1);
+        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV2);
+
+        new Label(shell, SWT.NONE);
         toggleCryoTwo.addSelectionListener(new PumpAdapter(PumpIds.CRYO_TWO));
 
         return shell;
