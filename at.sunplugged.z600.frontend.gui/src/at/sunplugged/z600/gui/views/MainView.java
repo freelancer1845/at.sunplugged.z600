@@ -158,41 +158,6 @@ public class MainView {
         groupVacuum.setText("Vakuum");
         groupVacuum.setLayout(new GridLayout(1, false));
 
-        Group groupInterlocks = new Group(groupVacuum, SWT.NONE);
-        groupInterlocks.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        groupInterlocks.setText("Interlocks");
-        groupInterlocks.setLayout(new GridLayout(3, true));
-
-        Button checkInterlockTurbo = new Button(groupInterlocks, SWT.CHECK);
-        checkInterlockTurbo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                vacuumService.setInterlock(Interlocks.TURBO_PUMP, checkInterlockTurbo.getSelection());
-            }
-        });
-        checkInterlockTurbo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        checkInterlockTurbo.setText("Turbopumpe");
-
-        Button checkInterlockCryoOne = new Button(groupInterlocks, SWT.CHECK);
-        checkInterlockCryoOne.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                vacuumService.setInterlock(Interlocks.CRYO_ONE, checkInterlockCryoOne.getSelection());
-            }
-        });
-        checkInterlockCryoOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        checkInterlockCryoOne.setText("Cryo Eins");
-
-        Button checkInterlockCryoTwo = new Button(groupInterlocks, SWT.CHECK);
-        checkInterlockCryoTwo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                vacuumService.setInterlock(Interlocks.CRYO_TWO, checkInterlockCryoTwo.getSelection());
-            }
-        });
-        checkInterlockCryoTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        checkInterlockCryoTwo.setText("Cryo Zwei");
-
         Button btnEvakuieren = new Button(groupVacuum, SWT.NONE);
         btnEvakuieren.addSelectionListener(new SelectionAdapter() {
 
@@ -205,23 +170,6 @@ public class MainView {
         btnEvakuieren.setText("Start");
 
         Group grpBandlauf = ConveyorGroupFactory.createGroup(composite_1);
-
-        Group grpInterlocks = InterlocksGroupFactory.createGroup(composite_1);
-        GridLayout gridLayout = (GridLayout) grpInterlocks.getLayout();
-        gridLayout.numColumns = 2;
-
-        Label lblPinnacle = new Label(grpInterlocks, SWT.NONE);
-        GridData gd_lblPinnacle = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblPinnacle.widthHint = 100;
-        lblPinnacle.setLayoutData(gd_lblPinnacle);
-        lblPinnacle.setText("Pinnacle");
-
-        Button button = new Button(grpInterlocks, SWT.CHECK);
-
-        Label lblMdx = new Label(grpInterlocks, SWT.NONE);
-        lblMdx.setText("MDX");
-
-        Button button_1 = new Button(grpInterlocks, SWT.CHECK);
 
         Group grpSystemOutput = new Group(composite_1, SWT.NONE);
         grpSystemOutput.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));

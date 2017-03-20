@@ -88,7 +88,7 @@ public class PumpFigure extends Figure implements MachineEventHandler {
                     innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_YELLOW));
                     break;
                 case STOPPING:
-                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+                    innerCircle.setBackgroundColor(SWTResourceManager.getColor(SWT.COLOR_YELLOW));
                     break;
                 }
             }

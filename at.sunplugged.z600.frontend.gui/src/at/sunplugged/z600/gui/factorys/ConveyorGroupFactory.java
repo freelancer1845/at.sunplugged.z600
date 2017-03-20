@@ -140,6 +140,30 @@ public final class ConveyorGroupFactory {
 
         });
 
+        Button btnStartPositionControlling = new Button(group, SWT.NONE);
+        btnStartPositionControlling.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStartPositionControlling.setText("Start Position controlling");
+        btnStartPositionControlling.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.togglePositionControl(true);
+            }
+
+        });
+
+        Button btnStopPositionControlling = new Button(group, SWT.NONE);
+        btnStopPositionControlling.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStopPositionControlling.setText("Stop Position controlling");
+        btnStopPositionControlling.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.togglePositionControl(false);
+            }
+
+        });
+
         Label lblLeftPosition = new Label(group, SWT.NONE);
         lblLeftPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         lblLeftPosition.setText("Left Position: 0");
@@ -148,12 +172,22 @@ public final class ConveyorGroupFactory {
         lblRightPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         lblRightPosition.setText("Right Position: 0");
 
+        Label lblLeftSpeed = new Label(group, SWT.NONE);
+        lblLeftSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblLeftSpeed.setText("Speed Left: 0");
+
+        Label lblRightSpeed = new Label(group, SWT.NONE);
+        lblRightSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblRightSpeed.setText("Speed Right: 0");
+
         Display.getDefault().timerExec(500, new Runnable() {
 
             @Override
             public void run() {
                 lblLeftPosition.setText("Left Position: " + conveyorPositionService.getLeftPosition());
                 lblRightPosition.setText("Right Positon: " + conveyorPositionService.getRightPosition());
+                lblLeftSpeed.setText("Speed Left: " + conveyorService.getSpeedLogger().getLeftSpeed());
+                lblRightSpeed.setText("Speed Right: " + conveyorService.getSpeedLogger().getRightSpeed());
                 Display.getDefault().timerExec(500, this);
             }
         });

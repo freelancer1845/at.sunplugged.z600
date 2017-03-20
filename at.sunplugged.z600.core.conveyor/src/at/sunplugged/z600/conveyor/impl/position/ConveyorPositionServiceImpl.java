@@ -57,6 +57,8 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
 
     private PositionControl positionControl;
 
+    private boolean controlPosition = false;
+
     @Override
     public void start() {
 
@@ -114,7 +116,9 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
         answer = reader.readLine();
         positionControl.addRightPosition(Double.valueOf(answer));
 
-        positionControl.tick();
+        if (controlPosition == true) {
+            positionControl.tick();
+        }
     }
 
     @Activate
@@ -244,6 +248,11 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
 
             }
         }
+    }
+
+    @Override
+    public void togglePositionControl(boolean state) {
+        this.controlPosition = state;
     }
 
 }

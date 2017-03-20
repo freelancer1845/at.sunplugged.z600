@@ -4,6 +4,8 @@ public interface ConveyorPositionService {
 
     public void start();
 
+    public void togglePositionControl(boolean state);
+
     public void stop();
 
     /**
