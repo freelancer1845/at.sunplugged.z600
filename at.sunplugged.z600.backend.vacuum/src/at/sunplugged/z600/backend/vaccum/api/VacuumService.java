@@ -14,6 +14,7 @@ public interface VacuumService {
         START_COOLING,
         WAIT_FOR_CRYO_COOL,
         CRYO_RUNNING,
+        GAS_FLOW_RUNNING,
         SHUTDOWN,
         CANCELED;
     }

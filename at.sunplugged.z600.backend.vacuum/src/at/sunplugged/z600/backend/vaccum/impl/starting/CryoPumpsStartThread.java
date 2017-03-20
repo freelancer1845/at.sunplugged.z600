@@ -10,6 +10,7 @@ import at.sunplugged.z600.backend.vaccum.api.VacuumService.CryoPumpsThreadState;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
 import at.sunplugged.z600.backend.vaccum.impl.VacuumServiceImpl;
 import at.sunplugged.z600.backend.vaccum.impl.VacuumUtils;
+import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
@@ -114,6 +115,13 @@ public class CryoPumpsStartThread extends Thread {
                     }
 
                     break;
+                case GAS_FLOW_RUNNING:
+                    if (isCanceled()) {
+                        break;
+                    }
+                    waitForGasflowToStop();
+                    stateSelector();
+                    break;
                 case SHUTDOWN:
                     if (isCanceled()) {
                         break;
@@ -138,6 +146,15 @@ public class CryoPumpsStartThread extends Thread {
 
         }
 
+    }
+
+    private void waitForGasflowToStop() throws InterruptedException {
+        while (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING) {
+            if (isCanceled()) {
+                return;
+            }
+            Thread.sleep(500);
+        }
     }
 
     private void stopCryoPumpThread() {
@@ -180,8 +197,12 @@ public class CryoPumpsStartThread extends Thread {
         case EVACUATE_CHAMBER:
             state = CryoPumpsThreadState.WAIT_FOR_CRYO_COOL;
             break;
+        case GAS_FLOW_RUNNING:
+            state = CryoPumpsThreadState.WAIT_FOR_CRYO_COOL;
+            break;
         default:
             state = CryoPumpsThreadState.INIT_STATE;
+            break;
         }
     }
 
@@ -360,6 +381,10 @@ public class CryoPumpsStartThread extends Thread {
                     state = CryoPumpsThreadState.INIT_STATE;
                     return;
                 }
+            }
+            if (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING) {
+                state = CryoPumpsThreadState.GAS_FLOW_RUNNING;
+                return;
             }
 
             Thread.sleep(500);
