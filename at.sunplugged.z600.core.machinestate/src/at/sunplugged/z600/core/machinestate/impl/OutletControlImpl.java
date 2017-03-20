@@ -12,11 +12,14 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 import at.sunplugged.z600.core.machinestate.impl.outlets.vat.VatOutlet;
 import at.sunplugged.z600.mbt.api.MbtService;
 
-public class OutletControlImpl implements OutletControl {
+public class OutletControlImpl implements OutletControl, MachineEventHandler {
 
     private final MachineStateService machineStateService;
 
@@ -319,6 +322,24 @@ public class OutletControlImpl implements OutletControl {
         message += " . Reason: \"";
         message += reason + "\"";
         return message;
+    }
+
+    @Override
+    public void handleEvent(MachineStateEvent event) {
+        if (event.getType().equals(Type.DIGITAL_INPUT_CHANGED)) {
+            switch ((DigitalInput) event.getOrigin()) {
+            case OUTLET_ONE_CLOSED:
+                machineStateService
+                        .fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_ONE, !(boolean) event.getValue()));
+                break;
+            case OUTLET_TWO_CLOSED:
+                machineStateService
+                        .fireMachineStateEvent(new OutletChangedEvent(Outlet.OUTLET_TWO, !(boolean) event.getValue()));
+                break;
+            default:
+                break;
+            }
+        }
     }
 
 }

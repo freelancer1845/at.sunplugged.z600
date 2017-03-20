@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="at.sunplugged.z600.gui.factorys.ConveyorGroupFactory">
    <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
+   <reference bind="bindConveyorPositionService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorPositionService" name="ConveyorPositionService" policy="static" unbind="unbindConveyorPositionService"/>
+   <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
    <implementation class="at.sunplugged.z600.gui.factorys.ConveyorGroupFactory"/>
 </scr:component>

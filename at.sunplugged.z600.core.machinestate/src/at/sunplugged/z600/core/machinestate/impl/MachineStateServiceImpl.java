@@ -89,6 +89,7 @@ public class MachineStateServiceImpl implements MachineStateService {
         this.gasFlowControl = new GasFlowControlImpl(this);
         this.machineStateEventHandler = new MachineStateEventHandler(this);
         registerMachineEventHandler(machineStateEventHandler);
+        registerMachineEventHandler((MachineEventHandler) outletControl);
         fillStateListsWithZeors();
     }
 

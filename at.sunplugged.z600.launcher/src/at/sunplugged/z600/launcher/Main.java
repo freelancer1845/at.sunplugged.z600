@@ -23,6 +23,8 @@ public class Main implements IApplication {
             return EXIT_OK;
         }
 
+        Thread.sleep(1000);
+
         // Main SWT Loop
         mainWindowLoop();
 

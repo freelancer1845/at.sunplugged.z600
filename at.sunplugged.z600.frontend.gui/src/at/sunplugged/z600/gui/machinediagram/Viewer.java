@@ -106,7 +106,9 @@ public class Viewer implements MachineEventHandler {
     }
 
     private void createOutletFigures() {
-        outletFigures[0] = new OutletFigure("V1", 130, 120, Outlet.OUTLET_ONE, false);
+        outletFigures[0] = new OutletFigure("V1", 130, 120, Outlet.OUTLET_ONE, false) {
+
+        };
         outletFigures[1] = new OutletFigure("V2", 130, 245, Outlet.OUTLET_TWO, false);
         outletFigures[2] = new OutletFigure("V3", 180, 245, Outlet.OUTLET_THREE, false);
         outletFigures[3] = new OutletFigure("V4", 250, 220, Outlet.OUTLET_FOUR, false);

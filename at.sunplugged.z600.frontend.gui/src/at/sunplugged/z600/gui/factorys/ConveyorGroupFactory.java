@@ -14,13 +14,19 @@ import org.eclipse.swt.widgets.Text;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorPositionService;
 
 @Component(immediate = true)
 public final class ConveyorGroupFactory {
 
     private static ConveyorControlService conveyorService;
+
+    private static ConveyorPositionService conveyorPositionService;
+
+    private static StandardThreadPoolService threadPool;
 
     private static Text text;
 
@@ -110,6 +116,48 @@ public final class ConveyorGroupFactory {
                 conveyorService.stop();
             }
         });
+
+        Button btnStartPositionControl = new Button(group, SWT.NONE);
+        btnStartPositionControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStartPositionControl.setText("Start Position Control");
+        btnStartPositionControl.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.start();
+            }
+
+        });
+        Button btnStopPositionControl = new Button(group, SWT.NONE);
+        btnStopPositionControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStopPositionControl.setText("Stop Position Control");
+        btnStopPositionControl.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.stop();
+            }
+
+        });
+
+        Label lblLeftPosition = new Label(group, SWT.NONE);
+        lblLeftPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblLeftPosition.setText("Left Position: 0");
+
+        Label lblRightPosition = new Label(group, SWT.NONE);
+        lblRightPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblRightPosition.setText("Right Position: 0");
+
+        Display.getDefault().timerExec(500, new Runnable() {
+
+            @Override
+            public void run() {
+                lblLeftPosition.setText("Left Position: " + conveyorPositionService.getLeftPosition());
+                lblRightPosition.setText("Right Positon: " + conveyorPositionService.getRightPosition());
+                Display.getDefault().timerExec(500, this);
+            }
+        });
+
         return group;
     }
 
@@ -121,6 +169,28 @@ public final class ConveyorGroupFactory {
     public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
         if (ConveyorGroupFactory.conveyorService == conveyorControlService) {
             ConveyorGroupFactory.conveyorService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindConveyorPositionService")
+    public synchronized void bindConveyorPositionService(ConveyorPositionService conveyorPositionService) {
+        ConveyorGroupFactory.conveyorPositionService = conveyorPositionService;
+    }
+
+    public synchronized void unbindConveyorPositionService(ConveyorPositionService conveyorPositionService) {
+        if (ConveyorGroupFactory.conveyorPositionService == conveyorPositionService) {
+            ConveyorGroupFactory.conveyorPositionService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindStandardThreadPoolService")
+    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService threadPool) {
+        ConveyorGroupFactory.threadPool = threadPool;
+    }
+
+    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService threadPool) {
+        if (ConveyorGroupFactory.threadPool == threadPool) {
+            ConveyorGroupFactory.threadPool = null;
         }
     }
 

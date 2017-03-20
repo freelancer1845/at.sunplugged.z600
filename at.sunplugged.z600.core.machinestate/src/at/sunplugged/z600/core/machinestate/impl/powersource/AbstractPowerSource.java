@@ -108,8 +108,8 @@ public abstract class AbstractPowerSource implements PowerSource {
     @Override
     public void setPower(double power) {
         if (power > settings.getPropertAsDouble(ParameterIds.MAX_POWER)) {
-            logService.log(LogService.LOG_WARNING, "Setting setpoint power of pinnacle to \"" + power
-                    + "\" is not allowed (too high)! Ignoring value...");
+            logService.log(LogService.LOG_WARNING,
+                    "Setting setpoint power to \"" + power + "\" is not allowed (too high)! Ignoring value...");
             return;
         }
         this.setPoint = power;
