@@ -2,12 +2,15 @@ package at.sunplugged.z600.core.machinestate.impl.powersource;
 
 import java.io.IOException;
 
+import org.osgi.service.log.LogService;
+
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.utils.Conversion;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 
 public abstract class AbstractSSVPowerSource extends AbstractPowerSource {
@@ -26,13 +29,16 @@ public abstract class AbstractSSVPowerSource extends AbstractPowerSource {
 
     private final AnalogInput voltageInput;
 
+    private final DigitalInput errorInput;
+
     public AbstractSSVPowerSource(MachineStateService machineStateService, PowerSourceId id, DigitalOutput start_output,
-            AnalogOutput currentOutput, AnalogInput currentInput, AnalogInput voltageInput) {
+            AnalogOutput currentOutput, AnalogInput currentInput, AnalogInput voltageInput, DigitalInput errorInput) {
         super(machineStateService, id);
         this.startOutput = start_output;
         this.currentOutput = currentOutput;
         this.currentInput = currentInput;
         this.voltageInput = voltageInput;
+        this.errorInput = errorInput;
     }
 
     @Override
@@ -77,6 +83,15 @@ public abstract class AbstractSSVPowerSource extends AbstractPowerSource {
             writeControlValue(currentControlValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_SSV));
         } else if (currentPower > (setPoint + 0.01)) {
             writeControlValue(currentControlValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_SSV));
+        }
+    }
+
+    @Override
+    protected void checkPowerSourceRunConditionsSpecific() {
+        boolean error = machineStateService.getDigitalInputState(errorInput);
+        if (error == true) {
+            logService.log(LogService.LOG_ERROR, "Error input for " + id.name() + " is true. Stopping power source...");
+            off();
         }
     }
 
