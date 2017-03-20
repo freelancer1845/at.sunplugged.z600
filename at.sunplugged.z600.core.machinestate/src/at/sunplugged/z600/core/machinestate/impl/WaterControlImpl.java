@@ -42,4 +42,16 @@ public class WaterControlImpl implements WaterControl {
 
     }
 
+    @Override
+    public boolean isKathodeWaterOn() {
+        if (machineStateService.getDigitalOutputState(WaterOutlet.KATH_ONE.getDigitalOutput()) == true
+                && machineStateService.getDigitalOutputState(WaterOutlet.KATH_TWO.getDigitalOutput()) == true
+                && machineStateService.getDigitalOutputState(WaterOutlet.KATH_THREE.getDigitalOutput()) == true
+                && machineStateService.getDigitalOutputState(WaterOutlet.SHIELD.getDigitalOutput()) == true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

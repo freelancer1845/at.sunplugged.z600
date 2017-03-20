@@ -6,7 +6,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -33,29 +32,26 @@ import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
-import at.sunplugged.z600.backend.vaccum.api.VacuumService.State;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
-import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.Pump;
+import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
-import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.InterlocksGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
+import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
-import org.eclipse.swt.layout.RowLayout;
-import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 
 @Component
 public class MainView {
@@ -393,6 +389,131 @@ public class MainView {
         Button toggleCryoTwo = new Button(composite, SWT.NONE);
         toggleCryoTwo.setText("Toggle Cryo Two");
         toggleCryoTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label waterKath1Label = new Label(composite, SWT.NONE);
+        waterKath1Label.setText("Water KATH1: false");
+        waterKath1Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label waterKath2Label = new Label(composite, SWT.NONE);
+        waterKath2Label.setText("Water KATH2: false");
+        waterKath2Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label waterKath3Label = new Label(composite, SWT.NONE);
+        waterKath3Label.setText("Water KATH3: false");
+        waterKath3Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label waterKath4Label = new Label(composite, SWT.NONE);
+        waterKath4Label.setText("Water KATH4: false");
+        waterKath4Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Display.getDefault().timerExec(500, new Runnable() {
+
+            @Override
+            public void run() {
+                waterKath1Label.setText(
+                        "Water KATH1: " + machineStateService.getDigitalOutputState(DigitalOutput.WATER_KATH_TWO));
+
+                waterKath2Label.setText("Pinnalce Setpoint: "
+                        + machineStateService.getAnalogOutputState(AnalogOutput.PINNACLE_SETPOINT));
+
+                waterKath3Label.setText("GasFlow Setpoint: "
+                        + machineStateService.getAnalogOutputState(AnalogOutput.GAS_FLOW_SETPOINT));
+
+                waterKath4Label.setText("Water On Kath: " + machineStateService.getWaterControl().isKathodeWaterOn());
+                Display.getDefault().timerExec(500, this);
+            }
+
+        });
+
+        Button toggleWaterTurboPump = new Button(composite, SWT.NONE);
+        toggleWaterTurboPump.setText("Toggle Water Turbo");
+        toggleWaterTurboPump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleWaterTurboPump.addSelectionListener(new SelectionAdapter() {
+            private boolean lastState = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, !lastState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                lastState = !lastState;
+            }
+
+        });
+
+        Button toggleWaterKath1Pump = new Button(composite, SWT.NONE);
+        toggleWaterKath1Pump.setText("Toggle Water Kath1");
+        toggleWaterKath1Pump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleWaterKath1Pump.addSelectionListener(new SelectionAdapter() {
+            private boolean lastState = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.KATH_ONE, !lastState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                lastState = !lastState;
+            }
+
+        });
+
+        Button toggleWaterKath2Pump = new Button(composite, SWT.NONE);
+        toggleWaterKath2Pump.setText("Toggle Water Kath2");
+        toggleWaterKath2Pump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleWaterKath2Pump.addSelectionListener(new SelectionAdapter() {
+            private boolean lastState = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.KATH_TWO, !lastState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                lastState = !lastState;
+            }
+
+        });
+
+        Button toggleWaterKath3Pump = new Button(composite, SWT.NONE);
+        toggleWaterKath3Pump.setText("Toggle Water Kath3");
+        toggleWaterKath3Pump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleWaterKath3Pump.addSelectionListener(new SelectionAdapter() {
+            private boolean lastState = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.KATH_THREE, !lastState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                lastState = !lastState;
+            }
+
+        });
+
+        Button toggleWaterShieldPump = new Button(composite, SWT.NONE);
+        toggleWaterShieldPump.setText("Toggle Water Shield");
+        toggleWaterShieldPump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleWaterShieldPump.addSelectionListener(new SelectionAdapter() {
+            private boolean lastState = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.SHIELD, !lastState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                lastState = !lastState;
+            }
+
+        });
 
         TabItem tbtmPowerSupply = new TabItem(tabFolder, SWT.NONE);
         tbtmPowerSupply.setText("Power Supply");

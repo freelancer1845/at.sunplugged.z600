@@ -112,6 +112,12 @@ public class TurboPump implements Pump, MachineEventHandler {
                                 "Turbo Pump stopping interrupted!!! This is not recommended!", e);
                     }
                     if (state == PumpState.STOPPING) {
+                        try {
+                            machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, false);
+                        } catch (IOException e) {
+                            MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                                    "Failed to close water outlet for turbo pump.", e);
+                        }
                         changeState(PumpState.OFF);
                     }
                 }

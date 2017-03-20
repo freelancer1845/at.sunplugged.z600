@@ -43,13 +43,19 @@ public class Pinnacle extends AbstractPowerSource {
         double initialPower = settings.getPropertAsDouble(ParameterIds.INITIAL_POWER_PINNACLE);
         writeControlValue(initialPower);
 
-        mbtService.writeDigOut(INTERLOCK.getAddress(), true);
         mbtService.writeDigOut(REG_ONE_OUTPUT.getAddress(), false);
         mbtService.writeDigOut(REG_TWO_OUTPUT.getAddress(), true);
+
+        Thread.sleep(1000);
+
+        mbtService.writeDigOut(INTERLOCK.getAddress(), true);
         mbtService.writeDigOut(OFF_OUTPUT.getAddress(), false);
+
+        Thread.sleep(1000);
+
         mbtService.writeDigOut(ON_OUTPUT.getAddress(), true);
 
-        Thread.sleep(2000);
+        Thread.sleep(5000);
 
         mbtService.writeDigOut(ON_OUTPUT.getAddress(), false);
 
@@ -59,9 +65,6 @@ public class Pinnacle extends AbstractPowerSource {
         if (!machineStateService.getGasFlowControl().getState().equals(GasFlowControl.State.RUNNING)) {
             throw new InvalidPowerSourceStateException(
                     "GasflowControl is not running! Won't start powersource pinnacle.");
-        }
-        if (machineStateService.getWaterControl().isWaterOnAllCheckpoints() == false) {
-            throw new InvalidPowerSourceStateException("Not every kathode is cooled. Wont start powersource pinnacle!");
         }
     }
 

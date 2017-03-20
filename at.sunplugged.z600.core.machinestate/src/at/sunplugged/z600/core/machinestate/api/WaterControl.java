@@ -8,11 +8,9 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 public interface WaterControl {
 
     public enum WaterOutlet {
-        TURBO_PUMP(DigitalOutput.WATER_TURBO_PUMP),
-        KATH_ONE(DigitalOutput.WATER_KATH_ONE),
-        KATH_TWO(DigitalOutput.WATER_KATH_TWO),
-        KATH_THREE(DigitalOutput.WATER_KATH_THREE),
-        SHIELD(DigitalOutput.WATER_SHIELD);
+        TURBO_PUMP(DigitalOutput.WATER_TURBO_PUMP), KATH_ONE(DigitalOutput.WATER_KATH_ONE), KATH_TWO(
+                DigitalOutput.WATER_KATH_TWO), KATH_THREE(
+                        DigitalOutput.WATER_KATH_THREE), SHIELD(DigitalOutput.WATER_SHIELD);
 
         private final DigitalOutput digitalOutput;
 
@@ -26,10 +24,8 @@ public interface WaterControl {
     }
 
     public enum FlowCheckPoint {
-        KATH_ONE(DigitalInput.WATER_KATH_ONE_ON),
-        KATH_TWO(DigitalInput.WATER_KATH_TWO_ON),
-        KATH_THREE(DigitalInput.WATER_KATH_THREE_ON),
-        KATH_FOUR(DigitalInput.WATER_KATH_FOUR_ON);
+        KATH_ONE(DigitalInput.WATER_KATH_ONE_ON), KATH_TWO(DigitalInput.WATER_KATH_TWO_ON), KATH_THREE(
+                DigitalInput.WATER_KATH_THREE_ON), KATH_FOUR(DigitalInput.WATER_KATH_FOUR_ON);
 
         private final DigitalInput digitalInput;
 
@@ -50,5 +46,7 @@ public interface WaterControl {
     public boolean getFlowCheckPointState(FlowCheckPoint checkPoint);
 
     public boolean isWaterOnAllCheckpoints();
+
+    public boolean isKathodeWaterOn();
 
 }

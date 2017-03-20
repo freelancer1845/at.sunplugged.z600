@@ -63,6 +63,7 @@ public abstract class AbstractSSVPowerSource extends AbstractPowerSource {
         writeControlValue(settings.getPropertAsDouble(ParameterIds.INITIAL_CURRENT_SSV));
         Thread.sleep(500);
         mbtService.writeDigOut(startOutput.getAddress(), true);
+        Thread.sleep(5000);
     }
 
     @Override

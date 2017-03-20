@@ -12,6 +12,7 @@ import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PowerSource;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
+import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PowerSourceEvent;
 import at.sunplugged.z600.core.machinestate.api.exceptions.InvalidPowerSourceStateException;
 import at.sunplugged.z600.core.machinestate.impl.MachineStateServiceImpl;
@@ -59,12 +60,16 @@ public abstract class AbstractPowerSource implements PowerSource {
             @Override
             public void run() {
                 try {
-                    powerSourceSpecificOn();
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.KATH_ONE, true);
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.KATH_TWO, true);
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.KATH_THREE, true);
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.SHIELD, true);
                     if (state != State.STARTING) {
                         logService.log(LogService.LOG_DEBUG,
                                 "Power source (" + id.name() + ") start interrupted during start phase.");
                         return;
                     }
+                    powerSourceSpecificOn();
                     changeState(State.ON_ADJUSTING);
                     startControl();
                 } catch (Exception e) {
@@ -138,10 +143,12 @@ public abstract class AbstractPowerSource implements PowerSource {
     protected abstract void powerSourceSpecificControlTick() throws Exception;
 
     private void checkPowerSourceRunConditions() throws InvalidPowerSourceStateException {
-        if (machineStateService.getWaterControl().isWaterOnAllCheckpoints() == false) {
-            throw new InvalidPowerSourceStateException(
-                    "Kathode cooling may have stopped. Stopping power control for \"" + id.name() + "\"");
-        }
+        // if (machineStateService.getWaterControl().isKathodeWaterOn() ==
+        // false) {
+        // throw new InvalidPowerSourceStateException(
+        // "Kathode cooling may have stopped. Stopping power control for \"" +
+        // id.name() + "\"");
+        // }
         if (getPower() < settings.getPropertAsDouble(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE)) {
             throw new InvalidPowerSourceStateException("Lower Limit for power reached! ("
                     + settings.getPropertAsDouble(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE)
