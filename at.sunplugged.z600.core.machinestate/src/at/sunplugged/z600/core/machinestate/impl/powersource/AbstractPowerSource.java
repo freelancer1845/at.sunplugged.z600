@@ -1,6 +1,7 @@
 package at.sunplugged.z600.core.machinestate.impl.powersource;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
 import org.osgi.service.log.LogService;
@@ -38,6 +39,8 @@ public abstract class AbstractPowerSource implements PowerSource {
 
     protected double currentControlValue = 0;
 
+    private Future<?> startFuture;
+
     private ScheduledFuture<?> controlFuture;
 
     public AbstractPowerSource(MachineStateService machineStateService, PowerSourceId id) {
@@ -56,7 +59,7 @@ public abstract class AbstractPowerSource implements PowerSource {
             return;
         }
         changeState(State.STARTING);
-        threadPool.execute(new Runnable() {
+        startFuture = threadPool.submit(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -72,6 +75,9 @@ public abstract class AbstractPowerSource implements PowerSource {
                     powerSourceSpecificOn();
                     changeState(State.ON_ADJUSTING);
                     startControl();
+                } catch (InterruptedException et) {
+                    logService.log(LogService.LOG_DEBUG, "Starting power source: \"" + id.name() + "\" interrupted.");
+                    off();
                 } catch (Exception e) {
                     logService.log(LogService.LOG_ERROR,
                             "Unexpected Exception when starting power source: \"" + id.name() + "\"", e);
@@ -95,9 +101,13 @@ public abstract class AbstractPowerSource implements PowerSource {
             @Override
             public void run() {
                 try {
-                    powerSourceSpecificOff();
-                    changeState(State.OFF);
-                    stopControl();
+                    if (startFuture.isDone() == false) {
+                        startFuture.cancel(true);
+                    } else {
+                        powerSourceSpecificOff();
+                        changeState(State.OFF);
+                        stopControl();
+                    }
                 } catch (Exception e) {
                     logService.log(LogService.LOG_ERROR,
                             "Unexpected exception when stopping power source: \"" + id.name() + "\"", e);
