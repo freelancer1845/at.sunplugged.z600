@@ -3,6 +3,8 @@ package at.sunplugged.z600.conveyor.impl.position;
 import java.io.IOException;
 import java.util.Arrays;
 
+import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
@@ -20,13 +22,17 @@ public class PositionControl {
 
     private final MbtService mbtService;
 
+    private final ConveyorControlService conveyorControlService;
+
     private double[] leftPositions = new double[10];
 
     private double[] rightPositions = new double[10];
 
-    public PositionControl(MachineStateService machineStateService, MbtService mbtSerivce) {
+    public PositionControl(MachineStateService machineStateService, MbtService mbtSerivce,
+            ConveyorControlService conveyorControlService) {
         this.machineStateService = machineStateService;
         this.mbtService = mbtSerivce;
+        this.conveyorControlService = conveyorControlService;
         Arrays.fill(leftPositions, DESIRED_POSITION_LEFT);
         Arrays.fill(rightPositions, DESIRED_POSITION_RIGHT);
     }
@@ -46,37 +52,99 @@ public class PositionControl {
     }
 
     public void tick() throws IOException {
-        double rightPosition = mean(rightPositions);
-        if (Math.abs(rightPosition - DESIRED_POSITION_RIGHT) > MAXIMUM_ERROR) {
+
+        boolean limitLeftFront = machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_FRONT);
+        boolean limitLeftBack = machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_BACK);
+        if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
+            if (limitLeftFront == true) {
+                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), true);
+            } else {
+                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
+            }
+            if (limitLeftBack == false) {
+                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), true);
+            } else {
+                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
+            }
+            if (limitLeftFront == false && limitLeftBack == true) {
+                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
+                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
+            }
+        } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
             boolean limitRightFront = machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_FRONT);
             boolean limitRightBack = machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_BACK);
-            if (rightPosition > DESIRED_POSITION_RIGHT && limitRightFront) {
-                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
-                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), true);
-            } else if (rightPosition < DESIRED_POSITION_RIGHT && limitRightBack) {
-                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
+            if (limitRightFront == true) {
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), true);
+            } else {
+                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
             }
-        } else if (Math.abs(rightPosition - DESIRED_POSITION_RIGHT) / 10 < MAXIMUM_ERROR / 10) {
-            mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
-            mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
-        }
-
-        double leftPosition = mean(leftPositions);
-        if (Math.abs(leftPosition - DESIRED_POSITION_LEFT) > MAXIMUM_ERROR) {
-            boolean limitLeftFront = machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_FRONT);
-            boolean limitLeftBack = machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_BACK);
-            if (leftPosition > DESIRED_POSITION_LEFT && limitLeftFront) {
-                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
-                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), true);
-            } else if (leftPosition < DESIRED_POSITION_LEFT && limitLeftBack) {
-                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
-                mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), true);
+            if (limitRightBack == false) {
+                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), true);
+            } else {
+                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
             }
-        } else if (Math.abs(leftPosition - DESIRED_POSITION_LEFT) / 10 < MAXIMUM_ERROR / 10) {
+            if (limitRightFront == false && limitRightBack == true) {
+                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
+                mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
+            }
+        } else {
             mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
             mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
+            mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
+            mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
         }
+
+        // double rightPosition = mean(rightPositions);
+        // if (Math.abs(rightPosition - DESIRED_POSITION_RIGHT) > MAXIMUM_ERROR)
+        // {
+        // boolean limitRightFront =
+        // machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_FRONT);
+        // boolean limitRightBack =
+        // machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_BACK);
+        // if (rightPosition > DESIRED_POSITION_RIGHT && limitRightFront) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(),
+        // false);
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(),
+        // true);
+        // } else if (rightPosition < DESIRED_POSITION_RIGHT && limitRightBack)
+        // {
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(),
+        // false);
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(),
+        // true);
+        // }
+        // } else if (Math.abs(rightPosition - DESIRED_POSITION_RIGHT) / 10 <
+        // MAXIMUM_ERROR / 10) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(),
+        // false);
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(),
+        // false);
+        // }
+        //
+        // double leftPosition = mean(leftPositions);
+        // if (Math.abs(leftPosition - DESIRED_POSITION_LEFT) > MAXIMUM_ERROR) {
+        // boolean limitLeftFront =
+        // machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_FRONT);
+        // boolean limitLeftBack =
+        // machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_BACK);
+        // if (leftPosition > DESIRED_POSITION_LEFT && limitLeftFront) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(),
+        // false);
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(),
+        // true);
+        // } else if (leftPosition < DESIRED_POSITION_LEFT && limitLeftBack) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(),
+        // false);
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(),
+        // true);
+        // }
+        // } else if (Math.abs(leftPosition - DESIRED_POSITION_LEFT) / 10 <
+        // MAXIMUM_ERROR / 10) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(),
+        // false);
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(),
+        // false);
+        // }
     }
 
     private double mean(double[] array) {

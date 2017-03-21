@@ -13,12 +13,11 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionService;
 import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
@@ -45,6 +44,8 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
 
     private StandardThreadPoolService threadPool;
 
+    private ConveyorControlService conveyorControlService;
+
     private CommPort commPort;
 
     private InputStream inputStream;
@@ -62,12 +63,13 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
     @Override
     public void start() {
 
-        if (commPort == null) {
-            connect(settingsService.getProperty(NetworkComIds.XPLAINED_COM_PORT));
-        }
-        if (commPort == null) {
-            throw new IllegalStateException("Can't start ConveyorPosition control... Can't connect to xplained.");
-        }
+        // if (commPort == null) {
+        // connect(settingsService.getProperty(NetworkComIds.XPLAINED_COM_PORT));
+        // }
+        // if (commPort == null) {
+        // throw new IllegalStateException("Can't start ConveyorPosition
+        // control... Can't connect to xplained.");
+        // }
         scheduledFuture = threadPool.timedPeriodicExecute(new Runnable() {
 
             @Override
@@ -101,20 +103,20 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
     }
 
     protected void tick() throws IOException, InterruptedException {
-        byte[] buffer = new byte[1];
-        String answer;
-
-        buffer[0] = LEFT_CHANNEL;
-        outputStream.write(buffer);
-        Thread.sleep(30);
-        answer = reader.readLine();
-        positionControl.addLeftPosition(Double.valueOf(answer));
-
-        buffer[0] = RIGHT_CHANNEL;
-        outputStream.write(buffer);
-        Thread.sleep(30);
-        answer = reader.readLine();
-        positionControl.addRightPosition(Double.valueOf(answer));
+        // byte[] buffer = new byte[1];
+        // String answer;
+        //
+        // buffer[0] = LEFT_CHANNEL;
+        // outputStream.write(buffer);
+        // Thread.sleep(30);
+        // answer = reader.readLine();
+        // positionControl.addLeftPosition(Double.valueOf(answer));
+        //
+        // buffer[0] = RIGHT_CHANNEL;
+        // outputStream.write(buffer);
+        // Thread.sleep(30);
+        // answer = reader.readLine();
+        // positionControl.addRightPosition(Double.valueOf(answer));
 
         if (controlPosition == true) {
             positionControl.tick();
@@ -123,7 +125,7 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
 
     @Activate
     protected void activate() {
-        positionControl = new PositionControl(machineStateService, mbtService);
+        positionControl = new PositionControl(machineStateService, mbtService, conveyorControlService);
         machineStateService.registerMachineEventHandler(this);
     }
 
@@ -230,29 +232,47 @@ public class ConveyorPositionServiceImpl implements ConveyorPositionService, Mac
 
     @Override
     public void handleEvent(MachineStateEvent event) {
-        if (event.getType() == MachineStateEvent.Type.DIGITAL_INPUT_CHANGED) {
-            if ((boolean) event.getValue() == true) {
-                try {
-                    if (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_LEFT_BACK)) {
-                        mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
-                    } else if (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_LEFT_FRONT)) {
-                        mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
-                    } else if (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_RIGHT_BACK)) {
-                        mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
-                    } else if (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_RIGHT_FRONT)) {
-                        mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
+        // if (event.getType() == MachineStateEvent.Type.DIGITAL_INPUT_CHANGED)
+        // {
+        // if ((boolean) event.getValue() == true) {
+        // try {
+        // if (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_LEFT_BACK)) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(),
+        // false);
+        // } else if
+        // (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_LEFT_FRONT)) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(),
+        // false);
+        // } else if
+        // (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_RIGHT_BACK)) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(),
+        // false);
+        // } else if
+        // (event.getOrigin().equals(DigitalInput.LIMIT_SWITCH_RIGHT_FRONT)) {
+        // mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(),
+        // false);
+        // }
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
+        //
+        // }
+        // }
     }
 
     @Override
     public void togglePositionControl(boolean state) {
         this.controlPosition = state;
+    }
+
+    public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
+        this.conveyorControlService = conveyorControlService;
+    }
+
+    public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
+        if (this.conveyorControlService == conveyorControlService) {
+            this.conveyorControlService = null;
+        }
     }
 
 }

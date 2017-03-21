@@ -54,6 +54,7 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
         try {
             engineOne = new EngineSerialCom(settingsService.getProperty(NetworkComIds.LEFT_ENGINE_COM_PORT), 2);
             engineTwo = new EngineSerialCom(settingsService.getProperty(NetworkComIds.RIGHT_ENGINE_COM_PORT), 1);
+            engineOne.connect();
             engineTwo.connect();
         } catch (IllegalStateException e) {
             logService.log(LogService.LOG_ERROR, "Couldnt connect engines!!!", e);

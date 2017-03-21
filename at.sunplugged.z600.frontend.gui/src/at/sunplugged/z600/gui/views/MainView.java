@@ -31,7 +31,6 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService;
-import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
@@ -41,11 +40,10 @@ import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceI
 import at.sunplugged.z600.core.machinestate.api.Pump;
 import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
-import at.sunplugged.z600.gui.factorys.InterlocksGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
@@ -358,16 +356,17 @@ public class MainView {
 
             @Override
             public void run() {
-                waterKath1Label.setText(
-                        "Water KATH1: " + machineStateService.getDigitalOutputState(DigitalOutput.WATER_KATH_TWO));
+                waterKath1Label.setText("LS Left Back: "
+                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_BACK));
 
-                waterKath2Label.setText("Pinnalce Setpoint: "
-                        + machineStateService.getAnalogOutputState(AnalogOutput.PINNACLE_SETPOINT));
+                waterKath2Label.setText("LS Left Front: "
+                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_FRONT));
 
-                waterKath3Label.setText("GasFlow Setpoint: "
-                        + machineStateService.getAnalogOutputState(AnalogOutput.GAS_FLOW_SETPOINT));
+                waterKath3Label.setText("LS Right Back: "
+                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_BACK));
 
-                waterKath4Label.setText("Water On Kath: " + machineStateService.getWaterControl().isKathodeWaterOn());
+                waterKath4Label.setText("LS Right Front: "
+                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_FRONT));
                 Display.getDefault().timerExec(500, this);
             }
 
@@ -455,6 +454,25 @@ public class MainView {
             public void widgetSelected(SelectionEvent e) {
                 try {
                     machineStateService.getWaterControl().setOutletState(WaterOutlet.SHIELD, !lastState);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                lastState = !lastState;
+            }
+
+        });
+
+        Button toggleDigOut = new Button(composite, SWT.NONE);
+        toggleDigOut.setText("Toggle Dig Out [2][0]");
+        toggleDigOut.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        toggleDigOut.addSelectionListener(new SelectionAdapter() {
+            private boolean lastState = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    mbtController.writeDigOut(WagoAddresses.DigitalOutput.SUPPLY_CONVEYOR_MEASURMENT.getAddress(),
+                            !lastState);
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
