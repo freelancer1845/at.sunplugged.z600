@@ -28,8 +28,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.backend.dataservice.api.DataService;
-import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
@@ -61,8 +59,6 @@ public class MainView {
     private static SrmCommunicator srmCommunicator;
 
     private static MbtService mbtController;
-
-    private static DataService dataService;
 
     private static MachineStateService machineStateService;
 
@@ -175,78 +171,6 @@ public class MainView {
         grpSystemOutput.setLayout(new GridLayout(1, false));
 
         StyledText styledText = SystemOutputFactory.createStyledText(grpSystemOutput);
-
-        TabItem tbtmSqlTest = new TabItem(tabFolder, SWT.NONE);
-        tbtmSqlTest.setText("SQL Test");
-
-        Composite sqlTestComposite = new Composite(tabFolder, SWT.NONE);
-        tbtmSqlTest.setControl(sqlTestComposite);
-        sqlTestComposite.setLayout(new GridLayout(1, false));
-
-        Group grpConnection = new Group(sqlTestComposite, SWT.NONE);
-        grpConnection.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        grpConnection.setText("Connection");
-        grpConnection.setLayout(new GridLayout(2, true));
-
-        Label labelAddress = new Label(grpConnection, SWT.NONE);
-        labelAddress.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        labelAddress.setText("Address:");
-
-        textAddress = new Text(grpConnection, SWT.BORDER);
-        textAddress.setText("localhost");
-        textAddress.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        Label labelUsername = new Label(grpConnection, SWT.NONE);
-        labelUsername.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        labelUsername.setText("Username:");
-
-        textUsername = new Text(grpConnection, SWT.BORDER);
-        textUsername.setText("freeskier");
-        textUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        Label labelPassword = new Label(grpConnection, SWT.NONE);
-        labelPassword.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-        labelPassword.setText("Password:");
-
-        textPassword = new Text(grpConnection, SWT.BORDER | SWT.PASSWORD);
-        textPassword.setText("*******");
-        textPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        Button buttonConnect = new Button(grpConnection, SWT.NONE);
-        buttonConnect.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    dataService.connectToSqlServer(textAddress.getText(), textUsername.getText(),
-                            textPassword.getText());
-                } catch (DataServiceException e1) {
-                    logService.log(LogService.LOG_ERROR, "Connection to SQL Server failed.", e1);
-                }
-
-            }
-        });
-        buttonConnect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        buttonConnect.setText("Connect");
-        new Label(grpConnection, SWT.NONE);
-        new Label(grpConnection, SWT.NONE);
-
-        Group grpStatements = new Group(sqlTestComposite, SWT.NONE);
-        grpStatements.setLayout(new GridLayout(2, false));
-        grpStatements.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        grpStatements.setText("Statements");
-
-        textStatement = new Text(grpStatements, SWT.BORDER);
-        textStatement.setText("enter statement");
-        textStatement.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        Button buttonSendStatement = new Button(grpStatements, SWT.NONE);
-        buttonSendStatement.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                dataService.issueStatement(textStatement.getText());
-            }
-        });
-        buttonSendStatement.setText("Send");
 
         TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
         tbtmVacuum.setText("Vacuum");
@@ -528,17 +452,6 @@ public class MainView {
     public synchronized void unbindMBTController(MbtService mbtController) {
         if (MainView.mbtController == mbtController) {
             MainView.mbtController = null;
-        }
-    }
-
-    @Reference(unbind = "unbindDataService")
-    public synchronized void bindDataService(DataService dataService) {
-        MainView.dataService = dataService;
-    }
-
-    public synchronized void unbindDataService(DataService dataService) {
-        if (MainView.dataService == dataService) {
-            MainView.dataService = null;
         }
     }
 

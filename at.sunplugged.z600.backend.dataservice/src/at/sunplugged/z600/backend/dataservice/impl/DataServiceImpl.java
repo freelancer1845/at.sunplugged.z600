@@ -4,11 +4,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Date;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
 import org.osgi.framework.BundleContext;
@@ -20,13 +18,12 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.backend.dataservice.api.DataService;
-import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.conveyor.api.ConveyorPositionService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 
 /**
@@ -39,7 +36,7 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
  */
 
 @Component()
-public class DataServiceImpl implements DataService {
+public class DataServiceImpl {
 
     private static LogService logService;
 
@@ -53,9 +50,9 @@ public class DataServiceImpl implements DataService {
 
     private static ConveyorControlService conveyorService;
 
-    private SqlConnection sqlConnection = null;
+    private static ConveyorPositionService conveyorPositionService;
 
-    private final Map<String, VariableSlot<?>> variableSlots = new HashMap<>();
+    private SqlConnection sqlConnection = null;
 
     @Activate
     protected synchronized void activate(BundleContext context) {
@@ -71,6 +68,7 @@ public class DataServiceImpl implements DataService {
                             settings.getProperty(NetworkComIds.SQL_USERNAME),
                             settings.getProperty(NetworkComIds.SQL_PASSWORD));
                     postConnectEvent(true, null);
+                    injectSettings();
                 } catch (DataServiceException e) {
                     logService.log(LogService.LOG_ERROR, "Failed to connect to sql server specified in settings file.",
                             e);
@@ -81,74 +79,43 @@ public class DataServiceImpl implements DataService {
         });
     }
 
-    @Override
-    public void connectToSqlServer(String address, String username, String password) throws DataServiceException {
+    private void connectToSqlServer(String address, String username, String password) throws DataServiceException {
         sqlConnection = new SqlConnection("jdbc:sqlserver://" + address, username, password);
         sqlConnection.open();
     }
 
-    @Override
-    public void startAutomaticSqlTableUpdating(int tickrate, String variableName, String... columns)
-            throws DataServiceException {
+    private void injectSettings() {
+        try {
+            Map<String, Object> settingsTable = getSettingsTable();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    private Map<String, Object> getSettingsTable() throws SQLException {
+        Statement stm = sqlConnection.getStatement();
+        stm.executeQuery("SELECT * FROM " + TableNames.SETTINGS_TABLE);
+        ResultSet resultSet = stm.getResultSet();
+        if (resultSet.next() == false) {
+            createSettingsTable();
+            logService.log(LogService.LOG_DEBUG, "No Settings Table found in Database!");
+            return null;
+        }
+        Map<String, Object> returnMap = new HashMap<>();
+        returnMap.put(ColumnNames.BELT_POSITION, resultSet.getLong(ColumnNames.BELT_POSITION));
+        returnMap.put(ColumnNames.BETL_POSITION_HORIZONTAL_LEFT,
+                resultSet.getLong(ColumnNames.BETL_POSITION_HORIZONTAL_LEFT));
+        returnMap.put(ColumnNames.BELT_POSITION_HORIZONTAL_RIGHT,
+                resultSet.getLong(ColumnNames.BELT_POSITION_HORIZONTAL_RIGHT));
+        return returnMap;
+    }
+
+    private void createSettingsTable() {
         // TODO Auto-generated method stub
 
     }
 
-    @Override
-    public void stopAutomaticSqlTableUpdating(String variableName) throws DataServiceException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void createDataBaseSnapshot(String filePath) throws DataServiceException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void saveData(String variableName, Date date, Object data) throws DataServiceException {
-        if (!variableSlots.containsKey(variableName)) {
-            variableSlots.put(variableName, createVariableSlot(variableName, data.getClass()));
-        }
-        variableSlots.get(variableName).addData(date, data);
-    }
-
-    @Override
-    public void clearDatabase() {
-        variableSlots.clear();
-    }
-
-    private VariableSlot<?> createVariableSlot(String variableName, Class<?> type) throws DataServiceException {
-
-        switch (type.getName()) {
-        case "java.lang.Double":
-            return new VariableSlot<Double>(variableName);
-        default:
-            throw new DataServiceException("The type of this data is not supported: \"" + type.getName() + "\"");
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> List<T> getData(String variableName, Class<T> type) throws DataServiceException {
-        if (variableSlots.containsKey(variableName)) {
-            switch (type.getName()) {
-            case "java.lang.Double":
-                return (List<T>) variableSlots.get(variableName).getData();
-            default:
-                throw new DataServiceException("The type of this data is not supported: \"" + type.getName() + "\"");
-            }
-        } else {
-            throw new DataServiceException("Variable Not Registered: " + variableName);
-        }
-    }
-
-    @Override
-    public void startAddingSrmDataToTable() {
-
-    }
-
-    @Override
     public void issueStatement(String statement) {
         if (!sqlConnection.isOpen()) {
             return;
@@ -280,6 +247,21 @@ public class DataServiceImpl implements DataService {
 
     public static ConveyorControlService getConveyorControlService() {
         return conveyorService;
+    }
+
+    @Reference(unbind = "unbindConveyorPositionService")
+    public synchronized void bindConveyorPositionService(ConveyorPositionService conveyorPositionService) {
+        DataServiceImpl.conveyorPositionService = conveyorPositionService;
+    }
+
+    public synchronized void unbindConveyorPositionService(ConveyorPositionService conveyorPositionService) {
+        if (DataServiceImpl.conveyorPositionService == conveyorPositionService) {
+            DataServiceImpl.conveyorPositionService = null;
+        }
+    }
+
+    public static ConveyorPositionService getConveyorPositionService() {
+        return DataServiceImpl.conveyorPositionService;
     }
 
 }

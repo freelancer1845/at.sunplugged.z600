@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import at.sunplugged.z600.backend.dataservice.api.DataColumnNames;
-import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
@@ -72,20 +70,20 @@ public class WriteDataTableUtils {
         Statement stm = connection.getStatement();
         String sql = "CREATE TABLE [" + tableName + "] (";
         sql += "Time TIME, ";
-        sql += DataColumnNames.PERSSURE_TMP + " FLOAT, ";
-        sql += DataColumnNames.PRESSURE_CHAMBER + " FLOAT, ";
-        sql += DataColumnNames.PRESSURE_CRYO_ONE + " FLOAT, ";
-        sql += DataColumnNames.PRESSURE_CRYO_TWO + " FLOAT, ";
-        sql += DataColumnNames.CONVEYOR_MODE + " VARCHAR(256), ";
-        sql += DataColumnNames.CONVEYOR_SPEED_SETPOINT + " FLOAT, ";
-        sql += DataColumnNames.CONVEYOR_SPEED_COMBINED + " FLOAT, ";
-        sql += DataColumnNames.CONVEYOR_SPEED_LEFT + " FLOAT, ";
-        sql += DataColumnNames.CONVEYOR_SPEED_RIGHT + " FLOAT, ";
-        sql += DataColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM + " INTEGER, ";
-        sql += DataColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM + " INTEGER, ";
-        sql += DataColumnNames.CATHODE_ONE_SETPOINT + " FLOAT, ";
-        sql += DataColumnNames.CATHODE_TWO_SETPOINT + " FLOAT, ";
-        sql += DataColumnNames.CATHODE_THREE_SETPOINT + " FLOAT; ";
+        sql += ColumnNames.PERSSURE_TMP + " FLOAT, ";
+        sql += ColumnNames.PRESSURE_CHAMBER + " FLOAT, ";
+        sql += ColumnNames.PRESSURE_CRYO_ONE + " FLOAT, ";
+        sql += ColumnNames.PRESSURE_CRYO_TWO + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_MODE + " VARCHAR(256), ";
+        sql += ColumnNames.CONVEYOR_SPEED_SETPOINT + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_SPEED_COMBINED + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_SPEED_LEFT + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_SPEED_RIGHT + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM + " INTEGER, ";
+        sql += ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM + " INTEGER, ";
+        sql += ColumnNames.CATHODE_ONE_SETPOINT + " FLOAT, ";
+        sql += ColumnNames.CATHODE_TWO_SETPOINT + " FLOAT, ";
+        sql += ColumnNames.CATHODE_THREE_SETPOINT + " FLOAT; ";
         stm.executeUpdate(sql);
         stm.close();
 
@@ -94,13 +92,13 @@ public class WriteDataTableUtils {
     private static Map<String, Object> getPressureSnapShot(MachineStateService machine) {
         Map<String, Object> dataMap = new HashMap<>();
         PressureMeasurement pressureInterface = machine.getPressureMeasurmentControl();
-        dataMap.put(DataColumnNames.PERSSURE_TMP,
+        dataMap.put(ColumnNames.PERSSURE_TMP,
                 pressureInterface.getCurrentValue(PressureMeasurementSite.TURBO_PUMP));
-        dataMap.put(DataColumnNames.PRESSURE_CHAMBER,
+        dataMap.put(ColumnNames.PRESSURE_CHAMBER,
                 pressureInterface.getCurrentValue(PressureMeasurementSite.CHAMBER));
-        dataMap.put(DataColumnNames.PRESSURE_CRYO_ONE,
+        dataMap.put(ColumnNames.PRESSURE_CRYO_ONE,
                 pressureInterface.getCurrentValue(PressureMeasurementSite.CRYO_PUMP_ONE));
-        dataMap.put(DataColumnNames.PRESSURE_CRYO_TWO,
+        dataMap.put(ColumnNames.PRESSURE_CRYO_TWO,
                 pressureInterface.getCurrentValue(PressureMeasurementSite.CRYO_PUMP_TWO));
         return dataMap;
     }
@@ -120,13 +118,13 @@ public class WriteDataTableUtils {
     private static Map<String, Object> getConveyorControlSnapShot(ConveyorControlService conveyor) {
         Map<String, Object> dataMap = new HashMap<>();
 
-        dataMap.put(DataColumnNames.CONVEYOR_MODE, conveyor.getActiveMode().name());
-        dataMap.put(DataColumnNames.CONVEYOR_SPEED_COMBINED, conveyor.getCurrentSpeed());
-        dataMap.put(DataColumnNames.CONVEYOR_SPEED_LEFT, conveyor.getSpeedLogger().getLeftSpeed());
-        dataMap.put(DataColumnNames.CONVEYOR_SPEED_RIGHT, conveyor.getSpeedLogger().getRightSpeed());
-        dataMap.put(DataColumnNames.CONVEYOR_SPEED_SETPOINT, conveyor.getSetpointSpeed());
-        dataMap.put(DataColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM, conveyor.getEngineOne().getCurrentMaximumSpeed());
-        dataMap.put(DataColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM, conveyor.getEngineTwo().getCurrentMaximumSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_MODE, conveyor.getActiveMode().name());
+        dataMap.put(ColumnNames.CONVEYOR_SPEED_COMBINED, conveyor.getCurrentSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_SPEED_LEFT, conveyor.getSpeedLogger().getLeftSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_SPEED_RIGHT, conveyor.getSpeedLogger().getRightSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_SPEED_SETPOINT, conveyor.getSetpointSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM, conveyor.getEngineOne().getCurrentMaximumSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM, conveyor.getEngineTwo().getCurrentMaximumSpeed());
 
         return dataMap;
     }
