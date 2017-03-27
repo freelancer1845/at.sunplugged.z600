@@ -281,16 +281,16 @@ public class MainView {
             @Override
             public void run() {
                 waterKath1Label.setText("LS Left Back: "
-                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_BACK));
+                        + machineStateService.getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_LEFT_BACK));
 
                 waterKath2Label.setText("LS Left Front: "
-                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_LEFT_FRONT));
+                        + machineStateService.getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_LEFT_FRONT));
 
                 waterKath3Label.setText("LS Right Back: "
-                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_BACK));
+                        + machineStateService.getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_RIGHT_BACK));
 
                 waterKath4Label.setText("LS Right Front: "
-                        + machineStateService.getDigitalInputState(DigitalInput.LIMIT_SWITCH_RIGHT_FRONT));
+                        + machineStateService.getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_RIGHT_FRONT));
                 Display.getDefault().timerExec(500, this);
             }
 

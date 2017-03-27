@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" name="at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl">
    <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
-   <reference bind="bindConveyorPositionService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorPositionService" name="ConveyorPositionService" policy="static" unbind="unbindConveyorPositionService"/>
+   <reference bind="bindConveyorPositionService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService" name="ConveyorPositionService" policy="static" unbind="unbindConveyorPositionService"/>
    <reference bind="bindEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static" unbind="unbindEventAdmin"/>
    <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
    <reference bind="bindMachineStateService" cardinality="0..1" interface="at.sunplugged.z600.core.machinestate.api.MachineStateService" name="MachineStateService" policy="static" unbind="unbindMachineStateService"/>

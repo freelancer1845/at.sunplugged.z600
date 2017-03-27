@@ -38,7 +38,7 @@ public class RelativePositionMeasurement implements MachineEventHandler {
             } else if (event.getOrigin() == WagoAddresses.DigitalInput.RIGHT_SPEED_TRIGGER) {
                 if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
                     rightPosition += SpeedLogger.RIGHT_DISTANCE_PER_HOLE;
-                } else if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
+                } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
                     rightPosition -= SpeedLogger.RIGHT_DISTANCE_PER_HOLE;
                 }
             }

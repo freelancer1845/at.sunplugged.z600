@@ -12,6 +12,7 @@ import java.util.Map;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.event.Event;
@@ -23,7 +24,7 @@ import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.conveyor.api.ConveyorPositionService;
+import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 
 /**
@@ -50,7 +51,7 @@ public class DataServiceImpl {
 
     private static ConveyorControlService conveyorService;
 
-    private static ConveyorPositionService conveyorPositionService;
+    private static ConveyorPositionCorrectionService conveyorPositionCorrectionService;
 
     private SqlConnection sqlConnection = null;
 
@@ -79,6 +80,15 @@ public class DataServiceImpl {
         });
     }
 
+    @Deactivate
+    protected synchronized void deactivate() {
+        try {
+            saveSettings();
+        } catch (SQLException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to save settings to sql database.", e);
+        }
+    }
+
     private void connectToSqlServer(String address, String username, String password) throws DataServiceException {
         sqlConnection = new SqlConnection("jdbc:sqlserver://" + address, username, password);
         sqlConnection.open();
@@ -87,9 +97,40 @@ public class DataServiceImpl {
     private void injectSettings() {
         try {
             Map<String, Object> settingsTable = getSettingsTable();
+            if (settingsTable.containsKey(SettingIds.BELT_CORRECTION_RUNTIME_LEFT)) {
+                conveyorPositionCorrectionService
+                        .setRuntimeLeft((long) settingsTable.get(SettingIds.BELT_CORRECTION_RUNTIME_LEFT));
+            }
+            if (settingsTable.containsKey(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT)) {
+                conveyorPositionCorrectionService
+                        .setRuntimeRight((long) settingsTable.get(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT));
+            }
+            if (settingsTable.containsKey(SettingIds.BELT_POSITION)) {
+                conveyorService.setPosition((double) settingsTable.get(SettingIds.BELT_POSITION));
+            }
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logService.log(LogService.LOG_ERROR, "Failed to inject settings from sql database.", e);
+        }
+    }
+
+    private void saveSettings() throws SQLException {
+        saveSingleSetting(SettingIds.BELT_POSITION, "Double", String.valueOf(conveyorService.getPosition()));
+        saveSingleSetting(SettingIds.BELT_CORRECTION_RUNTIME_LEFT, "Long",
+                String.valueOf(conveyorPositionCorrectionService.getRuntimeLeft()));
+        saveSingleSetting(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT, "Long",
+                String.valueOf(conveyorPositionCorrectionService.getRuntimeRight()));
+
+    }
+
+    private void saveSingleSetting(String id, String type, String value) {
+        try (Statement stm = sqlConnection.getStatement()) {
+            String sql = "INSERT OR IGNORE INTO " + TableNames.SETTINGS_TABLE + " (id, type, value) VALUES(" + "'" + id
+                    + "','" + type + "','" + value + "'); UDAPTE " + TableNames.SETTINGS_TABLE + " SET value = '"
+                    + value + "' WHERE id ='" + id + "'";
+            stm.execute(sql);
+            stm.close();
+        } catch (SQLException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to save setting: \"" + id + "\" Value: \"" + value + "\".", e);
         }
     }
 
@@ -97,23 +138,49 @@ public class DataServiceImpl {
         Statement stm = sqlConnection.getStatement();
         stm.executeQuery("SELECT * FROM " + TableNames.SETTINGS_TABLE);
         ResultSet resultSet = stm.getResultSet();
-        if (resultSet.next() == false) {
-            createSettingsTable();
+        if (resultSet == null) {
+            Map<String, Object> emptySettingsTable = createSettingsTable();
             logService.log(LogService.LOG_DEBUG, "No Settings Table found in Database!");
-            return null;
+            return emptySettingsTable;
         }
         Map<String, Object> returnMap = new HashMap<>();
-        returnMap.put(ColumnNames.BELT_POSITION, resultSet.getLong(ColumnNames.BELT_POSITION));
-        returnMap.put(ColumnNames.BETL_POSITION_HORIZONTAL_LEFT,
-                resultSet.getLong(ColumnNames.BETL_POSITION_HORIZONTAL_LEFT));
-        returnMap.put(ColumnNames.BELT_POSITION_HORIZONTAL_RIGHT,
-                resultSet.getLong(ColumnNames.BELT_POSITION_HORIZONTAL_RIGHT));
+        while (resultSet.next() == true) {
+            String id = resultSet.getString("id");
+            switch (resultSet.getString("id")) {
+            case SettingIds.BELT_POSITION:
+                returnMap.put(id, Double.valueOf(resultSet.getString("value")));
+                break;
+            case SettingIds.BELT_CORRECTION_RUNTIME_RIGHT:
+                returnMap.put(id, Long.valueOf(resultSet.getString("value")));
+                break;
+            case SettingIds.BELT_CORRECTION_RUNTIME_LEFT:
+                returnMap.put(id, Long.valueOf(resultSet.getString("value")));
+                break;
+            default:
+                logService.log(LogService.LOG_DEBUG, "Unexpected settings id: \"" + id + "\" Type: \""
+                        + resultSet.getString("type") + "\" Value: \"" + resultSet.getString("value") + "\".");
+                break;
+            }
+
+        }
+        stm.close();
         return returnMap;
     }
 
-    private void createSettingsTable() {
-        // TODO Auto-generated method stub
+    private Map<String, Object> createSettingsTable() throws SQLException {
 
+        try {
+            Statement stm = sqlConnection.getStatement();
+            String sql = "CREATE TABLE " + TableNames.SETTINGS_TABLE + " (id VARCHAR(255) not NULL PRIMARAY KEY, "
+                    + " type VARCHAR(255) not NULL" + " value VARCHAR(255))";
+            stm.executeUpdate(sql);
+            stm.close();
+        } catch (SQLException e) {
+            logService.log(LogService.LOG_DEBUG, "Failed to create settings table.");
+            throw e;
+        }
+
+        return null;
     }
 
     public void issueStatement(String statement) {
@@ -250,18 +317,18 @@ public class DataServiceImpl {
     }
 
     @Reference(unbind = "unbindConveyorPositionService")
-    public synchronized void bindConveyorPositionService(ConveyorPositionService conveyorPositionService) {
-        DataServiceImpl.conveyorPositionService = conveyorPositionService;
+    public synchronized void bindConveyorPositionService(ConveyorPositionCorrectionService conveyorPositionService) {
+        DataServiceImpl.conveyorPositionCorrectionService = conveyorPositionService;
     }
 
-    public synchronized void unbindConveyorPositionService(ConveyorPositionService conveyorPositionService) {
-        if (DataServiceImpl.conveyorPositionService == conveyorPositionService) {
-            DataServiceImpl.conveyorPositionService = null;
+    public synchronized void unbindConveyorPositionService(ConveyorPositionCorrectionService conveyorPositionService) {
+        if (DataServiceImpl.conveyorPositionCorrectionService == conveyorPositionService) {
+            DataServiceImpl.conveyorPositionCorrectionService = null;
         }
     }
 
-    public static ConveyorPositionService getConveyorPositionService() {
-        return DataServiceImpl.conveyorPositionService;
+    public static ConveyorPositionCorrectionService getConveyorPositionService() {
+        return DataServiceImpl.conveyorPositionCorrectionService;
     }
 
 }

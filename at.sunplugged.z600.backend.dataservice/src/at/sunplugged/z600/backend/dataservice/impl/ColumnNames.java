@@ -2,17 +2,6 @@ package at.sunplugged.z600.backend.dataservice.impl;
 
 public class ColumnNames {
 
-    /** SETTINGS COLUMN NAMES */
-
-    /** ID. */
-    public static String BELT_POSITION = "BeltPosition";
-
-    /** ID. */
-    public static String BETL_POSITION_HORIZONTAL_LEFT = "BeltPositionHorizontalLeft";
-
-    /** ID. */
-    public static String BELT_POSITION_HORIZONTAL_RIGHT = "BeltPositionHorizontalRight";
-
     /** DATA COLUMN NAMES */
 
     /** ID. */
