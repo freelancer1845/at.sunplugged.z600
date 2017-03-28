@@ -66,7 +66,7 @@ public class WriteDataTableUtils {
         return dataMap;
     }
 
-    private static void createDataTable(SqlConnection connection, String tableName) throws SQLException {
+    public static void createDataTable(SqlConnection connection, String tableName) throws SQLException {
         Statement stm = connection.getStatement();
         String sql = "CREATE TABLE [" + tableName + "] (";
         sql += "Time TIME, ";
@@ -92,10 +92,8 @@ public class WriteDataTableUtils {
     private static Map<String, Object> getPressureSnapShot(MachineStateService machine) {
         Map<String, Object> dataMap = new HashMap<>();
         PressureMeasurement pressureInterface = machine.getPressureMeasurmentControl();
-        dataMap.put(ColumnNames.PERSSURE_TMP,
-                pressureInterface.getCurrentValue(PressureMeasurementSite.TURBO_PUMP));
-        dataMap.put(ColumnNames.PRESSURE_CHAMBER,
-                pressureInterface.getCurrentValue(PressureMeasurementSite.CHAMBER));
+        dataMap.put(ColumnNames.PERSSURE_TMP, pressureInterface.getCurrentValue(PressureMeasurementSite.TURBO_PUMP));
+        dataMap.put(ColumnNames.PRESSURE_CHAMBER, pressureInterface.getCurrentValue(PressureMeasurementSite.CHAMBER));
         dataMap.put(ColumnNames.PRESSURE_CRYO_ONE,
                 pressureInterface.getCurrentValue(PressureMeasurementSite.CRYO_PUMP_ONE));
         dataMap.put(ColumnNames.PRESSURE_CRYO_TWO,
