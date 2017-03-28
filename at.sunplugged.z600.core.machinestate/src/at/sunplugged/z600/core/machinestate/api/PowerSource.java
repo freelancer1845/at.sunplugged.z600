@@ -36,9 +36,15 @@ public interface PowerSource {
     /**
      * Used to set the setpoint power.
      * 
-     * @param power in kW.
+     * @param power
+     *            in kW.
      */
     public void setPower(double power);
+
+    /**
+     * Get setpoint power.
+     */
+    public double getSetPointpower();
 
     /**
      * Returns the currently measured power at the power source.

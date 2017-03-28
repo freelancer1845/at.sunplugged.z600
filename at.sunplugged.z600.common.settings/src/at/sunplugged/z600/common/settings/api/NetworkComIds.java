@@ -14,6 +14,9 @@ public class NetworkComIds {
     /** SQL Password. */
     public static final String SQL_PASSWORD = "Sql_Password";
 
+    /** SQL Update Speed in ms. */
+    public static final String SQL_UPDATE_TIME_STEP = "Sql_Update_Time_Step";
+
     /** Left Engine Port. */
     public static final String LEFT_ENGINE_COM_PORT = "Motor_Links_Port";
 

@@ -19,6 +19,7 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
@@ -37,7 +38,7 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
  */
 
 @Component()
-public class DataServiceImpl {
+public class DataServiceImpl implements DataService {
 
     private static LogService logService;
 
@@ -329,6 +330,17 @@ public class DataServiceImpl {
 
     public static ConveyorPositionCorrectionService getConveyorPositionService() {
         return DataServiceImpl.conveyorPositionCorrectionService;
+    }
+
+    @Override
+    public void startUpdate() throws DataServiceException {
+        DataSavingThread.startInstance(sqlConnection);
+
+    }
+
+    @Override
+    public void stopUpdate() {
+        DataSavingThread.stopInstance();
     }
 
 }

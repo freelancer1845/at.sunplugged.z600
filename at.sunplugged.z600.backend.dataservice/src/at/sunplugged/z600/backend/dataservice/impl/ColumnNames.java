@@ -5,73 +5,73 @@ public class ColumnNames {
     /** DATA COLUMN NAMES */
 
     /** ID. */
-    public static String PRESSURE_CRYO_ONE = "Pressure Cryo One";
+    public static String PRESSURE_CRYO_ONE = "PressureCryoOne";
 
     /** ID. */
-    public static String PRESSURE_CRYO_TWO = "Pressure Cryo Two";
+    public static String PRESSURE_CRYO_TWO = "PressureCryoTwo";
 
     /** ID. */
-    public static String PRESSURE_CHAMBER = "Pressure Chamber";
+    public static String PRESSURE_CHAMBER = "PressureChamber";
 
     /** ID. */
-    public static String PERSSURE_TMP = "Pressure Turbopump";
+    public static String PERSSURE_TMP = "PressureTurbopump";
 
     /** ID. */
-    public static String PINNACLE_POWER = "Pinnacle Power";
+    public static String PINNACLE_POWER = "PinnaclePower";
 
     /** ID. */
-    public static String PINNACLE_CURRENT = "Pinnacle Current";
+    public static String PINNACLE_POWER_SETPOINT = "PinnaclePowerSetpoint";
 
     /** ID. */
-    public static String PINNACLE_VOLTAGE = "Pinnacle Voltage";
+    public static String PINNACLE_CURRENT = "PinnacleCurrent";
 
     /** ID. */
-    public static String SSV_ONE_POWER = "SSV One Power";
+    public static String PINNACLE_VOLTAGE = "PinnacleVoltage";
 
     /** ID. */
-    public static String SSV_ONE_CURRENT = "SSV One Current";
+    public static String SSV_ONE_POWER = "SSVOnePower";
 
     /** ID. */
-    public static String SSV_ONE_VOLTAGE = "SSV One Voltage";
+    public static String SSV_ONE_POWER_SETPOINT = "SSVOnePowerSetpoint";
 
     /** ID. */
-    public static String SSV_TWO_POWER = "SSV Two Power";
+    public static String SSV_ONE_CURRENT = "SSVOneCurrent";
 
     /** ID. */
-    public static String SSV_TWO_CURRENT = "SSV Two Current";
+    public static String SSV_ONE_VOLTAGE = "SSVOneVoltage";
 
     /** ID. */
-    public static String SSV_TWO_VOLTAGE = "SSV Two Voltage";
+    public static String SSV_TWO_POWER = "SSVTwoPower";
 
     /** ID. */
-    public static String CATHODE_ONE_SETPOINT = "Cathode One Setpoint";
+    public static String SSV_TWO_POWER_SETPOINT = "SSVTwoPowerSetpoint";
 
     /** ID. */
-    public static String CATHODE_TWO_SETPOINT = "Cathode Two Setpoint";
+    public static String SSV_TWO_CURRENT = "SSVTwoCurrent";
 
     /** ID. */
-    public static String CATHODE_THREE_SETPOINT = "Cathode Three Setpoint";
+    public static String SSV_TWO_VOLTAGE = "SSVTwoVoltage";
 
     /** ID. */
-    public static String CONVEYOR_SPEED_COMBINED = "Speed Combined";
+    public static String CONVEYOR_SPEED_COMBINED = "SpeedCombined";
 
     /** ID. */
-    public static String CONVEYOR_SPEED_LEFT = "Speed Left";
+    public static String CONVEYOR_SPEED_LEFT = "SpeedLeft";
 
     /** ID. */
-    public static String CONVEYOR_SPEED_RIGHT = "Speed Right";
+    public static String CONVEYOR_SPEED_RIGHT = "SpeedRight";
 
     /** ID. */
-    public static String CONVEYOR_SPEED_SETPOINT = "Speed Setpoint";
+    public static String CONVEYOR_SPEED_SETPOINT = "SpeedSetpoint";
 
     /** ID. */
-    public static String CONVEYOR_ENGINE_LEFT_MAXIMUM = "Engine Left Maximum";
+    public static String CONVEYOR_ENGINE_LEFT_MAXIMUM = "EngineLeftMaximum";
 
     /** ID. */
-    public static String CONVEYOR_ENGINE_RIGHT_MAXIMUM = "Engine Right Maximum";
+    public static String CONVEYOR_ENGINE_RIGHT_MAXIMUM = "EngineRightMaximum";
 
     /** ID. */
-    public static String CONVEYOR_MODE = "Conveyor Mode";
+    public static String CONVEYOR_MODE = "ConveyorMode";
 
     private ColumnNames() {
 

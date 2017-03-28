@@ -131,6 +131,11 @@ public abstract class AbstractPowerSource implements PowerSource {
     }
 
     @Override
+    public double getSetPointpower() {
+        return setPoint;
+    }
+
+    @Override
     public State getState() {
         return state;
     }

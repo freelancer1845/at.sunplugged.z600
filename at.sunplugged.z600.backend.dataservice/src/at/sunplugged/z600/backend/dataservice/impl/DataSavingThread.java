@@ -5,14 +5,15 @@ import java.time.format.DateTimeFormatter;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.common.settings.api.NetworkComIds;
+
 public class DataSavingThread extends Thread {
 
     private static DataSavingThread instance = null;
 
-    public static DataSavingThread createInstance(SqlConnection sqlConnection) throws DataServiceException {
+    public static void startInstance(SqlConnection sqlConnection) throws DataServiceException {
         if (instance != null) {
             instance = new DataSavingThread(sqlConnection);
-            return instance;
         } else {
             throw new DataServiceException("There is already a running instance of the DataSavingThread");
         }
@@ -39,7 +40,8 @@ public class DataSavingThread extends Thread {
         while (isRunning()) {
             try {
                 WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
-                Thread.sleep(1000);
+                Thread.sleep(Long
+                        .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
             } catch (Exception e) {
                 DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Unexpected exception in DataSavingThread!",
                         e);

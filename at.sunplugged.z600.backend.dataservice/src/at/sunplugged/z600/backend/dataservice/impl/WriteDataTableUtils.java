@@ -9,6 +9,9 @@ import java.util.Map;
 
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.PowerSource;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 
@@ -56,7 +59,7 @@ public class WriteDataTableUtils {
         MachineStateService machine = DataServiceImpl.getMachineStateService();
         if (machine != null) {
             dataMap.putAll(getPressureSnapShot(machine));
-            dataMap.putAll(getCathodeSettingsSnapShot(machine));
+            dataMap.putAll(getPowerSnapShot(machine));
         }
         ConveyorControlService conveyor = DataServiceImpl.getConveyorControlService();
         if (conveyor != null) {
@@ -81,9 +84,18 @@ public class WriteDataTableUtils {
         sql += ColumnNames.CONVEYOR_SPEED_RIGHT + " FLOAT, ";
         sql += ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM + " INTEGER, ";
         sql += ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM + " INTEGER, ";
-        sql += ColumnNames.CATHODE_ONE_SETPOINT + " FLOAT, ";
-        sql += ColumnNames.CATHODE_TWO_SETPOINT + " FLOAT, ";
-        sql += ColumnNames.CATHODE_THREE_SETPOINT + " FLOAT; ";
+        sql += ColumnNames.PINNACLE_POWER + " FLOAT, ";
+        sql += ColumnNames.PINNACLE_POWER_SETPOINT + " FLOAT, ";
+        sql += ColumnNames.PINNACLE_VOLTAGE + " FLOAT, ";
+        sql += ColumnNames.PINNACLE_CURRENT + " FLOAT, ";
+        sql += ColumnNames.SSV_ONE_POWER + " FLOAT, ";
+        sql += ColumnNames.SSV_ONE_POWER_SETPOINT + " FLOAT, ";
+        sql += ColumnNames.SSV_ONE_VOLTAGE + " FLOAT, ";
+        sql += ColumnNames.SSV_ONE_CURRENT + " FLOAT, ";
+        sql += ColumnNames.SSV_TWO_POWER + " FLOAT, ";
+        sql += ColumnNames.SSV_TWO_POWER_SETPOINT + " FLOAT, ";
+        sql += ColumnNames.SSV_TWO_VOLTAGE + " FLOAT, ";
+        sql += ColumnNames.SSV_TWO_CURRENT + " FLOAT, ";
         stm.executeUpdate(sql);
         stm.close();
 
@@ -103,12 +115,27 @@ public class WriteDataTableUtils {
 
     private static Map<String, Object> getPowerSnapShot(MachineStateService machine) {
         Map<String, Object> dataMap = new HashMap<>();
-        // TODO : Mapping of Cathodes to Power is unclear
-        return dataMap;
-    }
+        PowerSourceRegistry powerSourceRegistry = machine.getPowerSourceRegistry();
+        PowerSource currentSource;
 
-    private static Map<String, Object> getCathodeSettingsSnapShot(MachineStateService machine) {
-        Map<String, Object> dataMap = new HashMap<>();
+        // Pinnalce
+        currentSource = powerSourceRegistry.getPowerSource(PowerSourceId.PINNACLE);
+        dataMap.put(ColumnNames.PINNACLE_POWER, currentSource.getPower());
+        dataMap.put(ColumnNames.PINNACLE_POWER_SETPOINT, currentSource.getSetPointpower());
+        dataMap.put(ColumnNames.PINNACLE_VOLTAGE, currentSource.getVoltage());
+        dataMap.put(ColumnNames.PINNACLE_CURRENT, currentSource.getCurrent());
+
+        // SSV ONE
+        dataMap.put(ColumnNames.SSV_ONE_POWER, currentSource.getPower());
+        dataMap.put(ColumnNames.SSV_ONE_POWER_SETPOINT, currentSource.getSetPointpower());
+        dataMap.put(ColumnNames.SSV_ONE_VOLTAGE, currentSource.getVoltage());
+        dataMap.put(ColumnNames.SSV_ONE_CURRENT, currentSource.getCurrent());
+
+        // SSV TWO
+        dataMap.put(ColumnNames.SSV_TWO_POWER, currentSource.getPower());
+        dataMap.put(ColumnNames.SSV_TWO_POWER_SETPOINT, currentSource.getSetPointpower());
+        dataMap.put(ColumnNames.SSV_TWO_VOLTAGE, currentSource.getVoltage());
+        dataMap.put(ColumnNames.SSV_TWO_CURRENT, currentSource.getCurrent());
 
         return dataMap;
     }

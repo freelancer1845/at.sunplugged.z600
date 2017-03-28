@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" deactivate="deactivate" name="at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl">
+   <service>
+      <provide interface="at.sunplugged.z600.backend.dataservice.api.DataService"/>
+   </service>
    <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
    <reference bind="bindConveyorPositionService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService" name="ConveyorPositionService" policy="static" unbind="unbindConveyorPositionService"/>
    <reference bind="bindEventAdmin" cardinality="1..1" interface="org.osgi.service.event.EventAdmin" name="EventAdmin" policy="static" unbind="unbindEventAdmin"/>
