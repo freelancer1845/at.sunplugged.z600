@@ -1,6 +1,8 @@
 package at.sunplugged.z600.conveyor.impl;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -49,6 +51,10 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     private RelativePositionMeasurement relativePositionMeasurement;
 
+    private Future<?> startWithDistanceFuture = null;
+
+    private ScheduledFuture<?> startWithTimeFuture = null;
+
     @Activate
     protected void activate(BundleContext context) {
         try {
@@ -75,13 +81,85 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     @Override
     public void start(double speed, Mode direction) {
+        if (speedControl.getMode() != Mode.STOP) {
+            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
+            return;
+        }
         speedControl.setMode(direction);
         speedControl.setSetpoint(speed);
     }
 
     @Override
+    public void start(double speed, Mode direction, double distance) {
+        if (speedControl.getMode() != Mode.STOP) {
+            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
+            return;
+        }
+        start(speed, direction);
+
+        startWithDistanceFuture = threadPoolService.submit(new Runnable() {
+
+            @Override
+            public void run() {
+                double currentPosition = relativePositionMeasurement.getPosition();
+                double targetPosition = currentPosition;
+                if (direction == Mode.LEFT_TO_RIGHT) {
+                    targetPosition += distance;
+                } else if (direction == Mode.RIGHT_TO_LEFT) {
+                    targetPosition -= distance;
+                }
+                while (true) {
+                    try {
+
+                        Thread.sleep(100);
+                        if (direction == Mode.LEFT_TO_RIGHT) {
+                            if (relativePositionMeasurement.getPosition() > targetPosition) {
+                                stop();
+                                break;
+                            }
+                        } else if (direction == Mode.RIGHT_TO_LEFT) {
+                            if (relativePositionMeasurement.getPosition() < targetPosition) {
+                                stop();
+                                break;
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        logService.log(LogService.LOG_DEBUG, "Waiting for distance to be traveled interrupted.");
+                    }
+                }
+            }
+
+        });
+
+    }
+
+    @Override
+    public void start(double speed, Mode direction, long time, TimeUnit unit) {
+        if (speedControl.getMode() != Mode.STOP) {
+            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
+            return;
+        }
+        start(speed, direction);
+        startWithTimeFuture = threadPoolService.timedExecute(new Runnable() {
+
+            @Override
+            public void run() {
+                stop();
+            }
+
+        }, time, unit);
+
+    }
+
+    @Override
     public void stop() {
         speedControl.setMode(Mode.STOP);
+        if (startWithTimeFuture != null) {
+            startWithTimeFuture.cancel(true);
+        }
+        if (startWithDistanceFuture != null) {
+            startWithDistanceFuture.cancel(true);
+        }
     }
 
     @Override

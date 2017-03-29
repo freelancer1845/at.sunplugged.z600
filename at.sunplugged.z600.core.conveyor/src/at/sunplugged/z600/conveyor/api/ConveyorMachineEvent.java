@@ -5,7 +5,11 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 public class ConveyorMachineEvent extends MachineStateEvent {
 
     public enum Type {
-        LEFT_SPEED_CHANGED, RIGHT_SPEED_CHANGED, LEFT_ENGINE_MAXIMUM_SPEED_CHANGED, RIGHT_ENGINE_MAXIMUM_SPEED_CHANGED;
+        LEFT_SPEED_CHANGED,
+        RIGHT_SPEED_CHANGED,
+        LEFT_ENGINE_MAXIMUM_SPEED_CHANGED,
+        RIGHT_ENGINE_MAXIMUM_SPEED_CHANGED,
+        NEW_DISTANCE;
     }
 
     private final Type type;

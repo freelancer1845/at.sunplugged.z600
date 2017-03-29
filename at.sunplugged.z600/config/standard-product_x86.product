@@ -3,7 +3,6 @@
 
 <product name="z600_x86" uid="z600_x86_product" id="at.sunplugged.z600.launcher.z600" application="at.sunplugged.z600.launcher.standardApplicationId" version="0.1.0" useFeatures="false" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
@@ -14,7 +13,6 @@
 
    <windowImages/>
 
-
    <launcher name="z600">
       <solaris/>
       <win useIco="false">
@@ -22,11 +20,9 @@
       </win>
    </launcher>
 
-
    <vm>
       <windows include="false">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7</windows>
    </vm>
-
 
    <plugins>
       <plugin id="at.sunplugged.z600.backend"/>
@@ -39,6 +35,7 @@
       <plugin id="at.sunplugged.z600.core.conveyor"/>
       <plugin id="at.sunplugged.z600.core.machinestate"/>
       <plugin id="at.sunplugged.z600.frontend.gui"/>
+      <plugin id="at.sunplugged.z600.frontend.scriptinterpreter"/>
       <plugin id="at.sunplugged.z600.frontend.utils"/>
       <plugin id="at.sunplugged.z600.hardware.mbtcommunicator"/>
       <plugin id="at.sunplugged.z600.launcher"/>

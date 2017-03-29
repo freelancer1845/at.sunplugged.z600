@@ -3,7 +3,10 @@ package at.sunplugged.z600.gui.views;
 import java.io.IOException;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -41,6 +44,8 @@ import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
+import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
+import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
@@ -69,6 +74,8 @@ public class MainView {
     private static VacuumService vacuumService;
 
     private static SettingsService settings;
+
+    private static ScriptInterpreterService scriptInterpreterService;
 
     private static BundleContext context;
 
@@ -389,6 +396,8 @@ public class MainView {
         Button toggleDigOut = new Button(composite, SWT.NONE);
         toggleDigOut.setText("Toggle Dig Out [2][0]");
         toggleDigOut.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE);
         toggleDigOut.addSelectionListener(new SelectionAdapter() {
             private boolean lastState = false;
 
@@ -415,6 +424,82 @@ public class MainView {
         PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.PINNACLE);
         PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV1);
         PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV2);
+
+        TabItem tbtmScriptpage = new TabItem(tabFolder, SWT.NONE);
+        tbtmScriptpage.setText("ScriptPage");
+
+        Composite compositeScriptPage = new Composite(tabFolder, SWT.NONE);
+        tbtmScriptpage.setControl(compositeScriptPage);
+        compositeScriptPage.setLayout(new GridLayout(1, false));
+
+        Group group = new Group(compositeScriptPage, SWT.NONE);
+        group.setLayout(new GridLayout(3, true));
+        group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Button btnExecuteScript = new Button(group, SWT.NONE);
+        btnExecuteScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnExecuteScript.setText("Execute Script");
+
+        Button btnLoadScript = new Button(group, SWT.NONE);
+        btnLoadScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnLoadScript.setText("Load Script");
+
+        Button btnSaveScript = new Button(group, SWT.NONE);
+        btnSaveScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnSaveScript.setText("Save Script");
+
+        Label lblCurrentCommand = new Label(group, SWT.NONE);
+        lblCurrentCommand.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        lblCurrentCommand.setText("Current Command:");
+        new Label(group, SWT.NONE);
+        new Label(group, SWT.NONE);
+        new Label(group, SWT.NONE);
+
+        StyledText styledTextScriptInput = new StyledText(compositeScriptPage, SWT.BORDER);
+        styledTextScriptInput.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        styledTextScriptInput.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                styledTextScriptInput.setStyleRange(new StyleRange(0, styledTextScriptInput.getCharCount(),
+                        SWTResourceManager.getColor(SWT.COLOR_BLACK), SWTResourceManager.getColor(SWT.COLOR_WHITE)));
+                try {
+                    scriptInterpreterService.checkScript(styledTextScriptInput.getText());
+                } catch (ParseError e1) {
+                    if (e1.getLine() > -1) {
+                        int start = styledTextScriptInput.getOffsetAtLine(e1.getLine());
+                        int length = styledTextScriptInput.getLine(e1.getLine()).length();
+                        styledTextScriptInput.setStyleRange(
+                                new StyleRange(start, length, SWTResourceManager.getColor(SWT.COLOR_BLACK),
+                                        SWTResourceManager.getColor(SWT.COLOR_RED)));
+                    }
+                }
+            }
+        });
+
+        btnExecuteScript.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                scriptInterpreterService.executeScript(styledTextScriptInput.getText());
+            }
+
+        });
+        Display.getDefault().timerExec(500, new Runnable() {
+
+            @Override
+            public void run() {
+                String currentCommand = scriptInterpreterService.getCurrentCommandName();
+                if (currentCommand != null) {
+                    lblCurrentCommand.setText("Current: " + currentCommand);
+                } else {
+                    lblCurrentCommand.setText("Ready");
+                }
+                Display.getDefault().timerExec(500, this);
+
+            }
+
+        });
 
         new Label(shell, SWT.NONE);
         toggleCryoTwo.addSelectionListener(new PumpAdapter(PumpIds.CRYO_TWO));
@@ -516,6 +601,17 @@ public class MainView {
 
     public static VacuumService getVacuumService() {
         return vacuumService;
+    }
+
+    @Reference(unbind = "unbindScriptInterpreterService")
+    public synchronized void bindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
+        MainView.scriptInterpreterService = scriptInterpreterService;
+    }
+
+    public synchronized void unbindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
+        if (MainView.scriptInterpreterService == scriptInterpreterService) {
+            MainView.scriptInterpreterService = null;
+        }
     }
 
     private final static class OutletAdapter extends SelectionAdapter {

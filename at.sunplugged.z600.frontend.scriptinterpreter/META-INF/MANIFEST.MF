@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Scriptinterpreter
+Bundle-SymbolicName: at.sunplugged.z600.frontend.scriptinterpreter
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.osgi.services
+Service-Component: OSGI-INF/at.sunplugged.z600.frontend.scriptinterpreter.impl.ScriptInterpreterServiceImpl.xml
+Bundle-ActivationPolicy: lazy
+Import-Package: at.sunplugged.z600.common.execution.api,
+ at.sunplugged.z600.core.machinestate.api
+Export-Package: at.sunplugged.z600.frontend.scriptinterpreter.api

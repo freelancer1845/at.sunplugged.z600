@@ -2,6 +2,7 @@ package at.sunplugged.z600.conveyor.impl;
 
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.SpeedLogger;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
@@ -28,6 +29,8 @@ public class RelativePositionMeasurement implements MachineEventHandler {
     }
 
     private void handleTriggerEvent(MachineStateEvent event) {
+        double tempLeftPosition = leftPosition;
+        double tempRightPosition = rightPosition;
         if ((boolean) event.getValue() == true) {
             if (event.getOrigin() == WagoAddresses.DigitalInput.LEFT_SPEED_TRIGGER) {
                 if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
@@ -42,7 +45,10 @@ public class RelativePositionMeasurement implements MachineEventHandler {
                     rightPosition -= SpeedLogger.RIGHT_DISTANCE_PER_HOLE;
                 }
             }
-
+        }
+        if (tempLeftPosition != leftPosition || tempRightPosition != rightPosition) {
+            ConveyorControlServiceImpl.getMachineStateService().fireMachineStateEvent(
+                    new ConveyorMachineEvent(ConveyorMachineEvent.Type.NEW_DISTANCE, getPosition()));
         }
     }
 

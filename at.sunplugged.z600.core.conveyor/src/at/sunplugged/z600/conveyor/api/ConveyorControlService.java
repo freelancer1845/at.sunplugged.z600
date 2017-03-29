@@ -1,6 +1,7 @@
 package at.sunplugged.z600.conveyor.api;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public interface ConveyorControlService {
 
@@ -10,7 +11,29 @@ public interface ConveyorControlService {
         LEFT_TO_RIGHT, RIGHT_TO_LEFT, STOP;
     }
 
-    public void start(double speed, Mode direction);
+    /**
+     * 
+     * @param speedInMms in mm/s
+     * @param direction
+     */
+    public void start(double speedInMms, Mode direction);
+
+    /**
+     * 
+     * @param speedInMmS in mm/s
+     * @param direction
+     * @param distanceInCm in cm
+     */
+    public void start(double speedInMmS, Mode direction, double distanceInCm);
+
+    /**
+     * 
+     * @param speedInMmS
+     * @param direction
+     * @param time in given time unit
+     * @param unit
+     */
+    public void start(double speedInMmS, Mode direction, long time, TimeUnit unit);
 
     public void stop();
 
