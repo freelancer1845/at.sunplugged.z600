@@ -4,7 +4,13 @@ public class Commands {
 
     public static final String SET_PRESSURE = "setPressure";
 
-    public static final String START_CONVEYOR = "startConveyor";
+    public static final String START_CONVEYOR_SIMPLE = "startConveyorSimple";
+
+    public static final String START_CONVEYOR_DISTANCE = "startConveyorDistance";
+
+    public static final String START_CONVEYOR_TIME = "startConveyorTime";
+
+    public static final String WAIT_FOR_CONVEYOR = "waitForConveyor";
 
     public static final String WAIT = "wait";
 

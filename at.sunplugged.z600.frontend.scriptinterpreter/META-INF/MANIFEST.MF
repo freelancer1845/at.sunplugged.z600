@@ -8,5 +8,6 @@ Require-Bundle: org.eclipse.osgi.services
 Service-Component: OSGI-INF/at.sunplugged.z600.frontend.scriptinterpreter.impl.ScriptInterpreterServiceImpl.xml
 Bundle-ActivationPolicy: lazy
 Import-Package: at.sunplugged.z600.common.execution.api,
+ at.sunplugged.z600.conveyor.api,
  at.sunplugged.z600.core.machinestate.api
 Export-Package: at.sunplugged.z600.frontend.scriptinterpreter.api

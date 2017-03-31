@@ -1,6 +1,17 @@
 package at.sunplugged.z600.gui.views;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -17,6 +28,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -475,6 +487,69 @@ public class MainView {
                     }
                 }
             }
+        });
+
+        btnLoadScript.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.OPEN);
+                fd.setText("Load");
+
+                String[] filter = { "*.txt" };
+                fd.setFilterExtensions(filter);
+                String selected = fd.open();
+                if (selected == null) {
+                    return;
+                }
+                try (BufferedReader reader = new BufferedReader(new FileReader(selected))) {
+                    StringBuilder sb = new StringBuilder();
+                    String line = reader.readLine();
+                    while (line != null) {
+                        sb.append(line);
+                        sb.append(System.lineSeparator());
+                        line = reader.readLine();
+                    }
+                    styledTextScriptInput.setText(sb.toString());
+
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to load file.", e1);
+                }
+            }
+
+        });
+
+        btnSaveScript.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
+                fd.setText("Save");
+
+                String[] filter = { "untitled.txt" };
+                fd.setFilterExtensions(filter);
+                String selected = fd.open();
+
+                try {
+                    File file = new File(selected);
+                    if (!file.exists()) {
+                        file.createNewFile();
+                    } else {
+                        file.delete();
+                        file.createNewFile();
+                    }
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to save script.", e1);
+                }
+
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(selected))) {
+                    writer.write(styledTextScriptInput.getText());
+
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to save script.", e1);
+                }
+            }
+
         });
 
         btnExecuteScript.addSelectionListener(new SelectionAdapter() {

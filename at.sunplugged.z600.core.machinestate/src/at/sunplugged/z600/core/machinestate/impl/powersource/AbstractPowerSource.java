@@ -158,12 +158,7 @@ public abstract class AbstractPowerSource implements PowerSource {
     protected abstract void powerSourceSpecificControlTick() throws Exception;
 
     private void checkPowerSourceRunConditions() throws InvalidPowerSourceStateException {
-        // if (machineStateService.getWaterControl().isKathodeWaterOn() ==
-        // false) {
-        // throw new InvalidPowerSourceStateException(
-        // "Kathode cooling may have stopped. Stopping power control for \"" +
-        // id.name() + "\"");
-        // }
+
         if (getPower() < settings.getPropertAsDouble(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE)) {
             throw new InvalidPowerSourceStateException("Lower Limit for power reached! ("
                     + settings.getPropertAsDouble(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE)

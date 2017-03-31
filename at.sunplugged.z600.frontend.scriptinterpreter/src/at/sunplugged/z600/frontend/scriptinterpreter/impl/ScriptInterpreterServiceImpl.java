@@ -7,6 +7,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
@@ -16,6 +17,8 @@ import at.sunplugged.z600.frontend.scriptinterpreter.impl.commands.Command;
 public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
 
     private static MachineStateService machineStateService;
+
+    private static ConveyorControlService conveyorControlService;
 
     private static LogService logService;
 
@@ -90,6 +93,21 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
         if (ScriptInterpreterServiceImpl.standardThreadPoolService == standardThreadPoolService) {
             ScriptInterpreterServiceImpl.standardThreadPoolService = null;
         }
+    }
+
+    @Reference(unbind = "unbindConveyorControlService")
+    public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
+        ScriptInterpreterServiceImpl.conveyorControlService = conveyorControlService;
+    }
+
+    public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
+        if (ScriptInterpreterServiceImpl.conveyorControlService == conveyorControlService) {
+            ScriptInterpreterServiceImpl.conveyorControlService = null;
+        }
+    }
+
+    public static ConveyorControlService getConveyorControlService() {
+        return conveyorControlService;
     }
 
     @Override

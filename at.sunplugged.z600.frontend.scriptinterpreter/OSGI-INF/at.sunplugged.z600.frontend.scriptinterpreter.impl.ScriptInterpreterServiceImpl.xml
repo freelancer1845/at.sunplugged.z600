@@ -3,6 +3,7 @@
    <service>
       <provide interface="at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService"/>
    </service>
+   <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
    <reference bind="bindLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unbindLogService"/>
    <reference bind="bindMachineStateService" cardinality="1..1" interface="at.sunplugged.z600.core.machinestate.api.MachineStateService" name="MachineStateService" policy="static" unbind="unbindMachineStateService"/>
    <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
