@@ -81,9 +81,7 @@ public class VacuumServiceImpl implements VacuumService {
 
     @Override
     public void startEvacuation() {
-        if (state == State.READY) {
-            // cryoPumpThread = new CryoPumpsThread();
-            // cryoPumpThread.start();
+        if (state == State.READY || state == State.FAILED) {
             turboPumpThread = new TurboPumpStartThread();
             turboPumpThread.start();
             cryoPumpThread = new CryoPumpsStartThread();
@@ -96,6 +94,14 @@ public class VacuumServiceImpl implements VacuumService {
     }
 
     @Override
+    public void shutdown() {
+        stopPressureControl();
+        cryoPumpThread.shutdown();
+        turboPumpThread.shutdown();
+
+    }
+
+    @Override
     public void stopEvacuation() {
         if (state != State.FAILED) {
             turboPumpThread.interrupt();
@@ -104,7 +110,7 @@ public class VacuumServiceImpl implements VacuumService {
             state = State.READY;
         } else {
             logService.log(LogService.LOG_WARNING,
-                    "Tried to stop bvacuum thread but is not in acceeptable state: \"" + state.name() + "\"");
+                    "Tried to stop vacuum thread but is not in acceeptable state: \"" + state.name() + "\"");
         }
     }
 
@@ -192,14 +198,6 @@ public class VacuumServiceImpl implements VacuumService {
     @Override
     public TurboPumpThreadState getTurboPumpThreadState() {
         return turboState;
-    }
-
-    @Override
-    public void shutdown() {
-        stopPressureControl();
-        cryoPumpThread.shutdown();
-        turboPumpThread.shutdown();
-
     }
 
 }

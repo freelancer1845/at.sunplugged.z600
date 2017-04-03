@@ -1,18 +1,11 @@
 package at.sunplugged.z600.gui.views;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -34,7 +27,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -58,6 +50,7 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
+import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
@@ -65,6 +58,7 @@ import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
+import org.eclipse.swt.widgets.Combo;
 
 @Component
 public class MainView {
@@ -92,12 +86,6 @@ public class MainView {
     private static BundleContext context;
 
     private static Viewer diagramViewer;
-    private static Text text;
-    private static Text textAddress;
-    private static Text textUsername;
-    private static Text textPassword;
-    private static Text textStatement;
-    private static Text text_1;
 
     public static LogService getLogService() {
         return logService;
@@ -154,7 +142,7 @@ public class MainView {
 
         TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
         tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_CYAN));
-        GridData gdTabFolder = new GridData(SWT.RIGHT, SWT.TOP, true, true, 1, 2);
+        GridData gdTabFolder = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 2);
         gdTabFolder.heightHint = 718;
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
@@ -167,11 +155,21 @@ public class MainView {
         composite_1.setLayout(new GridLayout(1, false));
 
         Group groupVacuum = new Group(composite_1, SWT.NONE);
+        groupVacuum.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
         groupVacuum.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         groupVacuum.setText("Vakuum");
-        groupVacuum.setLayout(new GridLayout(1, false));
+        groupVacuum.setLayout(new GridLayout(2, true));
+
+        Button btnCryoEins = new Button(groupVacuum, SWT.CHECK);
+        btnCryoEins.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        btnCryoEins.setText("Cryo Eins");
+
+        Button btnCryoZwei = new Button(groupVacuum, SWT.CHECK);
+        btnCryoZwei.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        btnCryoZwei.setText("Cryo Zwei");
 
         Button btnEvakuieren = new Button(groupVacuum, SWT.NONE);
+        btnEvakuieren.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.NORMAL));
         btnEvakuieren.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -179,17 +177,141 @@ public class MainView {
 
             }
         });
-        btnEvakuieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        GridData gd_btnEvakuieren = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        gd_btnEvakuieren.heightHint = 50;
+        btnEvakuieren.setLayoutData(gd_btnEvakuieren);
         btnEvakuieren.setText("Start");
 
-        Group grpBandlauf = ConveyorGroupFactory.createGroup(composite_1);
+        Label lblGasfluss = new Label(groupVacuum, SWT.SEPARATOR | SWT.HORIZONTAL);
+        lblGasfluss.setText("Gasfluss");
+        GridData gd_lblGasfluss = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        gd_lblGasfluss.heightHint = 20;
+        lblGasfluss.setLayoutData(gd_lblGasfluss);
 
-        Group grpSystemOutput = new Group(composite_1, SWT.NONE);
-        grpSystemOutput.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        grpSystemOutput.setText("System Output");
-        grpSystemOutput.setLayout(new GridLayout(1, false));
+        Label lblLabelsetpointpressure = new Label(groupVacuum, SWT.NONE);
+        lblLabelsetpointpressure.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        lblLabelsetpointpressure.setText("labelSetpointPressure");
 
-        StyledText styledText = SystemOutputFactory.createStyledText(grpSystemOutput);
+        Button btnSetpressure = new Button(groupVacuum, SWT.NONE);
+        btnSetpressure.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        btnSetpressure.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnSetpressure.setText("Druck setzen");
+
+        Button btnStartPresssureControl = new Button(groupVacuum, SWT.NONE);
+        GridData gd_btnStartPresssureControl = new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1);
+        gd_btnStartPresssureControl.heightHint = 50;
+        btnStartPresssureControl.setLayoutData(gd_btnStartPresssureControl);
+        btnStartPresssureControl.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        btnStartPresssureControl.setText("Start");
+        new Label(groupVacuum, SWT.NONE);
+        new Label(groupVacuum, SWT.NONE);
+
+        Group grpBandlauf = new Group(composite_1, SWT.NONE);
+        grpBandlauf.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        grpBandlauf.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        grpBandlauf.setText("Bandlauf");
+        grpBandlauf.setLayout(new GridLayout(2, true));
+
+        Label lblLabelsetpointspeed = new Label(grpBandlauf, SWT.NONE);
+        lblLabelsetpointspeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        lblLabelsetpointspeed.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        lblLabelsetpointspeed.setText("labelSetpointSpeed");
+
+        Button btnSet = new Button(grpBandlauf, SWT.NONE);
+        btnSet.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnSet.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        btnSet.setText("V setzen [mm/s]");
+        btnSet.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ValueDialog dialog = new ValueDialog("Bandlauf Geschwindigkeit",
+                        "Bandlauf Geschwindigkeit in [mm/s] setzen.", 0, 30, shell);
+                if (dialog.open() == ValueDialog.Answer.OK) {
+                    lblLabelsetpointspeed.setText(dialog.getValue() + " [mm/s]");
+                }
+            }
+
+        });
+
+        Composite grpControl = new Composite(grpBandlauf, SWT.NONE);
+        grpControl.setLayout(new GridLayout(3, true));
+        grpControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        grpControl.setFont(SWTResourceManager.getFont("Segoe UI", 13, SWT.NORMAL));
+
+        Button button = new Button(grpControl, SWT.NONE);
+        GridData gd_button = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gd_button.heightHint = 40;
+        button.setLayoutData(gd_button);
+        button.setText("<< Rechts nach Links");
+
+        Button btnStop = new Button(grpControl, SWT.NONE);
+        GridData gd_btnStop = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+        gd_btnStop.heightHint = 40;
+        btnStop.setLayoutData(gd_btnStop);
+        btnStop.setText("Stopp");
+
+        Button btnLinksNachRechts = new Button(grpControl, SWT.NONE);
+        GridData gd_btnLinksNachRechts = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+        gd_btnLinksNachRechts.heightHint = 40;
+        btnLinksNachRechts.setLayoutData(gd_btnLinksNachRechts);
+        btnLinksNachRechts.setText("Links nach Rechts >>");
+        new Label(grpBandlauf, SWT.NONE);
+        new Label(grpBandlauf, SWT.NONE);
+
+        Group grpSkriptAusfhrung = new Group(composite_1, SWT.NONE);
+        grpSkriptAusfhrung.setLayout(new GridLayout(2, false));
+        grpSkriptAusfhrung.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        grpSkriptAusfhrung.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        grpSkriptAusfhrung.setText("Skript Ausf\u00FChrung");
+
+        Combo combo = new Combo(grpSkriptAusfhrung, SWT.NONE);
+        combo.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
+        combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        combo.setText("Skripte...");
+
+        Button btnAusfhren = new Button(grpSkriptAusfhrung, SWT.NONE);
+        btnAusfhren.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
+        GridData gd_btnAusfhren = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+        gd_btnAusfhren.widthHint = 120;
+        btnAusfhren.setLayoutData(gd_btnAusfhren);
+        btnAusfhren.setText("Ausf\u00FChren");
+
+        Label lblCurrentinstruction = new Label(grpSkriptAusfhrung, SWT.NONE);
+        lblCurrentinstruction.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
+        lblCurrentinstruction.setText("currentInstruction");
+
+        Button btnPausieren = new Button(grpSkriptAusfhrung, SWT.NONE);
+        btnPausieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnPausieren.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
+        btnPausieren.setText("Pausieren");
+
+        Label lblNewLabel = new Label(grpSkriptAusfhrung, SWT.NONE);
+
+        Button btnStoppen = new Button(grpSkriptAusfhrung, SWT.NONE);
+        btnStoppen.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
+        btnStoppen.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStoppen.setText("Stoppen");
+
+        Label label = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+        label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label label_1 = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+        label_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label label_2 = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+        label_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label label_4 = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+        label_4.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Label label_3 = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
+        label_3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
+        Button btnNotAus = new Button(composite_1, SWT.NONE);
+        btnNotAus.setFont(SWTResourceManager.getFont("Segoe UI", 24, SWT.NORMAL));
+        btnNotAus.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        btnNotAus.setText("Not Aus");
 
         TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
         tbtmVacuum.setText("Vacuum");
