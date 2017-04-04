@@ -72,6 +72,22 @@ public interface ConveyorControlService {
     public double getPosition();
 
     /**
+     * This returns the relative position of the belt in "m" as seen from the
+     * right engine.
+     * 
+     * @return
+     */
+    public double getRightPosition();
+
+    /**
+     * This returns the relative position of the belt in "m" as seen from the
+     * left engine.
+     * 
+     * @return
+     */
+    public double getLeftPosition();
+
+    /**
      * This sets the relative position of the conveyor belt in "m".
      * 
      * @param value

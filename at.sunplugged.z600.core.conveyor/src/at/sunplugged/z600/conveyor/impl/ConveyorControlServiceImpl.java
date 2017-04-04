@@ -301,4 +301,14 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
         relativePositionMeasurement.setPosition(value);
     }
 
+    @Override
+    public double getRightPosition() {
+        return relativePositionMeasurement.getRightPosition();
+    }
+
+    @Override
+    public double getLeftPosition() {
+        return relativePositionMeasurement.getLeftPosition();
+    }
+
 }

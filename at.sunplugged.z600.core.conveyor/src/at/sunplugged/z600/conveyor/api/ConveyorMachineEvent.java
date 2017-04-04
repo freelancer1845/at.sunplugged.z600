@@ -9,7 +9,8 @@ public class ConveyorMachineEvent extends MachineStateEvent {
         RIGHT_SPEED_CHANGED,
         LEFT_ENGINE_MAXIMUM_SPEED_CHANGED,
         RIGHT_ENGINE_MAXIMUM_SPEED_CHANGED,
-        NEW_DISTANCE;
+        NEW_DISTANCE,
+        MODE_CHANGED;
     }
 
     private final Type type;

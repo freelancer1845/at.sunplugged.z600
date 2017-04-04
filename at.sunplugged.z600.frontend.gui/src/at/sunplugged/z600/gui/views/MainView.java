@@ -41,6 +41,7 @@ import at.sunplugged.z600.backend.vaccum.api.VacuumService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
+import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
@@ -76,6 +77,16 @@ public class MainView {
     private static MachineStateService machineStateService;
 
     private static ConveyorControlService conveyorControlService;
+
+    public static ConveyorControlService getConveyorControlService() {
+        return conveyorControlService;
+    }
+
+    private static ConveyorPositionCorrectionService conveyorPositionCorrectionService;
+
+    public static ConveyorPositionCorrectionService getConveyorPositionCorrectionService() {
+        return conveyorPositionCorrectionService;
+    }
 
     private static StandardThreadPoolService threadPool;
 
@@ -852,6 +863,19 @@ public class MainView {
     public synchronized void unbindDataService(DataService dataService) {
         if (MainView.dataService == dataService) {
             MainView.dataService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindConveyorPositionCorrectionService")
+    public synchronized void bindConveyorPositionCorrectionService(
+            ConveyorPositionCorrectionService conveyorPositionCorrectionService) {
+        MainView.conveyorPositionCorrectionService = conveyorPositionCorrectionService;
+    }
+
+    public synchronized void unbindConveyorPositionCorrectionService(
+            ConveyorPositionCorrectionService conveyorPositionCorrectionService) {
+        if (MainView.conveyorPositionCorrectionService == conveyorPositionCorrectionService) {
+            MainView.conveyorPositionCorrectionService = null;
         }
     }
 

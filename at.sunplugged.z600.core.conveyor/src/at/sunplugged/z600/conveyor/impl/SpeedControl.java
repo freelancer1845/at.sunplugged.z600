@@ -37,6 +37,8 @@ public class SpeedControl implements MachineEventHandler {
 
     public void setMode(Mode mode) {
         currentMode = mode;
+        ConveyorControlServiceImpl.getMachineStateService()
+                .fireMachineStateEvent(new ConveyorMachineEvent(Type.MODE_CHANGED, mode));
 
         switch (mode) {
         case LEFT_TO_RIGHT:

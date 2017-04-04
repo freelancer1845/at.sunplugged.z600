@@ -56,6 +56,14 @@ public class RelativePositionMeasurement implements MachineEventHandler {
         return (leftPosition + rightPosition) / 2;
     }
 
+    public double getLeftPosition() {
+        return leftPosition;
+    }
+
+    public double getRightPosition() {
+        return rightPosition;
+    }
+
     public void setPosition(double position) {
         leftPosition = position;
         rightPosition = position;

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activateGui" name="at.sunplugged.z600.gui.views.MainView">
    <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
+   <reference bind="bindConveyorPositionCorrectionService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService" name="ConveyorPositionCorrectionService" policy="static" unbind="unbindConveyorPositionCorrectionService"/>
    <reference bind="bindDataService" cardinality="1..1" interface="at.sunplugged.z600.backend.dataservice.api.DataService" name="DataService" policy="static" unbind="unbindDataService"/>
    <reference bind="bindLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unbindLogService"/>
    <reference bind="bindMBTController" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MBTController" policy="static" unbind="unbindMBTController"/>
