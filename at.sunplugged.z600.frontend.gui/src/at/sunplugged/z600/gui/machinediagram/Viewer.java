@@ -25,13 +25,13 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
-import at.sunplugged.z600.gui.views.MainView;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.OutletChangedEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.PumpStateEvent;
+import at.sunplugged.z600.gui.views.MainView;
 
 public class Viewer implements MachineEventHandler {
 
-    private static final boolean DEBUG_MODE = false;
+    private static final boolean DEBUG_MODE = true;
 
     private ScalableLayeredPane contents;
 
@@ -43,6 +43,8 @@ public class Viewer implements MachineEventHandler {
 
     private ChamberFigure chamberFigure;
 
+    private ConveyorFigure conveyorFigure;
+
     private Map<String, VacuumConnection> connections = new HashMap<>();
 
     private List<MachineEventHandler> eventHandlingFigures = new ArrayList<>();
@@ -50,6 +52,7 @@ public class Viewer implements MachineEventHandler {
     public Viewer(Canvas parent) {
         LightweightSystem ls = new LightweightSystem(parent);
         contents = new ScalableLayeredPane();
+        contents.setScale(1);
         XYLayout contentsLayout = new XYLayout();
         contents.setLayoutManager(contentsLayout);
 
@@ -58,6 +61,7 @@ public class Viewer implements MachineEventHandler {
         createPressureSiteFigures();
         createChamberFigure();
         createConnections();
+        createConveyorFigure();
 
         for (String connectionName : connections.keySet()) {
             if (connectionName.equals("2M1-V4")) {
@@ -95,7 +99,9 @@ public class Viewer implements MachineEventHandler {
         }
 
         contents.add(chamberFigure);
+        contents.add(conveyorFigure);
         eventHandlingFigures.add(chamberFigure);
+        eventHandlingFigures.add(conveyorFigure);
 
         ls.setContents(contents);
         if (DEBUG_MODE) {
@@ -409,8 +415,15 @@ public class Viewer implements MachineEventHandler {
 
     }
 
+    private void createConveyorFigure() {
+        conveyorFigure = new ConveyorFigure(50, 500);
+    }
+
     @Override
     public void handleEvent(MachineStateEvent event) {
+        if (DEBUG_MODE == true) {
+            return;
+        }
         for (MachineEventHandler figure : eventHandlingFigures) {
             figure.handleEvent(event);
         }
@@ -438,6 +451,7 @@ public class Viewer implements MachineEventHandler {
                         createPumpFigures();
                         createPressureSiteFigures();
                         createChamberFigure();
+                        createConveyorFigure();
 
                         for (String connectionName : connections.keySet()) {
                             contents.add(connections.get(connectionName));
@@ -465,7 +479,9 @@ public class Viewer implements MachineEventHandler {
                         }
 
                         contents.add(chamberFigure);
+                        contents.add(conveyorFigure);
                         eventHandlingFigures.add(chamberFigure);
+                        eventHandlingFigures.add(conveyorFigure);
                     }
 
                 });
