@@ -7,6 +7,8 @@ import java.sql.Statement;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+
 public class SqlConnection {
 
     /**

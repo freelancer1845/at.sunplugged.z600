@@ -6,6 +6,8 @@ import java.sql.Statement;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+
 public class SrmUpdaterRunnable implements Runnable {
 
     private final LogService logService;

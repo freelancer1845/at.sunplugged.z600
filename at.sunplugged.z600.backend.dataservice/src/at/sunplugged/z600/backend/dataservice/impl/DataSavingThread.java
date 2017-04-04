@@ -1,10 +1,14 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 
 public class DataSavingThread extends Thread {
@@ -40,6 +44,7 @@ public class DataSavingThread extends Thread {
         while (isRunning()) {
             try {
                 WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
+                listAvailableTables();
                 Thread.sleep(Long
                         .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
             } catch (Exception e) {
@@ -51,6 +56,15 @@ public class DataSavingThread extends Thread {
 
         instance = null;
 
+    }
+
+    private void listAvailableTables() throws SQLException {
+        DatabaseMetaData md = sqlConnection.getConnection().getMetaData();
+        ResultSet rs = md.getTables(null, null, "%", null);
+        System.out.println("Current Tables: ");
+        while (rs.next()) {
+            System.out.println(rs.getString(3));
+        }
     }
 
     public boolean isRunning() {

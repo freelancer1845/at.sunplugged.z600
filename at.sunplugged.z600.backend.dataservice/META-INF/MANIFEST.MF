@@ -16,3 +16,4 @@ Import-Package: at.sunplugged.z600.common.execution.api,
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,lib/sqljdbc42.jar
 Service-Component: OSGI-INF/at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl.xml
+Export-Package: at.sunplugged.z600.backend.dataservice.api

@@ -1,4 +1,4 @@
-package at.sunplugged.z600.backend.dataservice.impl;
+package at.sunplugged.z600.backend.dataservice.api;
 
 /**
  * An Exception thrown by the {@linkplain DataService}.

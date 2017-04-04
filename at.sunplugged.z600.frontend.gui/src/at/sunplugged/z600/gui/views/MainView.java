@@ -35,6 +35,8 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataService;
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
@@ -82,6 +84,8 @@ public class MainView {
     private static SettingsService settings;
 
     private static ScriptInterpreterService scriptInterpreterService;
+
+    private static DataService dataService;
 
     private static BundleContext context;
 
@@ -548,6 +552,35 @@ public class MainView {
 
         });
 
+        Button startSql = new Button(composite, SWT.NONE);
+        startSql.setText("Start SQL");
+        startSql.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        startSql.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    dataService.startUpdate();
+                } catch (DataServiceException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+        });
+
+        Button stopSql = new Button(composite, SWT.NONE);
+        stopSql.setText("Stop SQL");
+        stopSql.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        stopSql.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                dataService.stopUpdate();
+
+            }
+
+        });
+
         TabItem tbtmPowerSupply = new TabItem(tabFolder, SWT.NONE);
         tbtmPowerSupply.setText("Power Supply");
         Composite powerSupplyComposite = new Composite(tabFolder, SWT.NONE);
@@ -808,6 +841,17 @@ public class MainView {
     public synchronized void unbindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
         if (MainView.scriptInterpreterService == scriptInterpreterService) {
             MainView.scriptInterpreterService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindDataService")
+    public synchronized void bindDataService(DataService dataService) {
+        MainView.dataService = dataService;
+    }
+
+    public synchronized void unbindDataService(DataService dataService) {
+        if (MainView.dataService == dataService) {
+            MainView.dataService = null;
         }
     }
 
