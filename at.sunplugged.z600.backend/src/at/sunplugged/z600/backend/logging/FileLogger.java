@@ -40,10 +40,9 @@ public class FileLogger implements LogListener {
     private final String sessionFileName;
 
     public FileLogger() {
-        LocalDateTime now = LocalDateTime.now();
 
-        this.sessionFileName = LOG_FILE_NAME_PREFIX + now.getYear() + now.getMonthValue() + now.getDayOfMonth()
-                + now.getHour() + now.getMinute() + now.getSecond() + LOG_FILE_SUFFIX;
+        this.sessionFileName = LOG_FILE_NAME_PREFIX
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMuuuuHHmmss")) + LOG_FILE_SUFFIX;
 
     }
 
@@ -96,13 +95,18 @@ public class FileLogger implements LogListener {
 
     @Override
     public void logged(LogEntry entry) {
-        threadPool.execute(new Runnable() {
+        if (threadPool != null) {
+            threadPool.execute(new Runnable() {
 
-            @Override
-            public void run() {
-                logToFile(entry);
-            }
-        });
+                @Override
+                public void run() {
+                    logToFile(entry);
+                }
+            });
+
+        } else {
+            logToFile(entry);
+        }
     }
 
     private void logToFile(LogEntry entry) {

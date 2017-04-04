@@ -3,8 +3,8 @@ package at.sunplugged.z600.backend.dataservice.impl;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
@@ -24,7 +24,7 @@ public class WriteDataTableUtils {
             throw new DataServiceException("Failed to write DataTable." + "Connection not open!");
         }
 
-        if (SqlUtils.checkIfTableExists(connection, tableName)) {
+        if (SqlUtils.checkIfTableExists(connection, tableName) == false) {
             createDataTable(connection, tableName);
         }
         Map<String, Object> dataMap = getDataSnapShot();
@@ -46,9 +46,9 @@ public class WriteDataTableUtils {
         PreparedStatement statement = connection.getConnection().prepareStatement(sql.toString());
         int i = 1;
         java.sql.Time sqlDate = new java.sql.Time(new java.util.Date().getTime());
-        statement.setObject(0, sqlDate);
+        statement.setObject(i, sqlDate.toString());
         for (Object value : dataMap.values()) {
-            statement.setObject(i++, value);
+            statement.setObject(++i, value);
         }
         statement.executeUpdate();
         statement.close();
@@ -56,7 +56,7 @@ public class WriteDataTableUtils {
     }
 
     private static Map<String, Object> getDataSnapShot() {
-        Map<String, Object> dataMap = new HashMap<>();
+        Map<String, Object> dataMap = new LinkedHashMap<>();
         MachineStateService machine = DataServiceImpl.getMachineStateService();
         if (machine != null) {
             dataMap.putAll(getPressureSnapShot(machine));
@@ -73,7 +73,7 @@ public class WriteDataTableUtils {
     public static void createDataTable(SqlConnection connection, String tableName) throws SQLException {
         Statement stm = connection.getStatement();
         String sql = "CREATE TABLE [" + tableName + "] (";
-        sql += "Time TIME, ";
+        sql += "Time VARCHAR(256), ";
         sql += ColumnNames.PERSSURE_TMP + " FLOAT, ";
         sql += ColumnNames.PRESSURE_CHAMBER + " FLOAT, ";
         sql += ColumnNames.PRESSURE_CRYO_ONE + " FLOAT, ";
@@ -96,14 +96,14 @@ public class WriteDataTableUtils {
         sql += ColumnNames.SSV_TWO_POWER + " FLOAT, ";
         sql += ColumnNames.SSV_TWO_POWER_SETPOINT + " FLOAT, ";
         sql += ColumnNames.SSV_TWO_VOLTAGE + " FLOAT, ";
-        sql += ColumnNames.SSV_TWO_CURRENT + " FLOAT, ";
+        sql += ColumnNames.SSV_TWO_CURRENT + " FLOAT)";
         stm.executeUpdate(sql);
         stm.close();
 
     }
 
     private static Map<String, Object> getPressureSnapShot(MachineStateService machine) {
-        Map<String, Object> dataMap = new HashMap<>();
+        Map<String, Object> dataMap = new LinkedHashMap<>();
         PressureMeasurement pressureInterface = machine.getPressureMeasurmentControl();
         dataMap.put(ColumnNames.PERSSURE_TMP, pressureInterface.getCurrentValue(PressureMeasurementSite.TURBO_PUMP));
         dataMap.put(ColumnNames.PRESSURE_CHAMBER, pressureInterface.getCurrentValue(PressureMeasurementSite.CHAMBER));
@@ -115,7 +115,7 @@ public class WriteDataTableUtils {
     }
 
     private static Map<String, Object> getPowerSnapShot(MachineStateService machine) {
-        Map<String, Object> dataMap = new HashMap<>();
+        Map<String, Object> dataMap = new LinkedHashMap<>();
         PowerSourceRegistry powerSourceRegistry = machine.getPowerSourceRegistry();
         PowerSource currentSource;
 
@@ -142,7 +142,7 @@ public class WriteDataTableUtils {
     }
 
     private static Map<String, Object> getConveyorControlSnapShot(ConveyorControlService conveyor) {
-        Map<String, Object> dataMap = new HashMap<>();
+        Map<String, Object> dataMap = new LinkedHashMap<>();
 
         dataMap.put(ColumnNames.CONVEYOR_MODE, conveyor.getActiveMode().name());
         dataMap.put(ColumnNames.CONVEYOR_SPEED_COMBINED, conveyor.getCurrentSpeed());

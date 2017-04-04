@@ -1,8 +1,9 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -16,8 +17,9 @@ public class DataSavingThread extends Thread {
     private static DataSavingThread instance = null;
 
     public static void startInstance(SqlConnection sqlConnection) throws DataServiceException {
-        if (instance != null) {
+        if (instance == null) {
             instance = new DataSavingThread(sqlConnection);
+            instance.start();
         } else {
             throw new DataServiceException("There is already a running instance of the DataSavingThread");
         }
@@ -40,11 +42,11 @@ public class DataSavingThread extends Thread {
 
     @Override
     public void run() {
-        String tableName = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dMuHms"));
+        running = true;
+        String tableName = "TestTable" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMuuuuHHmmss"));
         while (isRunning()) {
             try {
                 WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
-                listAvailableTables();
                 Thread.sleep(Long
                         .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
             } catch (Exception e) {
@@ -58,12 +60,20 @@ public class DataSavingThread extends Thread {
 
     }
 
-    private void listAvailableTables() throws SQLException {
-        DatabaseMetaData md = sqlConnection.getConnection().getMetaData();
-        ResultSet rs = md.getTables(null, null, "%", null);
-        System.out.println("Current Tables: ");
+    private void listDataInTable(String tableName) throws SQLException {
+        Statement stmt = sqlConnection.getStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName);
+        ResultSetMetaData metaData = rs.getMetaData();
+        for (int i = 1; i < metaData.getColumnCount(); i++) {
+            System.out.print(metaData.getColumnName(i) + "---");
+        }
+        System.out.println();
+
         while (rs.next()) {
-            System.out.println(rs.getString(3));
+            for (int i = 1; i < metaData.getColumnCount(); i++) {
+                System.out.print(rs.getString(i) + "---");
+            }
+            System.out.println();
         }
     }
 

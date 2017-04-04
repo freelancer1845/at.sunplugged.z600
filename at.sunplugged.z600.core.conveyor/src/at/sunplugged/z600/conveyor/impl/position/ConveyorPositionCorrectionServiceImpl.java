@@ -68,12 +68,12 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
     }
 
     @Override
-    public double getRuntimeLeft() {
+    public long getRuntimeLeft() {
         return positionControl.getRuntimeLeft();
     }
 
     @Override
-    public double getRuntimeRight() {
+    public long getRuntimeRight() {
         return positionControl.getRuntimeRight();
     }
 

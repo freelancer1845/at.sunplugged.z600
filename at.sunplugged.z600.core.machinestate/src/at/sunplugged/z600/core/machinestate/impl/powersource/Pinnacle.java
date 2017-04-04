@@ -99,6 +99,9 @@ public class Pinnacle extends AbstractPowerSource {
 
     @Override
     public double getCurrent() {
+        if (getVoltage() == 0) {
+            return 0;
+        }
         return 1000 * getPower() / getVoltage();
     }
 

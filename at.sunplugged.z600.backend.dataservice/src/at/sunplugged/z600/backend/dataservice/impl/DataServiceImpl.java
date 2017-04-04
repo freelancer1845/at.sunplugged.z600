@@ -99,6 +99,10 @@ public class DataServiceImpl implements DataService {
     private void injectSettings() {
         try {
             Map<String, Object> settingsTable = getSettingsTable();
+            for (String name : settingsTable.keySet()) {
+                logService.log(LogService.LOG_DEBUG, String.format(
+                        "Setting Loaded from SQL --- Name: \"%s\" Value: \"%s\"", name, settingsTable.get(name)));
+            }
             if (settingsTable.containsKey(SettingIds.BELT_CORRECTION_RUNTIME_LEFT)) {
                 conveyorPositionCorrectionService
                         .setRuntimeLeft((long) settingsTable.get(SettingIds.BELT_CORRECTION_RUNTIME_LEFT));
@@ -126,10 +130,11 @@ public class DataServiceImpl implements DataService {
 
     private void saveSingleSetting(String id, String type, String value) {
         try (Statement stm = sqlConnection.getStatement()) {
-            String sql = "INSERT OR IGNORE INTO " + TableNames.SETTINGS_TABLE + " (id, type, value) VALUES(" + "'" + id
-                    + "','" + type + "','" + value + "'); UDAPTE " + TableNames.SETTINGS_TABLE + " SET value = '"
+            String sql2 = "IF NOT EXISTS (select * from " + TableNames.SETTINGS_TABLE + " where id = '" + id
+                    + "')\n BEGIN INSERT INTO " + TableNames.SETTINGS_TABLE + " (id, type , value) VALUES ('" + id
+                    + "','" + type + "'," + value + ") END;  UPDATE " + TableNames.SETTINGS_TABLE + " SET value = '"
                     + value + "' WHERE id ='" + id + "'";
-            stm.execute(sql);
+            stm.execute(sql2);
             stm.close();
         } catch (SQLException e) {
             logService.log(LogService.LOG_ERROR, "Failed to save setting: \"" + id + "\" Value: \"" + value + "\".", e);
@@ -137,14 +142,14 @@ public class DataServiceImpl implements DataService {
     }
 
     private Map<String, Object> getSettingsTable() throws SQLException {
-        Statement stm = sqlConnection.getStatement();
-        stm.executeQuery("SELECT * FROM " + TableNames.SETTINGS_TABLE);
-        ResultSet resultSet = stm.getResultSet();
-        if (resultSet == null) {
+        if (SqlUtils.checkIfTableExists(sqlConnection, TableNames.SETTINGS_TABLE) == false) {
             Map<String, Object> emptySettingsTable = createSettingsTable();
             logService.log(LogService.LOG_DEBUG, "No Settings Table found in Database!");
             return emptySettingsTable;
         }
+        Statement stm = sqlConnection.getStatement();
+        stm.executeQuery("SELECT * FROM " + TableNames.SETTINGS_TABLE);
+        ResultSet resultSet = stm.getResultSet();
         Map<String, Object> returnMap = new HashMap<>();
         while (resultSet.next() == true) {
             String id = resultSet.getString("id");
@@ -173,8 +178,8 @@ public class DataServiceImpl implements DataService {
 
         try {
             Statement stm = sqlConnection.getStatement();
-            String sql = "CREATE TABLE " + TableNames.SETTINGS_TABLE + " (id VARCHAR(255) not NULL PRIMARAY KEY, "
-                    + " type VARCHAR(255) not NULL" + " value VARCHAR(255))";
+            String sql = "CREATE TABLE " + TableNames.SETTINGS_TABLE + " (id VARCHAR(255) not NULL PRIMARY KEY, "
+                    + " type VARCHAR(255) not NULL," + " value VARCHAR(255))";
             stm.executeUpdate(sql);
             stm.close();
         } catch (SQLException e) {
@@ -182,7 +187,7 @@ public class DataServiceImpl implements DataService {
             throw e;
         }
 
-        return null;
+        return new HashMap<String, Object>();
     }
 
     public void issueStatement(String statement) {

@@ -6,9 +6,9 @@ public interface ConveyorPositionCorrectionService {
 
     public void stop();
 
-    public double getRuntimeLeft();
+    public long getRuntimeLeft();
 
-    public double getRuntimeRight();
+    public long getRuntimeRight();
 
     public void setRuntimeLeft(long ms);
 
