@@ -248,12 +248,12 @@ public class TurboPumpStartThread extends Thread {
         try {
             outletControl.closeOutlet(Outlet.OUTLET_ONE);
             outletControl.closeOutlet(Outlet.OUTLET_THREE);
-            // pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
-            // Thread.sleep(1000);
-            // outletControl.closeOutlet(Outlet.OUTLET_TWO);
-            // pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
-            // Thread.sleep(500);
-            // pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump();
+            pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
+            Thread.sleep(1000);
+            outletControl.closeOutlet(Outlet.OUTLET_TWO);
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_ROOTS).stopPump();
+            Thread.sleep(500);
+            pumpRegistry.getPump(PumpIds.PRE_PUMP_ONE).stopPump();
 
         } catch (IOException e) {
             logService.log(LogService.LOG_ERROR, "Error during cancel turboPumpThread!!!", e);

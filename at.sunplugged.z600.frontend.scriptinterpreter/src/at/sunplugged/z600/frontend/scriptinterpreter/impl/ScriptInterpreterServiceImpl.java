@@ -27,11 +27,12 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
     private Future<?> scriptExecutionFuture;
 
     @Override
-    public Future<?> executeScript(String script) {
+    public Future<?> executeScript(String script) throws ParseError {
         if (scriptExecutionFuture != null && scriptExecutionFuture.isDone() == false) {
             logService.log(LogService.LOG_ERROR, "Parallel Script execution is not allowed, though possible.");
             return scriptExecutionFuture;
         }
+        checkScript(script);
         scriptExecutionFuture = standardThreadPoolService.submit(new Runnable() {
 
             @Override

@@ -62,7 +62,7 @@ public class Pinnacle extends AbstractPowerSource {
     }
 
     private void checkPowerSourceStartConditions() throws InvalidPowerSourceStateException {
-        if (!machineStateService.getGasFlowControl().getState().equals(GasFlowControl.State.RUNNING)) {
+        if (!machineStateService.getGasFlowControl().getState().equals(GasFlowControl.State.RUNNING_STABLE)) {
             throw new InvalidPowerSourceStateException(
                     "GasflowControl is not running! Won't start powersource pinnacle.");
         }

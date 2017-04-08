@@ -64,7 +64,7 @@ public class LexicalInterpreter {
                 }
 
             } else {
-                throw new ParseError("Wrong Command Structure", i);
+                throw new ParseError(String.format("Wrong Command Structure \"%s\"", commands[i]), i);
             }
         }
     }
@@ -86,7 +86,7 @@ public class LexicalInterpreter {
                 }
 
             } else {
-                throw new ParseError("Wrong Command Structure", i);
+                throw new ParseError(String.format("Wrong Command Structure \"%s\"", trimmedCommands[i]), i);
             }
         }
         return returnList;

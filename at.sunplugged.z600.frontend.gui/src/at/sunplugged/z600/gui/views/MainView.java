@@ -9,6 +9,8 @@ import java.io.IOException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -24,6 +26,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -38,10 +41,15 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.backend.vaccum.api.VacuumService;
+import at.sunplugged.z600.backend.vaccum.api.VacuumService.Interlocks;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.common.utils.FileAccessUtils;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
+import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
@@ -54,9 +62,7 @@ import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
-import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
-import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -176,10 +182,22 @@ public class MainView {
         groupVacuum.setLayout(new GridLayout(2, true));
 
         Button btnCryoEins = new Button(groupVacuum, SWT.CHECK);
+        btnCryoEins.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                vacuumService.setInterlock(Interlocks.CRYO_ONE, btnCryoEins.getSelection());
+            }
+        });
         btnCryoEins.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
         btnCryoEins.setText("Cryo Eins");
 
         Button btnCryoZwei = new Button(groupVacuum, SWT.CHECK);
+        btnCryoZwei.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                vacuumService.setInterlock(Interlocks.CRYO_TWO, btnCryoZwei.getSelection());
+            }
+        });
         btnCryoZwei.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
         btnCryoZwei.setText("Cryo Zwei");
 
@@ -189,9 +207,41 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-
+                VacuumService.State state = vacuumService.getState();
+                if (state == VacuumService.State.READY) {
+                    vacuumService.startEvacuation();
+                } else {
+                    vacuumService.stopEvacuation();
+                }
             }
         });
+        Display.getDefault().timerExec(500, new Runnable() {
+            @Override
+            public void run() {
+                VacuumService.State state = vacuumService.getState();
+                switch (state) {
+                case READY:
+                    setBtnText("Start", state);
+                    break;
+                case STARTING:
+                case EVACUATING:
+                case PRESSURE_CONTROL_RUNNING:
+                    setBtnText("Stopp", state);
+                    break;
+                case FAILED:
+                    btnEvakuieren.setText("Vacuum Service failed!");
+                    break;
+                default:
+                    btnEvakuieren.setText(String.format("Unexpected State: %s", state.toString()));
+                    break;
+                }
+            }
+
+            private void setBtnText(String prefix, VacuumService.State state) {
+                btnEvakuieren.setText(String.format("%s --- State: %s", prefix, state.toString()));
+            }
+        });
+
         GridData gd_btnEvakuieren = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
         gd_btnEvakuieren.heightHint = 50;
         btnEvakuieren.setLayoutData(gd_btnEvakuieren);
@@ -204,10 +254,35 @@ public class MainView {
         lblGasfluss.setLayoutData(gd_lblGasfluss);
 
         Label lblLabelsetpointpressure = new Label(groupVacuum, SWT.NONE);
-        lblLabelsetpointpressure.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        lblLabelsetpointpressure.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
         lblLabelsetpointpressure.setText("labelSetpointPressure");
+        GridData gd_lblLabelSetpointPressure = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        lblLabelsetpointpressure.setLayoutData(gd_lblLabelSetpointPressure);
+
+        Display.getDefault().timerExec(500, new Runnable() {
+            @Override
+            public void run() {
+                GasFlowControl gasFlowControl = machineStateService.getGasFlowControl();
+                GasFlowControl.State state = gasFlowControl.getState();
+                lblLabelsetpointpressure.setText(String.format("%s --- %.4f --- %.4f [mBar]", state.toString(),
+                        gasFlowControl.getCurrentGasFlowValue(), gasFlowControl.getGasflowDesiredPressure()));
+                Display.getDefault().timerExec(500, this);
+            }
+        });
 
         Button btnSetpressure = new Button(groupVacuum, SWT.NONE);
+        btnSetpressure.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ValueDialog dialog = new ValueDialog("Druck", "Gewünschten Druck in [mbar] setzen.",
+                        settings.getPropertAsDouble(ParameterIds.VACUUM_LOWER_LIMIT_MBAR),
+                        settings.getPropertAsDouble(ParameterIds.VACUUM_UPPER_LIMIT_MBAR), shell);
+                if (dialog.open() == ValueDialog.Answer.OK) {
+                    vacuumService.setSetpointPressure(dialog.getValue());
+                }
+            }
+        });
+
         btnSetpressure.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
         btnSetpressure.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnSetpressure.setText("Druck setzen");
@@ -218,6 +293,19 @@ public class MainView {
         btnStartPresssureControl.setLayoutData(gd_btnStartPresssureControl);
         btnStartPresssureControl.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
         btnStartPresssureControl.setText("Start");
+        btnStartPresssureControl.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                VacuumService.State state = vacuumService.getState();
+                if (state != VacuumService.State.PRESSURE_CONTROL_RUNNING) {
+                    vacuumService.startPressureControl();
+                } else {
+                    vacuumService.stopPressureControl();
+                }
+            }
+
+        });
         new Label(groupVacuum, SWT.NONE);
         new Label(groupVacuum, SWT.NONE);
 
@@ -230,7 +318,7 @@ public class MainView {
         Label lblLabelsetpointspeed = new Label(grpBandlauf, SWT.NONE);
         lblLabelsetpointspeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         lblLabelsetpointspeed.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
-        lblLabelsetpointspeed.setText("labelSetpointSpeed");
+        lblLabelsetpointspeed.setText(String.format("%.2f [mm/s]", conveyorControlService.getSetpointSpeed()));
 
         Button btnSet = new Button(grpBandlauf, SWT.NONE);
         btnSet.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -243,6 +331,7 @@ public class MainView {
                 ValueDialog dialog = new ValueDialog("Bandlauf Geschwindigkeit",
                         "Bandlauf Geschwindigkeit in [mm/s] setzen.", 0, 30, shell);
                 if (dialog.open() == ValueDialog.Answer.OK) {
+                    conveyorControlService.setSetpointSpeed(dialog.getValue());
                     lblLabelsetpointspeed.setText(dialog.getValue() + " [mm/s]");
                 }
             }
@@ -259,18 +348,40 @@ public class MainView {
         gd_button.heightHint = 40;
         button.setLayoutData(gd_button);
         button.setText("<< Rechts nach Links");
+        button.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.start(conveyorControlService.getSetpointSpeed(), Mode.RIGHT_TO_LEFT);
+            }
+
+        });
 
         Button btnStop = new Button(grpControl, SWT.NONE);
         GridData gd_btnStop = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
         gd_btnStop.heightHint = 40;
         btnStop.setLayoutData(gd_btnStop);
         btnStop.setText("Stopp");
+        btnStop.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.stop();
+            }
+
+        });
 
         Button btnLinksNachRechts = new Button(grpControl, SWT.NONE);
         GridData gd_btnLinksNachRechts = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
         gd_btnLinksNachRechts.heightHint = 40;
         btnLinksNachRechts.setLayoutData(gd_btnLinksNachRechts);
         btnLinksNachRechts.setText("Links nach Rechts >>");
+        btnLinksNachRechts.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorControlService.start(conveyorControlService.getSetpointSpeed(), Mode.LEFT_TO_RIGHT);
+            }
+        });
         new Label(grpBandlauf, SWT.NONE);
         new Label(grpBandlauf, SWT.NONE);
 
@@ -284,6 +395,25 @@ public class MainView {
         combo.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
         combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         combo.setText("Skripte...");
+        combo.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                String[] scriptNames = FileAccessUtils.getScriptNames();
+                if (scriptNames.length == 0) {
+                    combo.setItems("");
+                    combo.setText("No scripts found...");
+                } else {
+
+                    combo.setItems(FileAccessUtils.getScriptNames());
+
+                }
+            }
+        });
 
         Button btnAusfhren = new Button(grpSkriptAusfhrung, SWT.NONE);
         btnAusfhren.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
@@ -291,10 +421,50 @@ public class MainView {
         gd_btnAusfhren.widthHint = 120;
         btnAusfhren.setLayoutData(gd_btnAusfhren);
         btnAusfhren.setText("Ausf\u00FChren");
+        btnAusfhren.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                int selectedIndex = combo.getSelectionIndex();
+                if (selectedIndex != -1) {
+                    String scriptName = combo.getItem(combo.getSelectionIndex());
+                    if (scriptName.matches(".+\\.sc$")) {
+                        try {
+                            try {
+                                scriptInterpreterService.executeScript(FileAccessUtils.getScriptByName(scriptName));
+                            } catch (ParseError e1) {
+                                MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
+                                messageBox.setText("Failed to parse Script");
+                                messageBox.setMessage(e1.getMessage());
+                                messageBox.open();
+                            }
+                        } catch (IOException e1) {
+                            logService.log(LogService.LOG_ERROR, String.format(
+                                    "Failed to execute Script \"%s\". Unable to load from file.", scriptName), e1);
+                        }
+                    }
+                }
+
+            }
+        });
 
         Label lblCurrentinstruction = new Label(grpSkriptAusfhrung, SWT.NONE);
         lblCurrentinstruction.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
         lblCurrentinstruction.setText("currentInstruction");
+        Display.getDefault().timerExec(300, new Runnable() {
+
+            @Override
+            public void run() {
+                String currentCommand = scriptInterpreterService.getCurrentCommandName();
+                if (currentCommand != null) {
+                    lblCurrentinstruction.setText(scriptInterpreterService.getCurrentCommandName());
+                } else {
+                    lblCurrentinstruction.setText("Ready");
+                }
+
+                Display.getDefault().timerExec(300, this);
+            }
+
+        });
 
         Button btnPausieren = new Button(grpSkriptAusfhrung, SWT.NONE);
         btnPausieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -582,6 +752,7 @@ public class MainView {
         Button stopSql = new Button(composite, SWT.NONE);
         stopSql.setText("Stop SQL");
         stopSql.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        new Label(composite, SWT.NONE);
         stopSql.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -722,7 +893,15 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                scriptInterpreterService.executeScript(styledTextScriptInput.getText());
+                try {
+                    scriptInterpreterService.executeScript(styledTextScriptInput.getText());
+                } catch (ParseError e1) {
+                    MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
+                    messageBox.setText("Failed to parse Script");
+                    messageBox.setMessage(e1.getMessage());
+                    messageBox.open();
+
+                }
             }
 
         });

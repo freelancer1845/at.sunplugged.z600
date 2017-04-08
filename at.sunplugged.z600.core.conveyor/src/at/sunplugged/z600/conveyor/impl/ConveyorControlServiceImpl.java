@@ -173,6 +173,11 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     }
 
     @Override
+    public void setSetpointSpeed(double speedInMs) {
+        speedControl.setSetpoint(speedInMs);
+    }
+
+    @Override
     public Mode getActiveMode() {
         return speedControl.getMode();
     }

@@ -58,7 +58,7 @@ public class VacuumServiceImpl implements VacuumService {
     private static void updateState() {
         if (cryoState == CryoPumpsThreadState.CRYO_RUNNING && turboState == TurboPumpThreadState.TURBO_PUMP_RUNNING) {
             state = State.EVACUATING;
-            if (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING) {
+            if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOPPED) {
                 state = State.PRESSURE_CONTROL_RUNNING;
             }
             return;
@@ -168,6 +168,15 @@ public class VacuumServiceImpl implements VacuumService {
 
     public static Map<Interlocks, Boolean> getInterlocksMap() {
         return interlocksMap;
+    }
+
+    @Override
+    public void startPressureControl() {
+        if (VacuumUtils.isPressureControlLimitReached() == true) {
+            machineStateService.getGasFlowControl().startGasFlowControl();
+        } else {
+            logService.log(LogService.LOG_WARNING, "PressureControl Limit not reached!");
+        }
     }
 
     @Override

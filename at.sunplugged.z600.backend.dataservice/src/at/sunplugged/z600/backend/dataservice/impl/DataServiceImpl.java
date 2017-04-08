@@ -84,6 +84,9 @@ public class DataServiceImpl implements DataService {
 
     @Deactivate
     protected synchronized void deactivate() {
+        if (sqlConnection.isOpen() == false) {
+            return;
+        }
         try {
             saveSettings();
         } catch (SQLException e) {

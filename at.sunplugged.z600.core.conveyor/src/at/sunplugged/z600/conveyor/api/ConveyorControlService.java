@@ -41,6 +41,14 @@ public interface ConveyorControlService {
 
     public double getSetpointSpeed();
 
+    /**
+     * Sets the current setpoint speed only if the conveyor is not moving, else
+     * value is ignored.
+     * 
+     * @param speedInMs
+     */
+    public void setSetpointSpeed(double speedInMs);
+
     public Mode getActiveMode();
 
     /**

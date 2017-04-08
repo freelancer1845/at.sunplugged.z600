@@ -124,38 +124,46 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
         if (event.getType() == Type.CONVEYOR_EVENT) {
             ConveyorControlService conveyorService = MainView.getConveyorControlService();
             ConveyorMachineEvent conveyorEvent = (ConveyorMachineEvent) event;
-            switch (conveyorEvent.getConveyorEventType()) {
-            case LEFT_SPEED_CHANGED:
-                speedLeftLabel.setText(conveyorEvent.getValue().toString());
-                speedCombindedLabel.setText(String.valueOf(conveyorService.getCurrentSpeed()));
-                break;
-            case RIGHT_SPEED_CHANGED:
-                speedRightLabel.setText(conveyorEvent.getValue().toString());
-                speedCombindedLabel.setText(String.valueOf(conveyorService.getCurrentSpeed()));
-                break;
-            case NEW_DISTANCE:
-                positionLeftLabel.setText(String.valueOf(conveyorService.getLeftPosition()));
-                positionCombinedLabel.setText(String.valueOf(conveyorService.getPosition()));
-                positionRightLabel.setText(String.valueOf(conveyorService.getRightPosition()));
-                break;
-            case MODE_CHANGED:
-                Mode mode = (Mode) conveyorEvent.getValue();
-                switch (mode) {
-                case LEFT_TO_RIGHT:
-                    directionLabel.setText("Links nach Rechts ->>");
-                    break;
-                case RIGHT_TO_LEFT:
-                    directionLabel.setText("Rechts nach Links <<-");
-                    break;
-                case STOP:
-                    directionLabel.setText("Stopp");
-                    break;
-                default:
-                    break;
+            Display.getDefault().asyncExec(new Runnable() {
+
+                @Override
+                public void run() {
+                    switch (conveyorEvent.getConveyorEventType()) {
+                    case LEFT_SPEED_CHANGED:
+                        speedLeftLabel.setText(conveyorEvent.getValue().toString());
+                        speedCombindedLabel.setText(String.valueOf(conveyorService.getCurrentSpeed()));
+                        break;
+                    case RIGHT_SPEED_CHANGED:
+                        speedRightLabel.setText(conveyorEvent.getValue().toString());
+                        speedCombindedLabel.setText(String.valueOf(conveyorService.getCurrentSpeed()));
+                        break;
+                    case NEW_DISTANCE:
+                        positionLeftLabel.setText(String.valueOf(conveyorService.getLeftPosition()));
+                        positionCombinedLabel.setText(String.valueOf(conveyorService.getPosition()));
+                        positionRightLabel.setText(String.valueOf(conveyorService.getRightPosition()));
+                        break;
+                    case MODE_CHANGED:
+                        Mode mode = (Mode) conveyorEvent.getValue();
+                        switch (mode) {
+                        case LEFT_TO_RIGHT:
+                            directionLabel.setText("Links nach Rechts ->>");
+                            break;
+                        case RIGHT_TO_LEFT:
+                            directionLabel.setText("Rechts nach Links <<-");
+                            break;
+                        case STOP:
+                            directionLabel.setText("Stopp");
+                            break;
+                        default:
+                            break;
+                        }
+                    default:
+                        break;
+                    }
                 }
-            default:
-                break;
-            }
+
+            });
+
         }
     }
 

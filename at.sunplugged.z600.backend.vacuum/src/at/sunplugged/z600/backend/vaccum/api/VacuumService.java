@@ -49,6 +49,8 @@ public interface VacuumService {
      */
     public void stopEvacuation();
 
+    public void startPressureControl();
+
     public void startPressureControl(double setPointPressure);
 
     public void setSetpointPressure(double setPoint);

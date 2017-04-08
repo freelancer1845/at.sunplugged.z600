@@ -149,7 +149,7 @@ public class CryoPumpsStartThread extends Thread {
     }
 
     private void waitForGasflowToStop() throws InterruptedException {
-        while (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING) {
+        while (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING_STABLE) {
             if (isCanceled()) {
                 return;
             }
@@ -382,7 +382,7 @@ public class CryoPumpsStartThread extends Thread {
                     return;
                 }
             }
-            if (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING) {
+            if (machineStateService.getGasFlowControl().getState() == GasFlowControl.State.RUNNING_STABLE) {
                 state = CryoPumpsThreadState.GAS_FLOW_RUNNING;
                 return;
             }

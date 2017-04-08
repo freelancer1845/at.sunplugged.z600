@@ -44,7 +44,7 @@ public class CommandParser {
             double setpoint = Double.valueOf(parameters[1]);
             return new SetpointPowersourceCommand(id, setpoint);
         } catch (IllegalArgumentException e) {
-            throw new ParseError("Failed to parse parameters.");
+            throw new ParseError(String.format("Failed to parse parameters. \"%s\"", command));
         }
     }
 
@@ -63,7 +63,7 @@ public class CommandParser {
             long time = Long.valueOf(parameters[2]);
             return new StartConveyorDistanceCommand(mode, speed, time);
         } catch (NumberFormatException e) {
-            throw new ParseError("Mode, Speed or time parameter not provide properly.");
+            throw new ParseError(String.format("Mode, Speed or time parameter not provide properly. \"%s\"", command));
         }
     }
 
@@ -76,7 +76,8 @@ public class CommandParser {
             double distance = Double.valueOf(parameters[2]);
             return new StartConveyorDistanceCommand(mode, speed, distance);
         } catch (NumberFormatException e) {
-            throw new ParseError("Mode, Speed or distance parameter not provide properly.");
+            throw new ParseError(
+                    String.format("Mode, Speed or distance parameter not provide properly. \"%s\"", command));
         }
     }
 
@@ -90,7 +91,7 @@ public class CommandParser {
             double speed = Double.valueOf(parameters[1]);
             return new StartConveyorSimpleCommand(mode, speed);
         } catch (IllegalArgumentException e) {
-            throw new ParseError("Mode or Speed parameter not provided properly.");
+            throw new ParseError(String.format("Mode or Speed parameter not provided properly. \"%s\"", command));
         }
 
     }
@@ -102,7 +103,7 @@ public class CommandParser {
             double pressure = Double.valueOf(parameters[0]);
             return new SetPressureCommand(pressure);
         } catch (NumberFormatException e) {
-            throw new ParseError("Wrong format for pressure parameter.");
+            throw new ParseError(String.format("Wrong format for pressure parameter. \"%s\"", command));
         }
 
     }
@@ -115,7 +116,7 @@ public class CommandParser {
             int secondsToWait = Integer.valueOf(parameters[0]);
             return new WaitCommand(secondsToWait);
         } catch (NumberFormatException e) {
-            throw new ParseError("Wrong format for wait parameter.");
+            throw new ParseError(String.format("Wrong format for wait parameter. \"%s\"", command));
         }
     }
 

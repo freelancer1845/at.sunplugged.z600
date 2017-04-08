@@ -261,7 +261,7 @@ public class ValueDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 answer = Answer.OK;
-                value = Double.valueOf(txtInputfield.getText());
+                value = Double.valueOf(txtInputfield.getText().replace(",", "."));
                 shell.dispose();
             }
 

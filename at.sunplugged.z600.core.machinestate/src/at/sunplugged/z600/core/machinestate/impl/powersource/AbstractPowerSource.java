@@ -164,7 +164,7 @@ public abstract class AbstractPowerSource implements PowerSource {
                     + settings.getPropertAsDouble(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE)
                     + "). Shutting down \"" + id.name() + "\"");
         }
-        if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.RUNNING) {
+        if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.RUNNING_STABLE) {
             throw new InvalidPowerSourceStateException("GasflowControl not running!");
         }
         checkPowerSourceRunConditionsSpecific();

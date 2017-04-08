@@ -4,7 +4,7 @@ import java.util.concurrent.Future;
 
 public interface ScriptInterpreterService {
 
-    public Future<?> executeScript(String script);
+    public Future<?> executeScript(String script) throws ParseError;
 
     public String checkScript(String script) throws ParseError;
 

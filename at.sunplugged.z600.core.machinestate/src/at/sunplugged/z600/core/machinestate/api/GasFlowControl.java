@@ -11,7 +11,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.GasFlowEvent;
 public interface GasFlowControl {
 
     public enum State {
-        STARTING, RUNNING, STOPPED;
+        STARTING, RUNNING_STABLE, ADJUSTING, STOPPED;
     }
 
     /**
@@ -21,6 +21,8 @@ public interface GasFlowControl {
      * @param desiredPresure for the gas flow control.
      */
     public void setGasflowDesiredPressure(double desiredPresure);
+
+    public double getGasflowDesiredPressure();
 
     public double getCurrentGasFlowValue();
 

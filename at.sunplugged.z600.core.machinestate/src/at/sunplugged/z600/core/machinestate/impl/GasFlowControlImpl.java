@@ -1,6 +1,8 @@
 package at.sunplugged.z600.core.machinestate.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
@@ -41,6 +43,8 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     private double gasFlowVariable = 0;
 
+    private List<Double> stableControlList = new ArrayList<>();
+
     public GasFlowControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
         this.logService = MachineStateServiceImpl.getLogService();
@@ -66,7 +70,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     @Override
     public void startGasFlowControl() {
-        if (state == State.STARTING || state == State.RUNNING) {
+        if (state == State.STARTING || state == State.RUNNING_STABLE || state == State.ADJUSTING) {
             logService.log(LogService.LOG_DEBUG,
                     "Tried to start gasflow control, but state is: \"" + state.name() + "\"");
             return;
@@ -91,7 +95,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
-        if (state == State.RUNNING) {
+        if (state == State.RUNNING_STABLE) {
             if (event.getType().equals(Type.PRESSURE_CHANGED)) {
                 PressureChangedEvent pressureEvent = (PressureChangedEvent) event;
                 if (pressureEvent.getOrigin().equals(PressureMeasurementSite.CHAMBER)) {
@@ -195,11 +199,15 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
                     logService.log(LogService.LOG_DEBUG, "Gas flow control stopped.");
                     break;
                 }
-                setState(State.RUNNING);
                 if (desiredPressure - chamberPressure > controlParameterHysteresis) {
                     gasFlowVariable += controlParameter;
                 } else if ((chamberPressure - desiredPressure) > controlParameterHysteresis) {
                     gasFlowVariable -= controlParameter;
+                }
+                if (isStable(desiredPressure - chamberPressure)) {
+                    setState(State.RUNNING_STABLE);
+                } else {
+                    setState(State.ADJUSTING);
                 }
                 try {
                     writeGasFlowVariable();
@@ -229,6 +237,25 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
     @Override
     public State getState() {
         return state;
+    }
+
+    private boolean isStable(double differenceBetweenSetpointAndCurrent) {
+        stableControlList.add(Math.abs(differenceBetweenSetpointAndCurrent));
+        if (stableControlList.size() > 5) {
+            stableControlList.remove(0);
+        }
+        double mean = stableControlList.stream().mapToDouble(Double::valueOf).average().orElse(0.1);
+        if (mean < 0.0005) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    @Override
+    public double getGasflowDesiredPressure() {
+        return desiredPressure;
     }
 
 }
