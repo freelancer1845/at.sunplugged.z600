@@ -140,6 +140,7 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
         }
     }
 
+    @Reference(unbind = "unbindConveyorControlService")
     public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
         this.conveyorControlService = conveyorControlService;
     }

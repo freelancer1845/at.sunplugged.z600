@@ -13,7 +13,7 @@ public class LexicalInterpreter {
 
     private static Pattern commentsLinePattern = Pattern.compile(".*(\\/\\/.*)$");
 
-    private static Pattern commandPattern = Pattern.compile("[a-zA-Z0-9\\.\\,\\(\\)]+\\)$");
+    private static Pattern commandPattern = Pattern.compile("[a-zA-Z0-9_\\.\\,\\(\\)]+\\)$");
 
     public static String checkScript(String string) throws ParseError {
         String[] commands = splitCommands(string);

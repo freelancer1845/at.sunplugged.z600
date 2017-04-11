@@ -22,4 +22,6 @@ public interface Engine {
 
     public void stopEngineHard();
 
+    public void initializeEngine();
+
 }

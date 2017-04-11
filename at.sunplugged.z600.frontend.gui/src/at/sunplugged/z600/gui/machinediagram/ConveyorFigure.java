@@ -78,11 +78,11 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
         positionLabelGd.horizontalAlignment = GridData.HORIZONTAL_ALIGN_BEGINNING;
         this.add(positionLabel, positionLabelGd);
 
-        positionLeftLabel = labelFactory("positionLeftLabel");
+        positionLeftLabel = labelFactory(String.format("%.4f", MainView.getConveyorControlService().getPosition()));
 
-        positionCombinedLabel = labelFactory("positionCombinedLabel");
+        positionCombinedLabel = labelFactory(String.format("%.4f", MainView.getConveyorControlService().getPosition()));
 
-        positionRightLabel = labelFactory("positionRightLabel");
+        positionRightLabel = labelFactory(String.format("%.4f", MainView.getConveyorControlService().getPosition()));
 
         Label correctionLabel = new Label("Korrektur und Richtung");
         GridData correctionLabelGd = new GridData();
@@ -97,6 +97,16 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
         correctionRightLabel = labelFactory("correctionRightLabel");
 
         Display display = Display.getDefault();
+
+        display.timerExec(1000, new Runnable() {
+            @Override
+            public void run() {
+                positionLeftLabel.setText(String.format("%.4f", MainView.getConveyorControlService().getPosition()));
+                positionCombinedLabel
+                        .setText(String.format("%.4f", MainView.getConveyorControlService().getPosition()));
+                positionRightLabel.setText(String.format("%.4f", MainView.getConveyorControlService().getPosition()));
+            }
+        });
 
         display.timerExec(500, new Runnable() {
 
@@ -133,17 +143,17 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
                 public void run() {
                     switch (conveyorEvent.getConveyorEventType()) {
                     case LEFT_SPEED_CHANGED:
-                        speedLeftLabel.setText(conveyorEvent.getValue().toString());
-                        speedCombindedLabel.setText(String.valueOf(conveyorService.getCurrentSpeed()));
+                        speedLeftLabel.setText(String.format("%.2f", conveyorEvent.getValue()));
+                        speedCombindedLabel.setText(String.format("%.2f", conveyorService.getCurrentSpeed()));
                         break;
                     case RIGHT_SPEED_CHANGED:
-                        speedRightLabel.setText(conveyorEvent.getValue().toString());
-                        speedCombindedLabel.setText(String.valueOf(conveyorService.getCurrentSpeed()));
+                        speedRightLabel.setText(String.format("%.2f", conveyorEvent.getValue()));
+                        speedCombindedLabel.setText(String.format("%.2f", conveyorService.getCurrentSpeed()));
                         break;
                     case NEW_DISTANCE:
-                        positionLeftLabel.setText(String.valueOf(conveyorService.getLeftPosition()));
-                        positionCombinedLabel.setText(String.valueOf(conveyorService.getPosition()));
-                        positionRightLabel.setText(String.valueOf(conveyorService.getRightPosition()));
+                        positionLeftLabel.setText(String.format("%.4f", conveyorService.getLeftPosition()));
+                        positionCombinedLabel.setText(String.format("%.4f", conveyorService.getPosition()));
+                        positionRightLabel.setText(String.format("%.4f", conveyorService.getRightPosition()));
                         break;
                     case MODE_CHANGED:
                         Mode mode = (Mode) conveyorEvent.getValue();

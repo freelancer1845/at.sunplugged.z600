@@ -173,11 +173,14 @@ public class EngineSerialCom implements Engine {
         sendCommand("d" + direction);
     }
 
-    private void initializeEngine() {
+    @Override
+    public void initializeEngine() {
         this.setPositionMode();
         this.setEngineMode(EngineConstants.INITIAL_ENGINE_MODE);
         this.setRampMode();
-
+        this.setBreakMode();
+        setClosedLoopFalse();
+        resetPositionError();
     }
 
     private void setPositionMode() {
@@ -186,6 +189,18 @@ public class EngineSerialCom implements Engine {
 
     private void setRampMode() {
         sendCommand(":ramp_mode=" + EngineConstants.INITIAL_RAMP_MODE);
+    }
+
+    private void setBreakMode() {
+        sendCommand("P" + EngineConstants.INITIAL_BREAK_MODE);
+    }
+
+    private void setClosedLoopFalse() {
+        sendCommand(":CL_enable=" + 0);
+    }
+
+    private void resetPositionError() {
+        sendCommand("D");
     }
 
     private void sendCommand(String command) {
@@ -225,6 +240,7 @@ public class EngineSerialCom implements Engine {
                     } else {
                         logService.log(LogService.LOG_DEBUG,
                                 "Successfully issued command(" + command + ") to engine(" + portName + ")");
+                        Thread.sleep(50);
                     }
 
                 } catch (IOException e) {

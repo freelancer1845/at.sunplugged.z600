@@ -1,5 +1,7 @@
 package at.sunplugged.z600.gui.factorys;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -100,9 +102,9 @@ public final class ConveyorGroupFactory {
                 }
                 if (btnRechts.isEnabled() == false) {
 
-                    conveyorService.start(speed, Mode.RIGHT_TO_LEFT);
-                } else if (btnLinks.isEnabled() == false) {
                     conveyorService.start(speed, Mode.LEFT_TO_RIGHT);
+                } else if (btnLinks.isEnabled() == false) {
+                    conveyorService.start(speed, Mode.RIGHT_TO_LEFT);
                 }
             }
         });
@@ -152,10 +154,10 @@ public final class ConveyorGroupFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnRechts.isEnabled() == false) {
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT,
                             Double.valueOf(distanceDriveText.getText()));
                 } else if (btnLinks.isEnabled() == false) {
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT,
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
                             Double.valueOf(distanceDriveText.getText()));
                 }
             }
@@ -168,11 +170,11 @@ public final class ConveyorGroupFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnRechts.isEnabled() == false) {
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
-                            Double.valueOf(timeDriveText.getText()));
-                } else if (btnLinks.isEnabled() == false) {
                     conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT,
-                            Double.valueOf(timeDriveText.getText()));
+                            Long.valueOf(timeDriveText.getText()), TimeUnit.SECONDS);
+                } else if (btnLinks.isEnabled() == false) {
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
+                            Long.valueOf(timeDriveText.getText()), TimeUnit.SECONDS);
                 }
             }
         });

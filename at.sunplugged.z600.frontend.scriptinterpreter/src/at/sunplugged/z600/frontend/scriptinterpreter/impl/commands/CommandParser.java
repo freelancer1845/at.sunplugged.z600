@@ -10,12 +10,14 @@ import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 
 public class CommandParser {
 
-    private static Pattern parameterPattern = Pattern.compile("\\(([a-zA-Z0-9\\.\\,]+)\\)");
+    private static Pattern parameterPattern = Pattern.compile("\\(([a-zA-Z0-9_\\.\\,]+)\\)");
 
     public static Command parseCommand(String command) throws ParseError {
 
         if (command.startsWith(Commands.SET_PRESSURE)) {
             return interpretPressureCommand(command);
+        } else if (command.startsWith(Commands.WAIT_FOR_CONVEYOR)) {
+            return interpretWaitForConveyorCommand(command);
         } else if (command.startsWith(Commands.WAIT)) {
             return interpretWaitCommand(command);
         } else if (command.startsWith(Commands.START_CONVEYOR_SIMPLE)) {
@@ -34,6 +36,10 @@ public class CommandParser {
             throw new ParseError("Failed to parse command: \"" + command + "\"");
         }
 
+    }
+
+    private static Command interpretWaitForConveyorCommand(String command) throws ParseError {
+        return new WaitForConveyorCommand();
     }
 
     private static Command interpretPowerSurceCommand(String command) throws ParseError {

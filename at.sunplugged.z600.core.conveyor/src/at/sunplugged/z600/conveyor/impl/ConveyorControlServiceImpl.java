@@ -85,8 +85,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
             logService.log(LogService.LOG_ERROR, "Conveyor already running!");
             return;
         }
-        speedControl.setMode(direction);
         speedControl.setSetpoint(speed);
+        speedControl.setMode(direction);
     }
 
     @Override
@@ -104,10 +104,14 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
                 double currentPosition = relativePositionMeasurement.getPosition();
                 double targetPosition = currentPosition;
                 if (direction == Mode.LEFT_TO_RIGHT) {
-                    targetPosition += distance;
+                    targetPosition += distance / 100.0;
                 } else if (direction == Mode.RIGHT_TO_LEFT) {
-                    targetPosition -= distance;
+                    targetPosition -= distance / 100.0;
                 }
+                logService.log(LogService.LOG_DEBUG,
+                        String.format(
+                                "Started distance travel. CurrentPosition: \"%.4f\" TargetPosition: \"%.4f\" Distance: \"%.4f\"",
+                                currentPosition, targetPosition, distance));
                 while (true) {
                     try {
 
@@ -140,6 +144,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
             return;
         }
         start(speed, direction);
+        logService.log(LogService.LOG_DEBUG,
+                "Starting time travel. Time to go \"" + time + " " + unit.toString() + "\".");
         startWithTimeFuture = threadPoolService.timedExecute(new Runnable() {
 
             @Override

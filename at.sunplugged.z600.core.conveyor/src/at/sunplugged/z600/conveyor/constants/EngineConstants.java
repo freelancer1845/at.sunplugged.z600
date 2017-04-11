@@ -12,6 +12,8 @@ public class EngineConstants {
 
     public static final int INITIAL_RAMP_MODE = 1;
 
+    public static final int INITIAL_BREAK_MODE = 1;
+
     private EngineConstants() {
 
     }

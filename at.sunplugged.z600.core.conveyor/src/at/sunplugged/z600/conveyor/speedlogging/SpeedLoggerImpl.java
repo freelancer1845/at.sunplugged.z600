@@ -86,11 +86,11 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
                     rightLastTickTime = now;
                     addToRightMeasurementList(rightTickDifference);
                 }
-                if (now - leftLastTickTime > 20000000000L) {
+                if (now - leftLastTickTime > 40000000000L) {
                     leftLastTickTime = now;
                     addToLeftMeasurementList(-1);
                 }
-                if (now - rightLastTickTime > 20000000000L) {
+                if (now - rightLastTickTime > 40000000000L) {
                     rightLastTickTime = now;
                     addToRightMeasurementList(-1);
                 }

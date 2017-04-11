@@ -1,8 +1,8 @@
 package at.sunplugged.z600.conveyor.impl;
 
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent.Type;
 import at.sunplugged.z600.conveyor.api.Engine;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
@@ -14,11 +14,14 @@ public class SpeedControl implements MachineEventHandler {
 
     private final Engine engineTwo;
 
+    private final ConveyorControlService conveyorControlService;
+
     private double setPointSpeed = 0;
 
     private Mode currentMode = Mode.STOP;
 
     public SpeedControl(ConveyorControlService conveyorControlService) {
+        this.conveyorControlService = conveyorControlService;
         this.engineOne = conveyorControlService.getEngineOne();
         this.engineTwo = conveyorControlService.getEngineTwo();
 
@@ -40,8 +43,11 @@ public class SpeedControl implements MachineEventHandler {
         ConveyorControlServiceImpl.getMachineStateService()
                 .fireMachineStateEvent(new ConveyorMachineEvent(Type.MODE_CHANGED, mode));
 
+        System.out.println("New Mode= " + mode.toString());
         switch (mode) {
-        case LEFT_TO_RIGHT:
+        case RIGHT_TO_LEFT:
+            engineOne.initializeEngine();
+            engineTwo.initializeEngine();
             engineOne.setDirection(0);
             engineTwo.setDirection(0);
             engineTwo.setLoose();
@@ -50,7 +56,9 @@ public class SpeedControl implements MachineEventHandler {
             engineOne.setMaximumSpeed((int) (576000 * setPointSpeed / (2 * Math.PI * (80 + 3))));
             engineOne.startEngine();
             break;
-        case RIGHT_TO_LEFT:
+        case LEFT_TO_RIGHT:
+            engineOne.initializeEngine();
+            engineTwo.initializeEngine();
             engineOne.setDirection(1);
             engineTwo.setDirection(1);
             engineOne.setLoose();
@@ -86,16 +94,23 @@ public class SpeedControl implements MachineEventHandler {
     }
 
     private void handleSpeedChange(ConveyorMachineEvent conveyorEvent) {
-        double newSpeed = (double) conveyorEvent.getValue();
         int currentEngineSpeed;
         int newEngineSpeed;
         if (currentMode == Mode.LEFT_TO_RIGHT) {
+            if (conveyorEvent.getConveyorEventType() == Type.LEFT_SPEED_CHANGED) {
+                return;
+            }
             currentEngineSpeed = engineOne.getCurrentMaximumSpeed();
-            newEngineSpeed = calculateNewEngineSpeed(newSpeed, currentEngineSpeed);
+            newEngineSpeed = calculateNewEngineSpeed(conveyorControlService.getSpeedLogger().getRightSpeed(),
+                    currentEngineSpeed);
             engineOne.setMaximumSpeed(newEngineSpeed);
         } else if (currentMode == Mode.RIGHT_TO_LEFT) {
+            if (conveyorEvent.getConveyorEventType() == Type.RIGHT_SPEED_CHANGED) {
+                return;
+            }
             currentEngineSpeed = engineTwo.getCurrentMaximumSpeed();
-            newEngineSpeed = calculateNewEngineSpeed(newSpeed, currentEngineSpeed);
+            newEngineSpeed = calculateNewEngineSpeed(conveyorControlService.getSpeedLogger().getLeftSpeed(),
+                    currentEngineSpeed);
             engineTwo.setMaximumSpeed(newEngineSpeed);
         }
     }

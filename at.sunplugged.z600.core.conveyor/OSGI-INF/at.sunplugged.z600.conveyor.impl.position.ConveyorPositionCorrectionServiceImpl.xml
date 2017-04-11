@@ -7,5 +7,7 @@
    <reference bind="bindMbtService" cardinality="1..1" interface="at.sunplugged.z600.mbt.api.MbtService" name="MbtService" policy="static" unbind="unbindMbtService"/>
    <reference bind="bindSettingsService" cardinality="1..1" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="SettingsService" policy="static" unbind="unbindSettingsService"/>
    <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
+   <reference bind="bindConveyorControlService" cardinality="1..1" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="ConveyorControlService" policy="static" unbind="unbindConveyorControlService"/>
    <implementation class="at.sunplugged.z600.conveyor.impl.position.ConveyorPositionCorrectionServiceImpl"/>
+   
 </scr:component>
