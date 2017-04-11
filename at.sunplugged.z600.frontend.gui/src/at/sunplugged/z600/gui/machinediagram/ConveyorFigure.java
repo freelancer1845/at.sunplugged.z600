@@ -11,8 +11,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
@@ -96,7 +96,9 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
 
         correctionRightLabel = labelFactory("correctionRightLabel");
 
-        Display.getDefault().timerExec(500, new Runnable() {
+        Display display = Display.getDefault();
+
+        display.timerExec(500, new Runnable() {
 
             @Override
             public void run() {
@@ -104,6 +106,7 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
                         .setText(String.valueOf(MainView.getConveyorPositionCorrectionService().getRuntimeLeft()));
                 correctionRightLabel
                         .setText(String.valueOf(MainView.getConveyorPositionCorrectionService().getRuntimeRight()));
+                display.timerExec(500, this);
             }
 
         });
@@ -146,10 +149,10 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
                         Mode mode = (Mode) conveyorEvent.getValue();
                         switch (mode) {
                         case LEFT_TO_RIGHT:
-                            directionLabel.setText("Links nach Rechts ->>");
+                            directionLabel.setText("-->>");
                             break;
                         case RIGHT_TO_LEFT:
-                            directionLabel.setText("Rechts nach Links <<-");
+                            directionLabel.setText("<<--");
                             break;
                         case STOP:
                             directionLabel.setText("Stopp");

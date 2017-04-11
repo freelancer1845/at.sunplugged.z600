@@ -28,7 +28,7 @@ public final class ConveyorGroupFactory {
 
     private static StandardThreadPoolService threadPool;
 
-    private static Text text;
+    private static Text speedText;
 
     /**
      * @wbp.factory
@@ -43,8 +43,8 @@ public final class ConveyorGroupFactory {
         lblGeschwindigkeit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         lblGeschwindigkeit.setText("Geschwindigkeit in mm/s");
 
-        text = new Text(group, SWT.BORDER);
-        text.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
+        speedText = new Text(group, SWT.BORDER);
+        speedText.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
 
         Button btnLinks = new Button(group, SWT.NONE);
         btnLinks.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -94,7 +94,7 @@ public final class ConveyorGroupFactory {
             public void widgetSelected(SelectionEvent e) {
                 double speed;
                 try {
-                    speed = Double.valueOf(text.getText());
+                    speed = Double.valueOf(speedText.getText());
                 } catch (NumberFormatException e1) {
                     return;
                 }
@@ -139,32 +139,41 @@ public final class ConveyorGroupFactory {
             }
 
         });
+        Text distanceDriveText = new Text(group, SWT.BORDER);
+        distanceDriveText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblLeftPosition = new Label(group, SWT.NONE);
-        lblLeftPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblLeftPosition.setText("Left Position: 0");
+        Text timeDriveText = new Text(group, SWT.BORDER);
+        timeDriveText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Label lblRightPosition = new Label(group, SWT.NONE);
-        lblRightPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblRightPosition.setText("Right Position: 0");
-
-        Label lblLeftSpeed = new Label(group, SWT.NONE);
-        lblLeftSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblLeftSpeed.setText("Speed Left: 0");
-
-        Label lblRightSpeed = new Label(group, SWT.NONE);
-        lblRightSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        lblRightSpeed.setText("Speed Right: 0");
-
-        Display.getDefault().timerExec(500, new Runnable() {
-
+        Button btnDistanceDrive = new Button(group, SWT.NONE);
+        btnDistanceDrive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        btnDistanceDrive.setText("Drive Distance[cm] Start");
+        btnDistanceDrive.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void run() {
-                lblLeftPosition.setText("Left Position: " + conveyorPositionService.getRuntimeLeft());
-                lblRightPosition.setText("Right Positon: " + conveyorPositionService.getRuntimeRight());
-                lblLeftSpeed.setText("Speed Left: " + conveyorService.getSpeedLogger().getLeftSpeed());
-                lblRightSpeed.setText("Speed Right: " + conveyorService.getSpeedLogger().getRightSpeed());
-                Display.getDefault().timerExec(500, this);
+            public void widgetSelected(SelectionEvent e) {
+                if (btnRechts.isEnabled() == false) {
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
+                            Double.valueOf(distanceDriveText.getText()));
+                } else if (btnLinks.isEnabled() == false) {
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT,
+                            Double.valueOf(distanceDriveText.getText()));
+                }
+            }
+        });
+
+        Button btnTimeDrive = new Button(group, SWT.NONE);
+        btnTimeDrive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        btnTimeDrive.setText("Drive time[s] Start");
+        btnTimeDrive.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (btnRechts.isEnabled() == false) {
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
+                            Double.valueOf(timeDriveText.getText()));
+                } else if (btnLinks.isEnabled() == false) {
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT,
+                            Double.valueOf(timeDriveText.getText()));
+                }
             }
         });
 

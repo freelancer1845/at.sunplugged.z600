@@ -7,6 +7,9 @@ import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
 
+// TODO : The event should check whether the pressure was just a peak, or if it was really reached.
+// TODO : Probably by checking whether the pressure still forfills condition after 5s
+
 public class FuturePressureReachedEvent implements MachineEventHandler {
     private final MachineStateService machineStateService;
 

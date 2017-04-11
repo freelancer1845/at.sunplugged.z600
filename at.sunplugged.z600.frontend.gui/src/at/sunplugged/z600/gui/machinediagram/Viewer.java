@@ -15,6 +15,8 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
@@ -33,6 +35,8 @@ public class Viewer implements MachineEventHandler {
 
     private static final boolean DEBUG_MODE = false;
 
+    private final int widthRatio;
+
     private ScalableLayeredPane contents;
 
     private OutletFigure[] outletFigures = new OutletFigure[10];
@@ -50,9 +54,24 @@ public class Viewer implements MachineEventHandler {
     private List<MachineEventHandler> eventHandlingFigures = new ArrayList<>();
 
     public Viewer(Canvas parent) {
+        org.eclipse.swt.graphics.Rectangle shellSize = parent.getShell().getClientArea();
+        org.eclipse.swt.graphics.Rectangle canvasSize = parent.getClientArea();
+        widthRatio = canvasSize.width / shellSize.width;
+
         LightweightSystem ls = new LightweightSystem(parent);
         contents = new ScalableLayeredPane();
-        contents.setScale(1);
+        parent.getShell().addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                org.eclipse.swt.graphics.Rectangle shellSize = parent.getShell().getClientArea();
+                org.eclipse.swt.graphics.Rectangle canvasSize = parent.getClientArea();
+                int shellWidth = shellSize.width;
+                int canvasWidth = shellSize.width;
+                int newRatio = shellWidth / canvasWidth * widthRatio;
+
+            }
+        });
+        contents.setScale(1.3);
         XYLayout contentsLayout = new XYLayout();
         contents.setLayoutManager(contentsLayout);
 

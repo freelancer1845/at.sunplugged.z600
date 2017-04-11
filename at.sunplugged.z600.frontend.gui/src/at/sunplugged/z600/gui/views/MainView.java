@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -21,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
@@ -47,8 +49,8 @@ import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.common.utils.FileAccessUtils;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
-import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
@@ -62,12 +64,12 @@ import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
+import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
-import org.eclipse.swt.widgets.Combo;
 
 @Component
 public class MainView {
@@ -235,6 +237,7 @@ public class MainView {
                     btnEvakuieren.setText(String.format("Unexpected State: %s", state.toString()));
                     break;
                 }
+                Display.getDefault().timerExec(500, this);
             }
 
             private void setBtnText(String prefix, VacuumService.State state) {
@@ -504,6 +507,14 @@ public class MainView {
         Composite VacuumComposite = VacuumTabitemFactory.createComposite(tabFolder);
         tbtmVacuum.setControl(VacuumComposite);
         VacuumComposite.setLayout(new GridLayout(1, false));
+
+        TabItem conveyorDebugTabItem = new TabItem(tabFolder, SWT.NONE);
+        conveyorDebugTabItem.setText("Conveyor");
+
+        Composite conveyorDebugComposite = new Composite(tabFolder, SWT.NONE);
+        conveyorDebugComposite.setLayout(new GridLayout(1, false));
+        conveyorDebugTabItem.setControl(conveyorDebugComposite);
+        ConveyorGroupFactory.createGroup(conveyorDebugComposite);
 
         TabItem tbtmMachinedebug = new TabItem(tabFolder, SWT.NONE);
         tbtmMachinedebug.setText("MachineDebug");

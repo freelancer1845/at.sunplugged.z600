@@ -21,7 +21,7 @@ public class ParameterDefaultProperties extends Properties {
         this.put(ParameterIds.INITIAL_GAS_FLOW_PARAMETER, "0");
         this.put(ParameterIds.GAS_FLOW_CONTROL_PARAMETER, "1");
         this.put(ParameterIds.GAS_FLOW_HYSTERESIS_CONTROL_PARAMETER, "0.00001");
-        this.put(ParameterIds.PRESSURE_CONTROL_LOWER_LIMIT, "5E-04");
+        this.put(ParameterIds.PRESSURE_CONTROL_LOWER_LIMIT, "2E-05");
         this.put(ParameterIds.VACUUM_LOWER_LIMIT_MBAR, "0.001");
         this.put(ParameterIds.VACUUM_UPPER_LIMIT_MBAR, "0.007");
         this.put(ParameterIds.START_TRIGGER_TURBO_PUMP, "0.025");
