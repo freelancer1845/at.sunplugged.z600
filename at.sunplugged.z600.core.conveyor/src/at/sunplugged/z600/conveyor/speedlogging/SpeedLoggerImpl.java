@@ -18,9 +18,6 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
 
     private LogService logService;
 
-    /** This value represents the distance the conveyor has traveled. */
-    private double distanceTraveled = 0;
-
     private List<Double> leftSpeedMeasurements = new ArrayList<>();
 
     private double leftSpeedValue = 0;
@@ -142,14 +139,6 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
         }
         rightSpeedValue = speed;
         SpeedChangeUtilityClass.submitRightSpeedChange(speed);
-    }
-
-    public double getDistanceTraveled() {
-        return distanceTraveled;
-    }
-
-    public void setDistanceTraveled(double distanceTraveled) {
-        this.distanceTraveled = distanceTraveled;
     }
 
 }

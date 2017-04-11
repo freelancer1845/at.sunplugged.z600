@@ -248,6 +248,7 @@ public class TurboPumpStartThread extends Thread {
         try {
             outletControl.closeOutlet(Outlet.OUTLET_ONE);
             outletControl.closeOutlet(Outlet.OUTLET_THREE);
+            Thread.sleep(1000);
             pumpRegistry.getPump(PumpIds.TURBO_PUMP).stopPump();
             Thread.sleep(1000);
             outletControl.closeOutlet(Outlet.OUTLET_TWO);

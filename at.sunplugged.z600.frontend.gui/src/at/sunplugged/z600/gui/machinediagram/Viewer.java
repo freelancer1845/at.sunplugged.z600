@@ -64,14 +64,11 @@ public class Viewer implements MachineEventHandler {
             @Override
             public void handleEvent(Event event) {
                 org.eclipse.swt.graphics.Rectangle shellSize = parent.getShell().getClientArea();
-                org.eclipse.swt.graphics.Rectangle canvasSize = parent.getClientArea();
                 int shellWidth = shellSize.width;
-                int canvasWidth = shellSize.width;
-                int newRatio = shellWidth / canvasWidth * widthRatio;
-
+                contents.setScale(((double) shellWidth / 1800 + 0.54));
             }
         });
-        contents.setScale(1.3);
+        contents.setScale(1.0);
         XYLayout contentsLayout = new XYLayout();
         contents.setLayoutManager(contentsLayout);
 

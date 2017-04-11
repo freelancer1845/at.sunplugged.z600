@@ -63,7 +63,7 @@ public abstract class AbstractSSVPowerSource extends AbstractPowerSource {
         writeControlValue(settings.getPropertAsDouble(ParameterIds.INITIAL_CURRENT_SSV));
         Thread.sleep(500);
         mbtService.writeDigOut(startOutput.getAddress(), true);
-        Thread.sleep(10000);
+        Thread.sleep(1000);
     }
 
     @Override
@@ -82,8 +82,10 @@ public abstract class AbstractSSVPowerSource extends AbstractPowerSource {
         double currentPower = getPower();
         if (currentPower < (setPoint - 0.01)) {
             writeControlValue(currentControlValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_SSV));
+            System.out.println(String.format("CurrentPower: %.2f setpoint: %.2f going up", currentPower, setPoint));
         } else if (currentPower > (setPoint + 0.01)) {
-            writeControlValue(currentControlValue + settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_SSV));
+            writeControlValue(currentControlValue - settings.getPropertAsDouble(ParameterIds.CURRENT_CHANGE_SSV));
+            System.out.println(String.format("CurrentPower: %.2f setpoint: %.2f going down", currentPower, setPoint));
         }
     }
 

@@ -53,6 +53,11 @@ public class TurboPump implements Pump, MachineEventHandler {
 
     @Override
     public FutureEvent startPump() {
+        if (state == PumpState.STOPPING) {
+            MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                    "Turbo pump is currently stopping. Won't start.");
+            return null;
+        }
         FutureEvent startEvent = new FutureEvent(machineStateService, new PumpStateEvent(PUMP_ID, PumpState.ON));
 
         if (machineStateService.getWaterControl().getOutletState(WaterOutlet.TURBO_PUMP) == false) {
@@ -104,9 +109,9 @@ public class TurboPump implements Pump, MachineEventHandler {
                 @Override
                 public void run() {
                     MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
-                            "Turbo Pump stopping. Waiting 10 minutes for high speed to drop!");
+                            "Turbo Pump stopping. Waiting 5 minutes for high speed to drop!");
                     try {
-                        Thread.sleep(600000);
+                        Thread.sleep(300000);
                     } catch (InterruptedException e) {
                         MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
                                 "Turbo Pump stopping interrupted!!! This is not recommended!", e);

@@ -28,6 +28,7 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl;
+import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
@@ -119,6 +120,13 @@ public class MachineStateServiceImpl implements MachineStateService {
 
     @Override
     public void stop() {
+        try {
+            closeWaterOutlets();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR,
+                    "Error while shuting down MachineStateService in Closing water outlets.", e);
+        }
+
         if (this.updaterThread != null) {
             if (this.updaterThread.isRunning()) {
                 updaterThread.stop();
@@ -126,6 +134,14 @@ public class MachineStateServiceImpl implements MachineStateService {
             }
         }
 
+    }
+
+    private void closeWaterOutlets() throws IOException {
+        waterControl.setOutletState(WaterOutlet.KATH_ONE, false);
+        waterControl.setOutletState(WaterOutlet.KATH_TWO, false);
+        waterControl.setOutletState(WaterOutlet.KATH_THREE, false);
+        waterControl.setOutletState(WaterOutlet.TURBO_PUMP, false);
+        waterControl.setOutletState(WaterOutlet.SHIELD, false);
     }
 
     @Override

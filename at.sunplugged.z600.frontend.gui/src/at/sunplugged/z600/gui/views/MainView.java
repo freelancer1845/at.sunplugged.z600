@@ -213,7 +213,7 @@ public class MainView {
                 if (state == VacuumService.State.READY) {
                     vacuumService.startEvacuation();
                 } else {
-                    vacuumService.stopEvacuation();
+                    vacuumService.shutdown();
                 }
             }
         });
@@ -295,7 +295,7 @@ public class MainView {
         gd_btnStartPresssureControl.heightHint = 50;
         btnStartPresssureControl.setLayoutData(gd_btnStartPresssureControl);
         btnStartPresssureControl.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
-        btnStartPresssureControl.setText("Start");
+        btnStartPresssureControl.setText("Start/Stop");
         btnStartPresssureControl.addSelectionListener(new SelectionAdapter() {
 
             @Override
