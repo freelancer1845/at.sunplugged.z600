@@ -1,11 +1,13 @@
 package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
+import at.sunplugged.z600.core.machinestate.impl.MachineStateServiceImpl;
 
 // TODO : The event should check whether the pressure was just a peak, or if it was really reached.
 // TODO : Probably by checking whether the pressure still forfills condition after 5s
@@ -18,6 +20,8 @@ public class FuturePressureReachedEvent implements MachineEventHandler {
     private boolean pressureReached = false;
 
     private final double desiredPressure;
+
+    private ScheduledFuture<?> checkForPressurePeakFuture;
 
     public FuturePressureReachedEvent(MachineStateService machineStateService, PressureMeasurementSite site,
             double desiredPressure) {
@@ -53,11 +57,29 @@ public class FuturePressureReachedEvent implements MachineEventHandler {
             if (((PressureChangedEvent) event).getOrigin().equals(site)) {
                 double currentPressure = (double) event.getValue();
                 if (currentPressure <= desiredPressure) {
-                    pressureReached = true;
                     unregister();
+                    checkForPeak();
                 }
             }
 
+        }
+    }
+
+    private void checkForPeak() {
+        if (checkForPressurePeakFuture == null || checkForPressurePeakFuture.isDone()) {
+            checkForPressurePeakFuture = MachineStateServiceImpl.getStandardThreadPoolService()
+                    .timedExecute(new Runnable() {
+                        @Override
+                        public void run() {
+                            double pressureAtSite = machineStateService.getPressureMeasurmentControl()
+                                    .getCurrentValue(site);
+                            if (pressureAtSite <= desiredPressure) {
+                                pressureReached = true;
+                            } else {
+                                machineStateService.registerMachineEventHandler(FuturePressureReachedEvent.this);
+                            }
+                        }
+                    }, 2, TimeUnit.SECONDS);
         }
     }
 
