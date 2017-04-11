@@ -844,7 +844,7 @@ public class MainView {
                 FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.OPEN);
                 fd.setText("Load");
 
-                String[] filter = { "*.txt" };
+                String[] filter = { "*.sc" };
                 fd.setFilterExtensions(filter);
                 String selected = fd.open();
                 if (selected == null) {

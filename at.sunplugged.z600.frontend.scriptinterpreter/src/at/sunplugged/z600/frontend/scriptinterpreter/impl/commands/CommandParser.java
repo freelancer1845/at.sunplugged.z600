@@ -67,7 +67,7 @@ public class CommandParser {
             Mode mode = Mode.valueOf(parameters[0]);
             double speed = Double.valueOf(parameters[1]);
             long time = Long.valueOf(parameters[2]);
-            return new StartConveyorDistanceCommand(mode, speed, time);
+            return new StartConveyorTimeCommand(mode, speed, time);
         } catch (NumberFormatException e) {
             throw new ParseError(String.format("Mode, Speed or time parameter not provide properly. \"%s\"", command));
         }
