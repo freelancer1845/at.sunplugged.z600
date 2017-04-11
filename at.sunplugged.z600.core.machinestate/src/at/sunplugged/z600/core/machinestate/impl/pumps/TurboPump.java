@@ -103,7 +103,11 @@ public class TurboPump implements Pump, MachineEventHandler {
         }
         try {
             mbtService.writeDigOut(START_OUTPUT.getAddress(), false);
+            if (state == PumpState.STOPPING) {
+                throw new IllegalPumpConditionsException("Turbo pump is already stopping.");
+            }
             changeState(PumpState.STOPPING);
+
             MachineStateServiceImpl.getStandardThreadPoolService().execute(new Runnable() {
 
                 @Override
