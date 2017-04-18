@@ -158,6 +158,91 @@ public final class ConveyorGroupFactory {
 
         });
 
+        Button btnCenterLeft = new Button(group, SWT.NONE);
+        btnCenterLeft.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnCenterLeft.setText("Recenter Left");
+        btnCenterLeft.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.centerLeft();
+            }
+        });
+
+        Button btnCenterRight = new Button(group, SWT.NONE);
+        btnCenterRight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnCenterRight.setText("Recenter Right");
+        btnCenterRight.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.centerRight();
+            }
+        });
+
+        Group manualGroup = new Group(group, SWT.NONE);
+        manualGroup.setText("Manual Position Control");
+        manualGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        manualGroup.setLayout(new GridLayout(6, true));
+
+        Button leftForward = new Button(manualGroup, SWT.NONE);
+        leftForward.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        leftForward.setText("Forward");
+        leftForward.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.startLeftForward();
+            }
+        });
+
+        Button leftBackward = new Button(manualGroup, SWT.NONE);
+        leftBackward.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        leftBackward.setText("Backward");
+        leftBackward.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.startLeftBackward();
+            }
+        });
+
+        Button stopMove = new Button(manualGroup, SWT.NONE);
+        stopMove.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        stopMove.setText("Stop");
+        stopMove.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.stopManualMove();
+            }
+        });
+
+        Button resetTimer = new Button(manualGroup, SWT.NONE);
+        resetTimer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        resetTimer.setText("ResetTimer");
+        resetTimer.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.setRuntimeLeft(0);
+                conveyorPositionService.setRuntimeRight(0);
+            }
+        });
+        Button rightForward = new Button(manualGroup, SWT.NONE);
+        rightForward.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        rightForward.setText("Forward");
+        rightForward.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.startRightForward();
+            }
+        });
+
+        Button rightBackward = new Button(manualGroup, SWT.NONE);
+        rightBackward.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        rightBackward.setText("Backward");
+        rightBackward.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                conveyorPositionService.startRightBackward();
+            }
+        });
+
         Text distanceDriveText = new Text(group, SWT.BORDER);
         distanceDriveText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 

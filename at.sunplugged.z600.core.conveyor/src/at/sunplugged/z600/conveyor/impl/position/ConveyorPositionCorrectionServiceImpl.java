@@ -7,11 +7,13 @@ import java.util.concurrent.TimeUnit;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
+import at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -19,15 +21,17 @@ import at.sunplugged.z600.mbt.api.MbtService;
 @Component(immediate = true)
 public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCorrectionService {
 
-    private MachineStateService machineStateService;
+    private static MachineStateService machineStateService;
 
-    private MbtService mbtService;
+    private static MbtService mbtService;
 
     private SettingsService settingsService;
 
-    private StandardThreadPoolService threadPool;
+    private static StandardThreadPoolService threadPool;
 
-    private ConveyorControlService conveyorControlService;
+    private static ConveyorControlService conveyorControlService;
+
+    private static LogService logService;
 
     private ScheduledFuture<?> scheduledFuture;
 
@@ -56,7 +60,7 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
     public void stop() {
         if (scheduledFuture != null) {
             scheduledFuture.cancel(false);
-            positionControl.stop();
+            positionControl.stopTimer();
         }
         try {
             mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
@@ -97,23 +101,87 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
         positionControl.setRuntimeRight(ms);
     }
 
+    @Override
+    public void centerLeft() {
+        if (conveyorControlService.getActiveMode() != ConveyorControlService.Mode.STOP) {
+            logService.log(LogService.LOG_DEBUG, "Starting centering while conveyor is running is not allowed.");
+        } else {
+            logService.log(LogService.LOG_DEBUG, "Starting centering left.");
+            PositionCenterer.getInstance().startCentering(PositionCenterer.CENTER_LEFT,
+                    PositionControl.getInstance().getRuntimeLeft());
+        }
+
+    }
+
+    @Override
+    public void centerRight() {
+        if (conveyorControlService.getActiveMode() != ConveyorControlService.Mode.STOP) {
+            logService.log(LogService.LOG_DEBUG, "Starting centering while conveyor is running is not allowed.");
+        } else {
+            logService.log(LogService.LOG_DEBUG, "Starting centering right.");
+            PositionCenterer.getInstance().startCentering(PositionCenterer.CENTER_RIGHT,
+                    PositionControl.getInstance().getRuntimeRight());
+        }
+    }
+
+    @Override
+    public void startLeftForward() {
+        if (conveyorControlService.getActiveMode() != ConveyorControlService.Mode.STOP) {
+            logService.log(LogService.LOG_DEBUG, "Manual Move not allowed when conveyor is running.");
+        } else {
+            positionControl.startLeftMoveForward();
+        }
+    }
+
+    @Override
+    public void startLeftBackward() {
+        if (conveyorControlService.getActiveMode() != ConveyorControlService.Mode.STOP) {
+            logService.log(LogService.LOG_DEBUG, "Manual Move not allowed when conveyor is running.");
+        } else {
+            positionControl.startLeftMoveBackward();
+        }
+    }
+
+    @Override
+    public void startRightForward() {
+        if (conveyorControlService.getActiveMode() != ConveyorControlService.Mode.STOP) {
+            logService.log(LogService.LOG_DEBUG, "Manual Move not allowed when conveyor is running.");
+        } else {
+            positionControl.startRightMoveForward();
+        }
+    }
+
+    @Override
+    public void startRightBackward() {
+        if (conveyorControlService.getActiveMode() != ConveyorControlService.Mode.STOP) {
+            logService.log(LogService.LOG_DEBUG, "Manual Move not allowed when conveyor is running.");
+        } else {
+            positionControl.startRightMoveBackward();
+        }
+    }
+
+    @Override
+    public void stopManualMove() {
+        positionControl.stopManualMove();
+    }
+
     private void tick() throws IOException, InterruptedException {
         positionControl.tick();
     }
 
     @Activate
     protected void activate() {
-        positionControl = new PositionControl(machineStateService, mbtService, conveyorControlService);
+        positionControl = PositionControl.getInstance();
     }
 
     @Reference(unbind = "unbindMachineStateService")
     public synchronized void bindMachineStateService(MachineStateService machineStateService) {
-        this.machineStateService = machineStateService;
+        ConveyorPositionCorrectionServiceImpl.machineStateService = machineStateService;
     }
 
     public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
-        if (this.machineStateService == machineStateService) {
-            this.machineStateService = null;
+        if (ConveyorPositionCorrectionServiceImpl.machineStateService == machineStateService) {
+            ConveyorPositionCorrectionServiceImpl.machineStateService = null;
         }
     }
 
@@ -130,35 +198,66 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
 
     @Reference(unbind = "unbindStandardThreadPoolService")
     public synchronized void bindStandardThreadPoolService(StandardThreadPoolService threadPool) {
-        this.threadPool = threadPool;
+        ConveyorPositionCorrectionServiceImpl.threadPool = threadPool;
     }
 
     public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService threadPool) {
-        if (this.threadPool == threadPool) {
-            this.threadPool = null;
+        if (ConveyorPositionCorrectionServiceImpl.threadPool == threadPool) {
+            ConveyorPositionCorrectionServiceImpl.threadPool = null;
         }
     }
 
     @Reference(unbind = "unbindMbtService")
     public synchronized void bindMbtService(MbtService mbtService) {
-        this.mbtService = mbtService;
+        ConveyorPositionCorrectionServiceImpl.mbtService = mbtService;
     }
 
     public synchronized void unbindMbtService(MbtService mbtService) {
-        if (this.mbtService == mbtService) {
-            this.mbtService = null;
+        if (ConveyorPositionCorrectionServiceImpl.mbtService == mbtService) {
+            ConveyorPositionCorrectionServiceImpl.mbtService = null;
         }
     }
 
     @Reference(unbind = "unbindConveyorControlService")
     public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
-        this.conveyorControlService = conveyorControlService;
+        ConveyorPositionCorrectionServiceImpl.conveyorControlService = conveyorControlService;
     }
 
     public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
-        if (this.conveyorControlService == conveyorControlService) {
-            this.conveyorControlService = null;
+        if (ConveyorPositionCorrectionServiceImpl.conveyorControlService == conveyorControlService) {
+            ConveyorPositionCorrectionServiceImpl.conveyorControlService = null;
         }
+    }
+
+    @Reference(unbind = "unbindLogService")
+    public synchronized void bindLogService(LogService logService) {
+        ConveyorPositionCorrectionServiceImpl.logService = logService;
+    }
+
+    public synchronized void unbindLogService(LogService logService) {
+        if (ConveyorPositionCorrectionServiceImpl.logService == logService) {
+            ConveyorPositionCorrectionServiceImpl.logService = null;
+        }
+    }
+
+    public static MbtService getMbtService() {
+        return mbtService;
+    }
+
+    public static StandardThreadPoolService getThreadPool() {
+        return threadPool;
+    }
+
+    public static ConveyorControlService getConveyorControlService() {
+        return conveyorControlService;
+    }
+
+    public static LogService getLogService() {
+        return logService;
+    }
+
+    public static MachineStateService getMachineStateService() {
+        return machineStateService;
     }
 
 }

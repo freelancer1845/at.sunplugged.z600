@@ -16,4 +16,18 @@ public interface ConveyorPositionCorrectionService {
 
     public void setRuntimeRight(long ms);
 
+    public void centerLeft();
+
+    public void centerRight();
+
+    public void startLeftForward();
+
+    public void startLeftBackward();
+
+    public void startRightForward();
+
+    public void startRightBackward();
+
+    public void stopManualMove();
+
 }
