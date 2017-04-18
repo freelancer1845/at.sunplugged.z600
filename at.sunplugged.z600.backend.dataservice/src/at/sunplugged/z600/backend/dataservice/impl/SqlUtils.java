@@ -3,7 +3,6 @@ package at.sunplugged.z600.backend.dataservice.impl;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 public class SqlUtils {
 
