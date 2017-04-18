@@ -3,7 +3,7 @@ package at.sunplugged.z600.backend.vaccum.api;
 public interface VacuumService {
 
     public enum State {
-        STARTING, READY, FAILED, EVACUATING, PRESSURE_CONTROL_RUNNING;
+        STARTING, READY, FAILED, EVACUATING, PRESSURE_CONTROL_RUNNING, SHUTTING_DOWN;
     }
 
     public enum CryoPumpsThreadState {
@@ -47,7 +47,7 @@ public interface VacuumService {
     /**
      * Stops the evacuation hard. One should use shutdown()!
      */
-    public void stopEvacuation();
+    public void stopEvacuationHard();
 
     public void startPressureControl();
 

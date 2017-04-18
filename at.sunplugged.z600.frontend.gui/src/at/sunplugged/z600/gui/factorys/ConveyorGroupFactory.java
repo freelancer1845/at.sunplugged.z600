@@ -141,6 +141,23 @@ public final class ConveyorGroupFactory {
             }
 
         });
+        Label labelPositionControlState = new Label(group, SWT.NONE);
+        labelPositionControlState.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        labelPositionControlState.setText("PositionControlState");
+        Display.getDefault().timerExec(500, new Runnable() {
+
+            @Override
+            public void run() {
+                if (conveyorPositionService.isRunning()) {
+                    labelPositionControlState.setText("PositionControlState: Running");
+                } else {
+                    labelPositionControlState.setText("PositionControlState: Not Running");
+                }
+                Display.getDefault().timerExec(500, this);
+            }
+
+        });
+
         Text distanceDriveText = new Text(group, SWT.BORDER);
         distanceDriveText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 

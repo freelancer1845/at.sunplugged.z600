@@ -87,6 +87,10 @@ public class VacuumServiceImpl implements VacuumService {
             cryoPumpThread = new CryoPumpsStartThread();
             cryoPumpThread.start();
             state = State.STARTING;
+        } else if (state == State.SHUTTING_DOWN) {
+            turboPumpThread.restart();
+            cryoPumpThread.restart();
+            logService.log(LogService.LOG_DEBUG, "Restarting evacuation.");
         } else {
             logService.log(LogService.LOG_WARNING,
                     "Tried to start vacuum thread but is not in acceptable state: \"" + state.name() + "\"");
@@ -95,6 +99,7 @@ public class VacuumServiceImpl implements VacuumService {
 
     @Override
     public void shutdown() {
+        state = State.SHUTTING_DOWN;
         stopPressureControl();
         cryoPumpThread.shutdown();
         turboPumpThread.shutdown();
@@ -102,7 +107,7 @@ public class VacuumServiceImpl implements VacuumService {
     }
 
     @Override
-    public void stopEvacuation() {
+    public void stopEvacuationHard() {
         if (state != State.FAILED) {
             turboPumpThread.interrupt();
             cryoPumpThread.interrupt();

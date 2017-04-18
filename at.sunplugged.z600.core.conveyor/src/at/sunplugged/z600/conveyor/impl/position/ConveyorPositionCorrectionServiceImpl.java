@@ -56,6 +56,7 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
     public void stop() {
         if (scheduledFuture != null) {
             scheduledFuture.cancel(false);
+            positionControl.stop();
         }
         try {
             mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
@@ -64,6 +65,15 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
             mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        if (scheduledFuture != null) {
+            return !scheduledFuture.isDone();
+        } else {
+            return false;
         }
     }
 

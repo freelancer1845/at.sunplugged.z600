@@ -54,14 +54,14 @@ public class TurboPumpStartThread extends Thread {
 
     private void cancel() {
         this.interrupt();
-        if (state != TurboPumpThreadState.SHUTDOWN) {
+        if (state != TurboPumpThreadState.SHUTDOWN && state != TurboPumpThreadState.INIT_STATE) {
             state = TurboPumpThreadState.CANCELED;
         }
     }
 
     public void shutdown() {
-        this.interrupt();
         state = TurboPumpThreadState.SHUTDOWN;
+        this.interrupt();
     }
 
     @Override
@@ -283,6 +283,11 @@ public class TurboPumpStartThread extends Thread {
         state = TurboPumpThreadState.INIT_STATE;
         VacuumServiceImpl.transmitState(state);
         cancel = true;
+    }
+
+    public void restart() {
+        this.state = TurboPumpThreadState.INIT_STATE;
+        this.interrupt();
     }
 
 }

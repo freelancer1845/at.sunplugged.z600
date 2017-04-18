@@ -47,15 +47,22 @@ public class CryoPumpsStartThread extends Thread {
     }
 
     public void cancel() {
-        this.interrupt();
-        if (state != CryoPumpsThreadState.SHUTDOWN) {
+        if (state != CryoPumpsThreadState.SHUTDOWN && state != CryoPumpsThreadState.INIT_STATE) {
             state = CryoPumpsThreadState.CANCELED;
         }
+        this.interrupt();
+
     }
 
     public void shutdown() {
-        this.interrupt();
         state = CryoPumpsThreadState.SHUTDOWN;
+        this.interrupt();
+
+    }
+
+    public void restart() {
+        state = CryoPumpsThreadState.INIT_STATE;
+        this.interrupt();
     }
 
     @Override

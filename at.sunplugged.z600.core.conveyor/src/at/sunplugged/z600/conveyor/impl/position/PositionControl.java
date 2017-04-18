@@ -16,9 +16,13 @@ public class PositionControl {
 
     private final ConveyorControlService conveyorControlService;
 
-    private Timer leftTimer = new Timer();
+    private Timer leftTimerForward = new Timer();
 
-    private Timer rightTimer = new Timer();
+    private Timer leftTimerBackward = new Timer();
+
+    private Timer rightTimerForward = new Timer();
+
+    private Timer rightTimerBackward = new Timer();
 
     public PositionControl(MachineStateService machineStateService, MbtService mbtSerivce,
             ConveyorControlService conveyorControlService) {
@@ -38,22 +42,23 @@ public class PositionControl {
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIMIT_SWITCH_LEFT_FRONT);
             boolean limitSwitchLeftBack = machineStateService
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIMIT_SWITCH_LEFT_BACK);
+
             if (lightSwitchLeftFront == true && limitSwitchLeftFront == false) {
                 mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), true);
-                leftTimer.start(true);
-            } else if (limitSwitchLeftFront == true
-                    || machineStateService.getDigitalOutputState(DigitalOutput.BELT_LEFT_BACKWARDS_MOV) == true) {
+                leftTimerBackward.start();
+            } else if (lightSwitchLeftFront == false || limitSwitchLeftFront == true) {
                 mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
-                leftTimer.stop();
+                leftTimerBackward.stop();
             }
+
             if (lightSwitchLeftBack == false && limitSwitchLeftBack == false) {
                 mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), true);
-                leftTimer.start(false);
-            } else if (limitSwitchLeftBack == true
-                    || machineStateService.getDigitalOutputState(DigitalOutput.BELT_LEFT_FORWARD_MOV) == true) {
+                leftTimerForward.start();
+            } else if (lightSwitchLeftBack == true || limitSwitchLeftBack == true) {
                 mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
-                leftTimer.stop();
+                leftTimerForward.stop();
             }
+
         } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
             boolean lightSwitchRightFront = machineStateService
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_RIGHT_FRONT);
@@ -64,24 +69,25 @@ public class PositionControl {
             boolean limitSwitchRightBack = machineStateService
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIMIT_SWITCH_RIGHT_BACK);
             if (lightSwitchRightFront == true && limitSwitchRightFront == false) {
-                rightTimer.start(true);
+                rightTimerBackward.start();
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), true);
-            } else if (limitSwitchRightBack == true
-                    || machineStateService.getDigitalOutputState(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV) == true) {
+            } else if (lightSwitchRightFront == false || limitSwitchRightBack == true) {
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
-                rightTimer.stop();
+                rightTimerBackward.stop();
             }
             if (lightSwitchRightBack == false && limitSwitchRightBack == false) {
-                rightTimer.start(false);
+                rightTimerForward.start();
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), true);
-            } else if (limitSwitchRightBack == true
-                    || machineStateService.getDigitalOutputState(DigitalOutput.BELT_RIGHT_FORWARD_MOV)) {
+            } else if (lightSwitchRightBack == true || limitSwitchRightBack == true) {
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
-                rightTimer.stop();
+                rightTimerForward.stop();
             }
         } else {
-            leftTimer.stop();
-            rightTimer.stop();
+            leftTimerForward.stop();
+            leftTimerBackward.stop();
+            rightTimerForward.stop();
+            rightTimerForward.stop();
+
             mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
             mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
             mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
@@ -90,50 +96,63 @@ public class PositionControl {
     }
 
     public long getRuntimeRight() {
-        return rightTimer.getCurrentValue();
+        return rightTimerForward.getCurrentValue() - rightTimerBackward.getCurrentValue();
     }
 
     public void setRuntimeRight(long value) {
-        rightTimer.setCurrentValue(value);
+        if (value >= 0) {
+            rightTimerForward.setCurrentValue(value);
+            rightTimerBackward.setCurrentValue(0);
+        } else {
+            rightTimerForward.setCurrentValue(0);
+            rightTimerBackward.setCurrentValue(value);
+        }
     }
 
     public long getRuntimeLeft() {
-        return leftTimer.getCurrentValue();
+        return leftTimerForward.getCurrentValue() - leftTimerBackward.getCurrentValue();
     }
 
     public void setRuntimeLeft(long value) {
-        leftTimer.setCurrentValue(value);
+        if (value >= 0) {
+            leftTimerForward.setCurrentValue(value);
+            leftTimerBackward.setCurrentValue(0);
+        } else {
+            leftTimerForward.setCurrentValue(0);
+            leftTimerBackward.setCurrentValue(value);
+        }
+    }
+
+    public void stop() {
+        leftTimerForward.stop();
+        leftTimerBackward.stop();
+        rightTimerBackward.stop();
+        rightTimerForward.stop();
     }
 
     private class Timer {
 
-        private long timeKeeper = 0;
+        private long startTime = 0;
 
         private long runtime = 0;
 
-        private boolean negative = false;
-
-        public void start(boolean negative) {
-            this.negative = negative;
-            if (timeKeeper == 0) {
-                timeKeeper = System.currentTimeMillis();
+        public void start() {
+            stop();
+            if (startTime == 0) {
+                startTime = System.currentTimeMillis();
             }
         }
 
         public void stop() {
-            if (timeKeeper == 0) {
-                if (negative) {
-                    runtime -= System.currentTimeMillis() - timeKeeper;
-                } else {
-                    runtime += System.currentTimeMillis() - timeKeeper;
-                }
-                timeKeeper = 0;
+            if (startTime != 0) {
+                runtime += (System.currentTimeMillis() - startTime);
+                startTime = 0;
             }
         }
 
         public long getCurrentValue() {
-            if (timeKeeper != 0) {
-                return runtime + System.currentTimeMillis() - timeKeeper;
+            if (startTime != 0) {
+                return runtime + System.currentTimeMillis() - startTime;
             }
             return runtime;
         }

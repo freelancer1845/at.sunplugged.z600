@@ -158,7 +158,7 @@ public final class VacuumTabitemFactory {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                MainView.getVacuumService().stopEvacuation();
+                MainView.getVacuumService().stopEvacuationHard();
             }
 
             @Override
