@@ -1,7 +1,8 @@
 package at.sunplugged.z600.core.machinestate.impl.pumps;
 
 import java.io.IOException;
-
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.settings.api.ParameterIds;
@@ -42,6 +43,8 @@ public class TurboPump implements Pump, MachineEventHandler {
 
     private PumpState state;
 
+    private ScheduledFuture<?> stopHook;
+
     public TurboPump(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
         this.settings = MachineStateServiceImpl.getSettingsService();
@@ -54,8 +57,9 @@ public class TurboPump implements Pump, MachineEventHandler {
     @Override
     public FutureEvent startPump() {
         if (state == PumpState.STOPPING) {
-            MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                    "Turbo pump is currently stopping. Won't start.");
+            MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                    "Turbo pump restarted while shutting down.");
+            stopHook.cancel(true);
             return null;
         }
         FutureEvent startEvent = new FutureEvent(machineStateService, new PumpStateEvent(PUMP_ID, PumpState.ON));
@@ -104,34 +108,15 @@ public class TurboPump implements Pump, MachineEventHandler {
         try {
             mbtService.writeDigOut(START_OUTPUT.getAddress(), false);
             if (state == PumpState.STOPPING) {
-                throw new IllegalPumpConditionsException("Turbo pump is already stopping.");
+                throw new IllegalPumpConditionsException(String.format(
+                        "Turbo pump is already stopping. Time left: %d s", stopHook.getDelay(TimeUnit.SECONDS)));
             }
             changeState(PumpState.STOPPING);
 
-            MachineStateServiceImpl.getStandardThreadPoolService().execute(new Runnable() {
+            MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                    "Turbo Pump stopping. Waiting 5 minutes for high speed to drop!");
 
-                @Override
-                public void run() {
-                    MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
-                            "Turbo Pump stopping. Waiting 5 minutes for high speed to drop!");
-                    try {
-                        Thread.sleep(300000);
-                    } catch (InterruptedException e) {
-                        MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                                "Turbo Pump stopping interrupted!!! This is not recommended!", e);
-                    }
-                    if (state == PumpState.STOPPING) {
-                        try {
-                            machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, false);
-                        } catch (IOException e) {
-                            MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                                    "Failed to close water outlet for turbo pump.", e);
-                        }
-                        changeState(PumpState.OFF);
-                    }
-                }
-
-            });
+            stopHook = createStopHook();
         } catch (IOException e) {
             throw new IllegalPumpConditionsException(e);
         }
@@ -161,6 +146,22 @@ public class TurboPump implements Pump, MachineEventHandler {
     private void changeState(PumpState newState) {
         state = newState;
         machineStateService.fireMachineStateEvent(new PumpStateEvent(PUMP_ID, state));
+    }
+
+    private ScheduledFuture<?> createStopHook() {
+        return MachineStateServiceImpl.getStandardThreadPoolService().timedExecute(() -> {
+
+            if (state == PumpState.STOPPING) {
+                try {
+                    machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, false);
+                } catch (IOException e) {
+                    MachineStateServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                            "Failed to close water outlet for turbo pump.", e);
+                }
+                changeState(PumpState.OFF);
+            }
+
+        }, 5, TimeUnit.MINUTES);
     }
 
 }
