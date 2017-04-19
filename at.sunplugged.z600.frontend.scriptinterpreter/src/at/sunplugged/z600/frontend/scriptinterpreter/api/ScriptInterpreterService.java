@@ -6,6 +6,8 @@ public interface ScriptInterpreterService {
 
     public Future<?> executeScript(String script) throws ParseError;
 
+    public void stopExecution();
+
     public String checkScript(String script) throws ParseError;
 
     public String getCurrentCommandName();

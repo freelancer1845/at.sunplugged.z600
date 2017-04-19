@@ -18,6 +18,8 @@ public class Commands {
 
     public static final String SETPOINT_POWERSOURCE = "setpointPowersource";
 
+    public static final String WAIT_FOR_STABLE_POWERSOURCE = "waitForStablePowersource";
+
     private Commands() {
 
     }

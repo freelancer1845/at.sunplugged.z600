@@ -18,6 +18,8 @@ public class CommandParser {
             return interpretPressureCommand(command);
         } else if (command.startsWith(Commands.WAIT_FOR_CONVEYOR)) {
             return interpretWaitForConveyorCommand(command);
+        } else if (command.startsWith(Commands.WAIT_FOR_STABLE_POWERSOURCE)) {
+            return interpretWaitForStablePowersourceCommand(command);
         } else if (command.startsWith(Commands.WAIT)) {
             return interpretWaitCommand(command);
         } else if (command.startsWith(Commands.START_CONVEYOR_SIMPLE)) {
@@ -36,6 +38,17 @@ public class CommandParser {
             throw new ParseError("Failed to parse command: \"" + command + "\"");
         }
 
+    }
+
+    private static Command interpretWaitForStablePowersourceCommand(String command) throws ParseError {
+        String[] parameters = getParameters(command);
+        testParameterCount(command, parameters, 1);
+        try {
+            PowerSourceId id = PowerSourceId.valueOf(parameters[0]);
+            return new WaitForStablePowersourceCommand(id);
+        } catch (IllegalArgumentException e) {
+            throw new ParseError(String.format("Failed to parse parameters. \"%s\"", command));
+        }
     }
 
     private static Command interpretWaitForConveyorCommand(String command) throws ParseError {

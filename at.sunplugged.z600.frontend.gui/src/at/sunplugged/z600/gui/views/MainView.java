@@ -473,6 +473,7 @@ public class MainView {
         btnPausieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnPausieren.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
         btnPausieren.setText("Pausieren");
+        btnPausieren.setEnabled(false);
 
         Label lblNewLabel = new Label(grpSkriptAusfhrung, SWT.NONE);
 
@@ -480,6 +481,12 @@ public class MainView {
         btnStoppen.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
         btnStoppen.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnStoppen.setText("Stoppen");
+        btnStoppen.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                scriptInterpreterService.stopExecution();
+            }
+        });
 
         Label label = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
         label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -500,6 +507,7 @@ public class MainView {
         btnNotAus.setFont(SWTResourceManager.getFont("Segoe UI", 24, SWT.NORMAL));
         btnNotAus.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         btnNotAus.setText("Not Aus");
+        btnNotAus.setEnabled(false);
 
         TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
         tbtmVacuum.setText("Vacuum");

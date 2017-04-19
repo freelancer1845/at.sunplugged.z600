@@ -10,7 +10,7 @@ package at.sunplugged.z600.core.machinestate.api;
 public interface PowerSourceRegistry {
 
     public enum PowerSourceId {
-        SSV1, SSV2, MDX, PINNACLE;
+        SSV1, SSV2, PINNACLE;
     }
 
     /**

@@ -50,6 +50,17 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
     }
 
     @Override
+    public void stopExecution() {
+
+        if (scriptExecutionFuture != null && scriptExecutionFuture.isDone() == false) {
+            scriptExecutionFuture.cancel(true);
+        } else {
+            logService.log(LogService.LOG_DEBUG, "Tried to stop execution, but no script running...");
+            return;
+        }
+    }
+
+    @Override
     public String checkScript(String script) throws ParseError {
         LexicalInterpreter.checkScript(script);
         return null;
