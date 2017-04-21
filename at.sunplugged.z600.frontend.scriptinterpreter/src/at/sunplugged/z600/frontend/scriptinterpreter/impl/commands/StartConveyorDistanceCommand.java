@@ -1,5 +1,7 @@
 package at.sunplugged.z600.frontend.scriptinterpreter.impl.commands;
 
+import java.util.concurrent.TimeUnit;
+
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.Commands;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptExecutionException;
@@ -28,6 +30,11 @@ public class StartConveyorDistanceCommand extends AbstractCommand {
     @Override
     protected void executeCommandSpecific() throws InterruptedException, ScriptExecutionException {
         ScriptInterpreterServiceImpl.getConveyorControlService().start(speed, mode, distance);
+    }
+
+    @Override
+    public long getEstimededTimeNeeded(TimeUnit unit) {
+        return unit.convert((long) (distance * 10 / speed), TimeUnit.SECONDS);
     }
 
 }

@@ -94,7 +94,7 @@ public class CommandParser {
             double speed = Double.valueOf(parameters[1]);
             double distance = Double.valueOf(parameters[2]);
             return new StartConveyorDistanceCommand(mode, speed, distance);
-        } catch (NumberFormatException e) {
+        } catch (IllegalArgumentException e) {
             throw new ParseError(
                     String.format("Mode, Speed or distance parameter not provide properly. \"%s\"", command));
         }

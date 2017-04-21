@@ -59,4 +59,10 @@ public class ParameterIds {
     /** Current change per 0.1s SSV. */
     public static final String CURRENT_CHANGE_SSV = "Current_Change_SSV_per_0.1s";
 
+    /** Length of Cathode in mm. */
+    public static final String CATHODE_LENGTH_MM = "Cathode_Length_in_mm";
+
+    /** Wait time for gasflow control to stop in seconds. */
+    public static final String GASFLOW_CONTROL_WAIT_TIME = "Gasflowcontrol_wait_time_seconds";
+
 }

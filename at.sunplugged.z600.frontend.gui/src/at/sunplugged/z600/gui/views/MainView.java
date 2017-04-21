@@ -66,6 +66,7 @@ import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterServic
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
+import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -259,8 +260,7 @@ public class MainView {
         Label lblLabelsetpointpressure = new Label(groupVacuum, SWT.NONE);
         lblLabelsetpointpressure.setFont(SWTResourceManager.getFont("Segoe UI", 8, SWT.NORMAL));
         lblLabelsetpointpressure.setText("labelSetpointPressure");
-        GridData gd_lblLabelSetpointPressure = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-        lblLabelsetpointpressure.setLayoutData(gd_lblLabelSetpointPressure);
+        lblLabelsetpointpressure.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Display.getDefault().timerExec(500, new Runnable() {
             @Override
@@ -488,6 +488,39 @@ public class MainView {
             }
         });
 
+        Group grpSql = new Group(composite_1, SWT.NONE);
+        grpSql.setLayout(new GridLayout(1, false));
+        grpSql.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        grpSql.setFont(SWTResourceManager.getFont("Segoe UI", 14, SWT.NORMAL));
+        grpSql.setText("SQL");
+
+        Button btnStartSqlLogging = new Button(grpSql, SWT.NONE);
+        btnStartSqlLogging.addSelectionListener(new SelectionAdapter() {
+            boolean state = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (state == false) {
+                    try {
+                        dataService.startUpdate();
+                        state = true;
+                        btnStartSqlLogging.setText("Stop SQL Logging");
+                    } catch (DataServiceException e1) {
+                        logService.log(LogService.LOG_ERROR, "Failed to start sql logging.", e1);
+                    }
+                } else {
+                    dataService.stopUpdate();
+                    state = false;
+                    btnStartSqlLogging.setText("Start SQL Logging");
+                }
+            }
+        });
+        btnStartSqlLogging.setFont(SWTResourceManager.getFont("Segoe UI", 13, SWT.NORMAL));
+        GridData gd_btnStartSqlLogging = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
+        gd_btnStartSqlLogging.heightHint = 40;
+        btnStartSqlLogging.setLayoutData(gd_btnStartSqlLogging);
+        btnStartSqlLogging.setText("Start SQL Logging");
+
         Label label = new Label(composite_1, SWT.SEPARATOR | SWT.HORIZONTAL);
         label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
@@ -509,12 +542,21 @@ public class MainView {
         btnNotAus.setText("Not Aus");
         btnNotAus.setEnabled(false);
 
-        TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
-        tbtmVacuum.setText("Vacuum");
+        // TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
+        // tbtmVacuum.setText("Vacuum");
+        //
+        // Composite VacuumComposite =
+        // VacuumTabitemFactory.createComposite(tabFolder);
+        // tbtmVacuum.setControl(VacuumComposite);
+        // VacuumComposite.setLayout(new GridLayout(1, false));
 
-        Composite VacuumComposite = VacuumTabitemFactory.createComposite(tabFolder);
-        tbtmVacuum.setControl(VacuumComposite);
-        VacuumComposite.setLayout(new GridLayout(1, false));
+        TabItem tabItemLog = new TabItem(tabFolder, SWT.NONE);
+        tabItemLog.setText("Log");
+
+        Composite logComposite = new Composite(tabFolder, SWT.NONE);
+        logComposite.setLayout(new GridLayout(1, false));
+        tabItemLog.setControl(logComposite);
+        SystemOutputFactory.createStyledText(logComposite);
 
         TabItem conveyorDebugTabItem = new TabItem(tabFolder, SWT.NONE);
         conveyorDebugTabItem.setText("Conveyor");

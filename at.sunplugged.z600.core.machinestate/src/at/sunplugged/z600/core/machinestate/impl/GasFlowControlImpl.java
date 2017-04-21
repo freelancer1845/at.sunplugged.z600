@@ -3,6 +3,8 @@ package at.sunplugged.z600.core.machinestate.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
+
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
@@ -45,6 +47,8 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     private List<Double> stableControlList = new ArrayList<>();
 
+    private Future<?> stopFuture;
+
     public GasFlowControlImpl(MachineStateService machineStateService) {
         this.machineStateService = machineStateService;
         this.logService = MachineStateServiceImpl.getLogService();
@@ -79,6 +83,9 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
             logService.log(LogService.LOG_WARNING,
                     "Won't start gasflow control since pressure start limit is not reached...");
             return;
+        }
+        if (stopFuture != null && stopFuture.isDone() == false) {
+            stopFuture.cancel(true);
         }
         setState(State.STARTING);
     }
@@ -125,23 +132,36 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
     }
 
     private void setState(State state) {
-        this.state = state;
+
         if (state == State.STARTING) {
             threadPoolService.execute(new StartRunnable());
+            this.state = state;
         } else if (state == State.STOPPED) {
-            stopGasflowControl();
+            logService.log(LogService.LOG_INFO, "Stopping gasflow control.");
+            stopFuture = threadPoolService.submit(() -> {
+                try {
+                    stopGasflowControl();
+                    this.state = state;
+                } catch (IOException e) {
+                    logService.log(LogService.LOG_ERROR, "Unexpected exception when stopping gasflow control!", e);
+                } catch (InterruptedException e) {
+                    logService.log(LogService.LOG_DEBUG, "Stopping of gasflow control interrupted.");
+                }
+            });
         }
+
         machineStateService.fireMachineStateEvent(new GasFlowEvent(state));
     }
 
-    private void stopGasflowControl() {
-        try {
-            machineStateService.getOutletControl().closeOutlet(Outlet.OUTLET_NINE);
-            gasFlowVariable = 0;
-            writeGasFlowVariable();
-        } catch (IOException e) {
-            logService.log(LogService.LOG_ERROR, "Unexpected exception when stopping gasflow control!", e);
-        }
+    private void stopGasflowControl() throws IOException, InterruptedException {
+
+        gasFlowVariable = 0;
+        writeGasFlowVariable();
+        long waitTime = (long) settingsService.getPropertAsDouble(ParameterIds.GASFLOW_CONTROL_WAIT_TIME);
+        logService.log(LogService.LOG_INFO, String.format("Waiting %d seconds to close outlet nine.", waitTime));
+        Thread.sleep(waitTime);
+        machineStateService.getOutletControl().closeOutlet(Outlet.OUTLET_NINE);
+
     }
 
     private void writeGasFlowVariable() throws IOException {

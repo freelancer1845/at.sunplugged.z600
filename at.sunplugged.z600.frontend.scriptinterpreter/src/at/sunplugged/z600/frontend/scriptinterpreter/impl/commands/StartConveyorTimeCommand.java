@@ -13,23 +13,28 @@ public class StartConveyorTimeCommand extends AbstractCommand {
 
     private final double speed;
 
-    private final long timeInMs;
+    private final long timeInSeconds;
 
-    public StartConveyorTimeCommand(Mode mode, double speed, long timeInMs) {
+    public StartConveyorTimeCommand(Mode mode, double speed, long timeInSeconds) {
         this.mode = mode;
         this.speed = speed;
-        this.timeInMs = timeInMs;
+        this.timeInSeconds = timeInSeconds;
 
     }
 
     @Override
     public String name() {
-        return Commands.START_CONVEYOR_TIME + "(" + mode + ", " + speed + ", " + timeInMs + ")";
+        return Commands.START_CONVEYOR_TIME + "(" + mode + ", " + speed + ", " + timeInSeconds + ")";
     }
 
     @Override
     protected void executeCommandSpecific() throws InterruptedException, ScriptExecutionException {
-        ScriptInterpreterServiceImpl.getConveyorControlService().start(speed, mode, timeInMs, TimeUnit.MILLISECONDS);
+        ScriptInterpreterServiceImpl.getConveyorControlService().start(speed, mode, timeInSeconds, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public long getEstimededTimeNeeded(TimeUnit unit) {
+        return unit.convert(timeInSeconds, TimeUnit.SECONDS);
     }
 
 }

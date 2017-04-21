@@ -95,6 +95,11 @@ public abstract class AbstractPowerSource implements PowerSource {
     public void off() {
         if (state == State.OFF) {
             logService.log(LogService.LOG_DEBUG, "Powersource is already off: \"" + id.name() + "\"");
+            return;
+        }
+        if (startFuture == null) {
+            logService.log(LogService.LOG_DEBUG, "Tired to stop powersource which was never switched on!");
+            return;
         }
         threadPool.execute(new Runnable() {
 

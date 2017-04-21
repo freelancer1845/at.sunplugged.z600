@@ -27,13 +27,25 @@ public interface ConveyorControlService {
     public void start(double speedInMmS, Mode direction, double distanceInCm);
 
     /**
-     * 
+     * @deprecated
      * @param speedInMmS
      * @param direction
      * @param time in given time unit
      * @param unit
      */
     public void start(double speedInMmS, Mode direction, long time, TimeUnit unit);
+
+    /**
+     * Starts the conveyor and has it traveling the given distance with speed
+     * calculated by considering the desired timeUnderCathode. The length of the
+     * Cathode is defined in the settings (default = 90mm)
+     * 
+     * @param direction
+     * @param distanceInCm
+     * @param timeUnderCathode
+     * @param unit
+     */
+    public void start(Mode direction, double distanceInCm, long timeUnderCathode, TimeUnit unit);
 
     public void stop();
 

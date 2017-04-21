@@ -15,6 +15,7 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
@@ -108,10 +109,10 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
                 } else if (direction == Mode.RIGHT_TO_LEFT) {
                     targetPosition -= distance / 100.0;
                 }
-                logService.log(LogService.LOG_DEBUG,
+                logService.log(LogService.LOG_INFO,
                         String.format(
-                                "Started distance travel. CurrentPosition: \"%.4f\" TargetPosition: \"%.4f\" Distance: \"%.4f\"",
-                                currentPosition, targetPosition, distance));
+                                "Started distance travel. CurrentPosition: \"%.4f\" TargetPosition: \"%.4f\" Distance: \"%.4f\" Speed: \"%.4f\"",
+                                currentPosition, targetPosition, distance, speed));
                 while (true) {
                     try {
 
@@ -144,7 +145,7 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
             return;
         }
         start(speed, direction);
-        logService.log(LogService.LOG_DEBUG,
+        logService.log(LogService.LOG_INFO,
                 "Starting time travel. Time to go \"" + time + " " + unit.toString() + "\".");
         startWithTimeFuture = threadPoolService.timedExecute(new Runnable() {
 
@@ -155,6 +156,17 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
         }, time, unit);
 
+    }
+
+    @Override
+    public void start(Mode direction, double distanceInCm, long timeUnderCathode, TimeUnit unit) {
+        if (speedControl.getMode() != Mode.STOP) {
+            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
+            return;
+        }
+        double lengthOfCathode = settingsService.getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
+        double speed = lengthOfCathode / unit.toSeconds(timeUnderCathode);
+        start(speed, direction, distanceInCm);
     }
 
     @Override

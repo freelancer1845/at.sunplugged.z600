@@ -24,40 +24,14 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
 
     private static StandardThreadPoolService standardThreadPoolService;
 
-    private Future<?> scriptExecutionFuture;
-
     @Override
     public Future<?> executeScript(String script) throws ParseError {
-        if (scriptExecutionFuture != null && scriptExecutionFuture.isDone() == false) {
-            logService.log(LogService.LOG_ERROR, "Parallel Script execution is not allowed, though possible.");
-            return scriptExecutionFuture;
-        }
-        checkScript(script);
-        scriptExecutionFuture = standardThreadPoolService.submit(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    ScriptExecutor.executeScript(script);
-                } catch (Exception e) {
-                    logService.log(LogService.LOG_ERROR, "Script execution failed due to unhandled exception.", e);
-                }
-            }
-
-        });
-
-        return scriptExecutionFuture;
+        return ScriptExecutor.getInstance().executeScript(script);
     }
 
     @Override
     public void stopExecution() {
-
-        if (scriptExecutionFuture != null && scriptExecutionFuture.isDone() == false) {
-            scriptExecutionFuture.cancel(true);
-        } else {
-            logService.log(LogService.LOG_DEBUG, "Tried to stop execution, but no script running...");
-            return;
-        }
+        ScriptExecutor.getInstance().stopExecution();
     }
 
     @Override
@@ -107,6 +81,10 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
         }
     }
 
+    public static StandardThreadPoolService getStandardThreadPoolService() {
+        return standardThreadPoolService;
+    }
+
     @Reference(unbind = "unbindConveyorControlService")
     public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
         ScriptInterpreterServiceImpl.conveyorControlService = conveyorControlService;
@@ -124,7 +102,7 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
 
     @Override
     public String getCurrentCommandName() {
-        Command command = ScriptExecutor.getCurrentCommand();
+        Command command = ScriptExecutor.getInstance().getCurrentCommand();
         if (command == null) {
             return null;
         } else {
