@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.script.ScriptException;
+
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
@@ -55,13 +57,15 @@ public class ScriptExecutor {
         }
 
         logService.log(LogService.LOG_INFO, constructInfoString(commands, estimededTimeNeededInSeconds));
+        ScriptMonitor scriptMonitor = new ScriptMonitor();
 
         scriptExecutionFuture = standardThreadPoolService.submit(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    executeCommands(commands);
+                    scriptMonitor.start();
+                    executeCommands(commands, scriptMonitor);
                 } catch (Exception e) {
                     logService.log(LogService.LOG_ERROR, "Script execution failed due to unhandled exception.", e);
                     try {
@@ -81,6 +85,8 @@ public class ScriptExecutor {
                     } catch (Exception e1) {
                         logService.log(LogService.LOG_ERROR, "Error while cleaning up script execution", e1);
                     }
+                } finally {
+                    scriptMonitor.stopMonitor();
                 }
             }
 
@@ -103,11 +109,15 @@ public class ScriptExecutor {
         return currentCommand;
     }
 
-    private void executeCommands(List<Command> commands) throws Exception {
+    private void executeCommands(List<Command> commands, ScriptMonitor scriptMonitor) throws Exception {
         try {
 
             for (Command command : commands) {
+                if (Thread.interrupted() == true) {
+                    throw new ScriptException("Script execution interrupted!");
+                }
                 currentCommand = command;
+                scriptMonitor.addCommand(command);
                 command.execute();
 
             }
