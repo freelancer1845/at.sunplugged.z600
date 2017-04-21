@@ -11,7 +11,7 @@ import at.sunplugged.z600.core.machinestate.api.eventhandling.GasFlowEvent;
 public interface GasFlowControl {
 
     public enum State {
-        STARTING, RUNNING_STABLE, ADJUSTING, STOPPED;
+        STARTING, RUNNING_STABLE, ADJUSTING, STOPPING, STOP;
     }
 
     /**

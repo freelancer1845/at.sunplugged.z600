@@ -3,10 +3,12 @@ package at.sunplugged.z600.frontend.scriptinterpreter.impl.commands;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.Commands;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
+import at.sunplugged.z600.frontend.scriptinterpreter.impl.ScriptInterpreterServiceImpl;
 
 public class CommandParser {
 
@@ -138,6 +140,20 @@ public class CommandParser {
         testParameterCount(command, parameters, 1);
         try {
             double pressure = Double.valueOf(parameters[0]);
+            if (pressure > 0) {
+                double minPressure = ScriptInterpreterServiceImpl.getSettingsService()
+                        .getPropertAsDouble(ParameterIds.VACUUM_LOWER_LIMIT_MBAR);
+                if (pressure < minPressure) {
+                    throw new ParseError(
+                            String.format("Pressure parameter is lower than min value. \"%f\"", minPressure));
+                }
+                double maxPressure = ScriptInterpreterServiceImpl.getSettingsService()
+                        .getPropertAsDouble(ParameterIds.VACUUM_UPPER_LIMIT_MBAR);
+                if (pressure > maxPressure) {
+                    throw new ParseError(
+                            String.format("Pressure parameter is higher than max value. \"%f\"", maxPressure));
+                }
+            }
             return new SetPressureCommand(pressure);
         } catch (NumberFormatException e) {
             throw new ParseError(String.format("Wrong format for pressure parameter. \"%s\"", command));

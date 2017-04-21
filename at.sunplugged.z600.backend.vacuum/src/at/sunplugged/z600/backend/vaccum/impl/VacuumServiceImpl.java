@@ -58,7 +58,8 @@ public class VacuumServiceImpl implements VacuumService {
     private static void updateState() {
         if (cryoState == CryoPumpsThreadState.CRYO_RUNNING && turboState == TurboPumpThreadState.TURBO_PUMP_RUNNING) {
             state = State.EVACUATING;
-            if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOPPED) {
+            if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOP
+                    && machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOPPING) {
                 state = State.PRESSURE_CONTROL_RUNNING;
             }
             return;

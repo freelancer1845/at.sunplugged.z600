@@ -453,6 +453,7 @@ public class MainView {
         Label lblCurrentinstruction = new Label(grpSkriptAusfhrung, SWT.NONE);
         lblCurrentinstruction.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
         lblCurrentinstruction.setText("currentInstruction");
+        lblCurrentinstruction.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         Display.getDefault().timerExec(300, new Runnable() {
 
             @Override
@@ -556,6 +557,74 @@ public class MainView {
         Composite logComposite = new Composite(tabFolder, SWT.NONE);
         logComposite.setLayout(new GridLayout(1, false));
         tabItemLog.setControl(logComposite);
+        Group logLevelgroup = new Group(logComposite, SWT.NONE);
+        logLevelgroup.setText("Log Levels");
+        logLevelgroup.setLayout(new GridLayout(4, true));
+
+        Button infoCheck = new Button(logLevelgroup, SWT.CHECK);
+        infoCheck.setText("Log Info");
+        infoCheck.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        infoCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (infoCheck.getSelection() == true) {
+                    SystemOutputFactory.activateLogLevel(LogService.LOG_INFO);
+                } else {
+                    SystemOutputFactory.deactivateLogLevel(LogService.LOG_INFO);
+                }
+            }
+        });
+        SystemOutputFactory.activateLogLevel(LogService.LOG_INFO);
+        infoCheck.setSelection(true);
+
+        Button warningCheck = new Button(logLevelgroup, SWT.CHECK);
+        warningCheck.setText("Log Warning");
+        warningCheck.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        warningCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (warningCheck.getSelection() == true) {
+                    SystemOutputFactory.activateLogLevel(LogService.LOG_WARNING);
+                } else {
+                    SystemOutputFactory.deactivateLogLevel(LogService.LOG_WARNING);
+                }
+            }
+        });
+        SystemOutputFactory.activateLogLevel(LogService.LOG_WARNING);
+        warningCheck.setSelection(true);
+
+        Button errorCheck = new Button(logLevelgroup, SWT.CHECK);
+        errorCheck.setText("Log Error");
+        errorCheck.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        errorCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (errorCheck.getSelection() == true) {
+                    SystemOutputFactory.activateLogLevel(LogService.LOG_ERROR);
+                } else {
+                    SystemOutputFactory.deactivateLogLevel(LogService.LOG_ERROR);
+                }
+            }
+        });
+        SystemOutputFactory.activateLogLevel(LogService.LOG_ERROR);
+        errorCheck.setSelection(true);
+
+        Button debugCheck = new Button(logLevelgroup, SWT.CHECK);
+        debugCheck.setText("Log Debug");
+        debugCheck.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        debugCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (debugCheck.getSelection() == true) {
+                    SystemOutputFactory.activateLogLevel(LogService.LOG_DEBUG);
+                } else {
+                    SystemOutputFactory.deactivateLogLevel(LogService.LOG_DEBUG);
+                }
+            }
+        });
+        SystemOutputFactory.deactivateLogLevel(LogService.LOG_DEBUG);
+        debugCheck.setSelection(false);
+
         SystemOutputFactory.createStyledText(logComposite);
 
         TabItem conveyorDebugTabItem = new TabItem(tabFolder, SWT.NONE);
@@ -861,7 +930,16 @@ public class MainView {
         Label lblCurrentCommand = new Label(group, SWT.NONE);
         lblCurrentCommand.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
         lblCurrentCommand.setText("Current Command:");
-        new Label(group, SWT.NONE);
+
+        Button btnStopExecution = new Button(group, SWT.NONE);
+        btnStopExecution.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                scriptInterpreterService.stopExecution();
+            }
+        });
+        btnStopExecution.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStopExecution.setText("Stop Execution");
         new Label(group, SWT.NONE);
         new Label(group, SWT.NONE);
 
@@ -873,6 +951,7 @@ public class MainView {
             public void modifyText(ModifyEvent e) {
                 styledTextScriptInput.setStyleRange(new StyleRange(0, styledTextScriptInput.getCharCount(),
                         SWTResourceManager.getColor(SWT.COLOR_BLACK), SWTResourceManager.getColor(SWT.COLOR_WHITE)));
+                styledTextScriptInput.setToolTipText("");
                 try {
                     scriptInterpreterService.checkScript(styledTextScriptInput.getText());
                 } catch (ParseError e1) {
@@ -882,6 +961,7 @@ public class MainView {
                         styledTextScriptInput.setStyleRange(
                                 new StyleRange(start, length, SWTResourceManager.getColor(SWT.COLOR_BLACK),
                                         SWTResourceManager.getColor(SWT.COLOR_RED)));
+                        styledTextScriptInput.setToolTipText(e1.getMessage());
                     }
                 }
             }
@@ -924,10 +1004,12 @@ public class MainView {
                 FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
                 fd.setText("Save");
 
-                String[] filter = { "untitled.txt" };
+                String[] filter = { "*.sc" };
                 fd.setFilterExtensions(filter);
                 String selected = fd.open();
-
+                if (selected == null) {
+                    return;
+                }
                 try {
                     File file = new File(selected);
                     if (!file.exists()) {

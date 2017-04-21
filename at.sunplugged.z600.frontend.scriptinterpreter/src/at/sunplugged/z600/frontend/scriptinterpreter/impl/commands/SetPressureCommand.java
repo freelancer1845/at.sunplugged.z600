@@ -23,14 +23,15 @@ public class SetPressureCommand extends AbstractCommand {
             gasflowControl.stopGasFlowControl();
             return;
         }
-        if (gasflowControl.getState() == GasFlowControl.State.STOPPED) {
+        if (gasflowControl.getState() == GasFlowControl.State.STOP
+                || gasflowControl.getState() == GasFlowControl.State.STOPPING) {
             gasflowControl.startGasFlowControl();
             Thread.sleep(500);
         } else if (gasflowControl.getState() == GasFlowControl.State.STARTING) {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
         }
-        if (gasflowControl.getState() != GasFlowControl.State.ADJUSTING
-                || gasflowControl.getState() != GasFlowControl.State.RUNNING_STABLE) {
+        if (!(gasflowControl.getState() == GasFlowControl.State.ADJUSTING
+                || gasflowControl.getState() == GasFlowControl.State.RUNNING_STABLE)) {
             setState(State.FAILED);
             throw new ScriptExecutionException(
                     "Failed to execute setPressure command: Not able to start gasflow control.");

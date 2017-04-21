@@ -39,7 +39,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     private MbtService mbtService;
 
-    private State state = State.STOPPED;
+    private State state = State.STOP;
 
     private double desiredPressure = 0;
 
@@ -92,12 +92,12 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     @Override
     public void stopGasFlowControl() {
-        if (state == State.STOPPED) {
+        if (state == State.STOP || state == State.STOPPING) {
             logService.log(LogService.LOG_DEBUG,
                     "Tried to stop gasflow control, but state is: \"" + state.name() + "\"");
             return;
         }
-        setState(State.STOPPED);
+        setState(State.STOP);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
                 PressureChangedEvent pressureEvent = (PressureChangedEvent) event;
                 if (pressureEvent.getOrigin().equals(PressureMeasurementSite.CHAMBER)) {
                     if ((double) pressureEvent.getValue() > 0.03) {
-                        setState(State.STOPPED);
+                        setState(State.STOP);
                     }
                 }
             }
@@ -136,8 +136,9 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         if (state == State.STARTING) {
             threadPoolService.execute(new StartRunnable());
             this.state = state;
-        } else if (state == State.STOPPED) {
+        } else if (state == State.STOP) {
             logService.log(LogService.LOG_INFO, "Stopping gasflow control.");
+            this.state = State.STOPPING;
             stopFuture = threadPoolService.submit(() -> {
                 try {
                     stopGasflowControl();
@@ -148,6 +149,8 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
                     logService.log(LogService.LOG_DEBUG, "Stopping of gasflow control interrupted.");
                 }
             });
+        } else {
+            this.state = state;
         }
 
         machineStateService.fireMachineStateEvent(new GasFlowEvent(state));
@@ -158,8 +161,8 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
         gasFlowVariable = 0;
         writeGasFlowVariable();
         long waitTime = (long) settingsService.getPropertAsDouble(ParameterIds.GASFLOW_CONTROL_WAIT_TIME);
-        logService.log(LogService.LOG_INFO, String.format("Waiting %d seconds to close outlet nine.", waitTime));
-        Thread.sleep(waitTime);
+        logService.log(LogService.LOG_INFO, String.format("Waiting %d seconds until closing outlet nine.", waitTime));
+        Thread.sleep(waitTime * 1000);
         machineStateService.getOutletControl().closeOutlet(Outlet.OUTLET_NINE);
 
     }
@@ -215,8 +218,8 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
             while (true) {
                 double chamberPressure = machineStateService.getPressureMeasurmentControl()
                         .getCurrentValue(PressureMeasurementSite.CHAMBER);
-                if (state == State.STOPPED) {
-                    logService.log(LogService.LOG_DEBUG, "Gas flow control stopped.");
+                if (state == State.STOP || state == State.STOPPING) {
+                    logService.log(LogService.LOG_DEBUG, "(CONTROL LOOP) Gas flow control stopped.");
                     break;
                 }
                 if (desiredPressure - chamberPressure > controlParameterHysteresis) {
@@ -233,7 +236,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
                     writeGasFlowVariable();
                 } catch (IOException e) {
                     logService.log(LogService.LOG_ERROR, "Failed to start Gas Flow Control!", e);
-                    setState(State.STOPPED);
+                    setState(State.STOP);
                     break;
                 }
 
@@ -245,7 +248,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
                     } catch (InterruptedException e) {
                         logService.log(LogService.LOG_ERROR,
                                 "Starting of Gas Flow Control failed due to Interruption when waiting!");
-                        setState(State.STOPPED);
+                        setState(State.STOP);
                         break;
                     }
                 }

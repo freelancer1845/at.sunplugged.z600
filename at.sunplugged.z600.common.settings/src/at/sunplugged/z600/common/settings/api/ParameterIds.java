@@ -65,4 +65,10 @@ public class ParameterIds {
     /** Wait time for gasflow control to stop in seconds. */
     public static final String GASFLOW_CONTROL_WAIT_TIME = "Gasflowcontrol_wait_time_seconds";
 
+    /**
+     * Power window for considering a powersource stable in percentage of
+     * setpoint.
+     */
+    public static final String POWER_SOURCE_POWER_STABLE_WINDOW_PERCENTAGE = "PowerSource_Power_Stable_Window_In_Percentage";
+
 }

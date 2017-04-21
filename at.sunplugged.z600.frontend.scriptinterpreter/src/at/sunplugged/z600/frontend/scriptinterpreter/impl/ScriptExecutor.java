@@ -97,6 +97,8 @@ public class ScriptExecutor {
     }
 
     public void stopExecution() {
+
+        logService.log(LogService.LOG_INFO, "Stopping script execution. Sleep interrupted errors are expected.");
         if (scriptExecutionFuture != null && scriptExecutionFuture.isDone() == false) {
             scriptExecutionFuture.cancel(true);
         } else {
@@ -144,6 +146,7 @@ public class ScriptExecutor {
         stringBuilder.append(String.format("--- Estimeted runtime \"%d\" seconds ---", timeNeededInSeconds));
         stringBuilder.append(System.lineSeparator());
         LocalTime now = LocalTime.now();
+        now = now.plusSeconds(timeNeededInSeconds);
         stringBuilder.append(String.format("--- Estimeted time of finish %02d:%02d:%02d ---", now.getHour(),
                 now.getMinute(), now.getSecond()));
         stringBuilder.append(System.lineSeparator());

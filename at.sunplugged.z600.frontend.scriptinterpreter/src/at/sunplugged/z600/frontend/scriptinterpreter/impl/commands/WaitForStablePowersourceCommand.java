@@ -2,6 +2,7 @@ package at.sunplugged.z600.frontend.scriptinterpreter.impl.commands;
 
 import java.util.concurrent.TimeUnit;
 
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.core.machinestate.api.PowerSource;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.Commands;
@@ -32,15 +33,18 @@ public class WaitForStablePowersourceCommand extends AbstractCommand {
                 .getPowerSource(id);
         int counter = 0;
         while (counter < 10) {
-            PowerSource.State state = powerSource.getState();
-            if (state == PowerSource.State.OFF) {
+            if (powerSource.getState() == PowerSource.State.OFF) {
                 break;
             }
-            if (state == PowerSource.State.ON) {
+            double windowSize = ScriptInterpreterServiceImpl.getSettingsService()
+                    .getPropertAsDouble(ParameterIds.POWER_SOURCE_POWER_STABLE_WINDOW_PERCENTAGE) / 100
+                    * powerSource.getSetPointpower();
+            if (Math.abs(powerSource.getPower() - powerSource.getSetPointpower()) < windowSize) {
                 counter++;
             } else {
                 counter = 0;
             }
+
             Thread.sleep(100);
         }
     }

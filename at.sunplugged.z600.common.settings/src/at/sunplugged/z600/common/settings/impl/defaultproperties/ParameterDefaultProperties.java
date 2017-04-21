@@ -34,6 +34,8 @@ public class ParameterDefaultProperties extends Properties {
         this.put(ParameterIds.POWER_CHANGE_PINNACLE, "0.002");
         this.put(ParameterIds.CURRENT_CHANGE_SSV, "0.02");
         this.put(ParameterIds.CATHODE_LENGTH_MM, "90");
+        this.put(ParameterIds.GASFLOW_CONTROL_WAIT_TIME, "30");
+        this.put(ParameterIds.POWER_SOURCE_POWER_STABLE_WINDOW_PERCENTAGE, "10");
     }
 
 }

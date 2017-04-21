@@ -50,28 +50,28 @@ public class ConsoleLogger implements LogListener {
     public void logged(LogEntry entry) {
         switch (entry.getLevel()) {
         case LogService.LOG_DEBUG:
-            System.out.println(LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
+            System.out.println("DEBUG - " + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
                     + entry.getBundle().getSymbolicName() + " - " + entry.getMessage());
             if (entry.getException() != null) {
                 entry.getException().printStackTrace();
             }
             break;
         case LogService.LOG_ERROR:
-            System.out.println(LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
+            System.out.println("ERROR - " + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
                     + entry.getBundle().getSymbolicName() + " - " + entry.getMessage());
             if (entry.getException() != null) {
                 entry.getException().printStackTrace();
             }
             break;
         case LogService.LOG_INFO:
-            System.out.println(LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
+            System.out.println("INFO - " + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
                     + entry.getBundle().getSymbolicName() + " - " + entry.getMessage());
             if (entry.getException() != null) {
                 entry.getException().printStackTrace();
             }
             break;
         case LogService.LOG_WARNING:
-            System.out.println(LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
+            System.out.println("WARNING - " + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + " - "
                     + entry.getBundle().getSymbolicName() + " - " + entry.getMessage());
             if (entry.getException() != null) {
                 entry.getException().printStackTrace();

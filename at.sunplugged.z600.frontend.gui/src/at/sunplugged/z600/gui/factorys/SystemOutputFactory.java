@@ -1,7 +1,9 @@
 package at.sunplugged.z600.gui.factorys;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.eclipse.equinox.log.ExtendedLogReaderService;
 import org.eclipse.swt.SWT;
@@ -33,6 +35,20 @@ public final class SystemOutputFactory implements LogListener {
 
     private static StyledText styledText;
 
+    private static List<Integer> logLevels = new ArrayList<>();
+
+    public static void activateLogLevel(int logLevel) {
+        if (logLevels.contains(logLevel) == false) {
+            logLevels.add(logLevel);
+        }
+    }
+
+    public static void deactivateLogLevel(int logLevel) {
+        if (logLevels.contains(logLevel)) {
+            logLevels.remove((Integer) logLevel);
+        }
+    }
+
     /**
      * @wbp.factory
      */
@@ -58,16 +74,24 @@ public final class SystemOutputFactory implements LogListener {
         if (styledText != null) {
             switch (entry.getLevel()) {
             case LogService.LOG_INFO:
-                logInfo(entry);
+                if (logLevels.contains(LogService.LOG_INFO)) {
+                    logInfo(entry);
+                }
                 break;
             case LogService.LOG_DEBUG:
-                logDebug(entry);
+                if (logLevels.contains(LogService.LOG_DEBUG)) {
+                    logDebug(entry);
+                }
                 break;
             case LogService.LOG_WARNING:
-                logWarning(entry);
+                if (logLevels.contains(LogService.LOG_WARNING)) {
+                    logWarning(entry);
+                }
                 break;
             case LogService.LOG_ERROR:
-                logError(entry);
+                if (logLevels.contains(LogService.LOG_ERROR)) {
+                    logError(entry);
+                }
                 break;
             default:
 

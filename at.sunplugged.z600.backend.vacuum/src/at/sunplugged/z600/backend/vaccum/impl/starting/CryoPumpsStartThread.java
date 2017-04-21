@@ -389,7 +389,8 @@ public class CryoPumpsStartThread extends Thread {
                     return;
                 }
             }
-            if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOPPED) {
+            if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOP
+                    && machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOPPING) {
                 state = CryoPumpsThreadState.GAS_FLOW_RUNNING;
                 return;
             }
