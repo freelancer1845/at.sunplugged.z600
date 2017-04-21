@@ -7,6 +7,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
@@ -23,6 +24,8 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
     private static LogService logService;
 
     private static StandardThreadPoolService standardThreadPoolService;
+
+    private static SettingsService settingsService;
 
     @Override
     public Future<?> executeScript(String script) throws ParseError {
@@ -98,6 +101,21 @@ public class ScriptInterpreterServiceImpl implements ScriptInterpreterService {
 
     public static ConveyorControlService getConveyorControlService() {
         return conveyorControlService;
+    }
+
+    @Reference(unbind = "unbindSettingsService")
+    public synchronized void bindSettingsService(SettingsService settingsService) {
+        ScriptInterpreterServiceImpl.settingsService = settingsService;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService settingsService) {
+        if (ScriptInterpreterServiceImpl.settingsService == settingsService) {
+            ScriptInterpreterServiceImpl.settingsService = null;
+        }
+    }
+
+    public static SettingsService getSettingsService() {
+        return settingsService;
     }
 
     @Override

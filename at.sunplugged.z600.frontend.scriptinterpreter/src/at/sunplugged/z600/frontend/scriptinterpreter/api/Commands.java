@@ -10,6 +10,8 @@ public class Commands {
 
     public static final String START_CONVEYOR_TIME = "startConveyorTime";
 
+    public static final String START_CONVEYOR_TIME_UNDER_CATHODE = "startConveyorTimeUnderCathode";
+
     public static final String WAIT_FOR_CONVEYOR = "waitForConveyor";
 
     public static final String WAIT = "wait";

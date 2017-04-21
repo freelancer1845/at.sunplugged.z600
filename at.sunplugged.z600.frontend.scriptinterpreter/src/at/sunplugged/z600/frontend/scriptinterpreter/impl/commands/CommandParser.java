@@ -26,6 +26,8 @@ public class CommandParser {
             return interpretStartConveyorSimpleCommand(command);
         } else if (command.startsWith(Commands.START_CONVEYOR_DISTANCE)) {
             return interpretStartConveyorDistanceCommand(command);
+        } else if (command.startsWith(Commands.START_CONVEYOR_TIME_UNDER_CATHODE)) {
+            return interpretStartConveyorTimeUnderCathodeCommand(command);
         } else if (command.startsWith(Commands.START_CONVEYOR_TIME)) {
             return interpretStartConveyorTimeCommand(command);
         } else if (command.startsWith(Commands.STOP_CONVEYOR)) {
@@ -36,6 +38,22 @@ public class CommandParser {
 
         else {
             throw new ParseError("Failed to parse command: \"" + command + "\"");
+        }
+
+    }
+
+    private static Command interpretStartConveyorTimeUnderCathodeCommand(String command) throws ParseError {
+        String[] parameters = getParameters(command);
+        testParameterCount(command, parameters, 3);
+        try {
+            Mode mode = Mode.valueOf(parameters[0]);
+            double distance = Double.valueOf(parameters[1]);
+            long timeUnderCathodeInSeconds = Long.valueOf(parameters[2]);
+
+            return new StartConveyorTimeUnderCathodeCommand(mode, distance, timeUnderCathodeInSeconds);
+        } catch (IllegalArgumentException e) {
+            throw new ParseError(String
+                    .format("Mode, distance or timeUnderCathode parameter not provide properly. \"%s\"", command));
         }
 
     }
