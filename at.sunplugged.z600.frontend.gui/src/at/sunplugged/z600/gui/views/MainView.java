@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -14,6 +16,8 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -59,7 +63,10 @@ import at.sunplugged.z600.core.machinestate.api.Pump;
 import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
@@ -71,6 +78,7 @@ import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
+import org.eclipse.swt.widgets.Text;
 
 @Component
 public class MainView {
@@ -110,6 +118,8 @@ public class MainView {
     private static BundleContext context;
 
     private static Viewer diagramViewer;
+    private static Text textAnalogOutput;
+    private static Text textAnalogInput;
 
     public static LogService getLogService() {
         return logService;
@@ -638,97 +648,97 @@ public class MainView {
         TabItem tbtmMachinedebug = new TabItem(tabFolder, SWT.NONE);
         tbtmMachinedebug.setText("MachineDebug");
 
-        Composite composite = new Composite(tabFolder, SWT.NONE);
-        tbtmMachinedebug.setControl(composite);
-        composite.setLayout(new GridLayout(3, true));
+        Composite machineDebugComposite = new Composite(tabFolder, SWT.NONE);
+        tbtmMachinedebug.setControl(machineDebugComposite);
+        machineDebugComposite.setLayout(new GridLayout(3, true));
 
-        Button toggelOutletOne = new Button(composite, SWT.NONE);
+        Button toggelOutletOne = new Button(machineDebugComposite, SWT.NONE);
         toggelOutletOne.addSelectionListener(new OutletAdapter(Outlet.OUTLET_ONE));
         toggelOutletOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         toggelOutletOne.setText("V1");
 
-        Button toggelOutletTwo = new Button(composite, SWT.NONE);
+        Button toggelOutletTwo = new Button(machineDebugComposite, SWT.NONE);
         toggelOutletTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggelOutletTwo.setText("V2");
         toggelOutletTwo.addSelectionListener(new OutletAdapter(Outlet.OUTLET_TWO));
 
-        Button toggelOutletThree = new Button(composite, SWT.NONE);
+        Button toggelOutletThree = new Button(machineDebugComposite, SWT.NONE);
         toggelOutletThree.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggelOutletThree.setText("V3");
         toggelOutletThree.addSelectionListener(new OutletAdapter(Outlet.OUTLET_THREE));
 
-        Button toggleOutletFour = new Button(composite, SWT.NONE);
+        Button toggleOutletFour = new Button(machineDebugComposite, SWT.NONE);
         toggleOutletFour.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleOutletFour.setText("V4");
         toggleOutletFour.addSelectionListener(new OutletAdapter(Outlet.OUTLET_FOUR));
 
-        Button toggelOutletFive = new Button(composite, SWT.NONE);
+        Button toggelOutletFive = new Button(machineDebugComposite, SWT.NONE);
         toggelOutletFive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggelOutletFive.setText("V5");
         toggelOutletFive.addSelectionListener(new OutletAdapter(Outlet.OUTLET_FIVE));
 
-        Button toggleOutletSix = new Button(composite, SWT.NONE);
+        Button toggleOutletSix = new Button(machineDebugComposite, SWT.NONE);
         toggleOutletSix.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleOutletSix.setText("V6");
         toggleOutletSix.addSelectionListener(new OutletAdapter(Outlet.OUTLET_SIX));
 
-        Button toggleOutletSeven = new Button(composite, SWT.NONE);
+        Button toggleOutletSeven = new Button(machineDebugComposite, SWT.NONE);
         toggleOutletSeven.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleOutletSeven.setText("V7");
         toggleOutletSeven.addSelectionListener(new OutletAdapter(Outlet.OUTLET_SEVEN));
 
-        Button toggleOutletEight = new Button(composite, SWT.NONE);
+        Button toggleOutletEight = new Button(machineDebugComposite, SWT.NONE);
         toggleOutletEight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleOutletEight.setText("V8");
         toggleOutletEight.addSelectionListener(new OutletAdapter(Outlet.OUTLET_EIGHT));
 
-        Button toggelOutletNine = new Button(composite, SWT.NONE);
+        Button toggelOutletNine = new Button(machineDebugComposite, SWT.NONE);
         toggelOutletNine.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggelOutletNine.setText("V9");
         toggelOutletNine.addSelectionListener(new OutletAdapter(Outlet.OUTLET_NINE));
 
-        Button togglePrePumpOne = new Button(composite, SWT.NONE);
+        Button togglePrePumpOne = new Button(machineDebugComposite, SWT.NONE);
         togglePrePumpOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         togglePrePumpOne.setText("Toggle Pre Pump Pone");
         togglePrePumpOne.addSelectionListener(new PumpAdapter(PumpIds.PRE_PUMP_ONE));
 
-        Button togglePrePumpRoots = new Button(composite, SWT.NONE);
+        Button togglePrePumpRoots = new Button(machineDebugComposite, SWT.NONE);
         togglePrePumpRoots.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         togglePrePumpRoots.setText("Toggle Pre Pump Roots");
         togglePrePumpRoots.addSelectionListener(new PumpAdapter(PumpIds.PRE_PUMP_ROOTS));
 
-        Button togglepPrePumpTwo = new Button(composite, SWT.NONE);
+        Button togglepPrePumpTwo = new Button(machineDebugComposite, SWT.NONE);
         togglepPrePumpTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         togglepPrePumpTwo.setText("Toggle Pre Pump Two");
         togglepPrePumpTwo.addSelectionListener(new PumpAdapter(PumpIds.PRE_PUMP_TWO));
 
-        Button toggleTurboPump = new Button(composite, SWT.NONE);
+        Button toggleTurboPump = new Button(machineDebugComposite, SWT.NONE);
         toggleTurboPump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleTurboPump.setText("Toggle Turbo Pump");
         toggleTurboPump.addSelectionListener(new PumpAdapter(PumpIds.TURBO_PUMP));
 
-        Button toggleCryoOne = new Button(composite, SWT.NONE);
+        Button toggleCryoOne = new Button(machineDebugComposite, SWT.NONE);
         toggleCryoOne.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleCryoOne.setText("Toggle Cryo One");
         toggleCryoOne.addSelectionListener(new PumpAdapter(PumpIds.CRYO_ONE));
 
-        Button toggleCryoTwo = new Button(composite, SWT.NONE);
+        Button toggleCryoTwo = new Button(machineDebugComposite, SWT.NONE);
         toggleCryoTwo.setText("Toggle Cryo Two");
         toggleCryoTwo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
-        Label waterKath1Label = new Label(composite, SWT.NONE);
+        Label waterKath1Label = new Label(machineDebugComposite, SWT.NONE);
         waterKath1Label.setText("Water KATH1: false");
         waterKath1Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
-        Label waterKath2Label = new Label(composite, SWT.NONE);
+        Label waterKath2Label = new Label(machineDebugComposite, SWT.NONE);
         waterKath2Label.setText("Water KATH2: false");
         waterKath2Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
-        Label waterKath3Label = new Label(composite, SWT.NONE);
+        Label waterKath3Label = new Label(machineDebugComposite, SWT.NONE);
         waterKath3Label.setText("Water KATH3: false");
         waterKath3Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
-        Label waterKath4Label = new Label(composite, SWT.NONE);
+        Label waterKath4Label = new Label(machineDebugComposite, SWT.NONE);
         waterKath4Label.setText("Water KATH4: false");
         waterKath4Label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
@@ -752,7 +762,7 @@ public class MainView {
 
         });
 
-        Button toggleWaterTurboPump = new Button(composite, SWT.NONE);
+        Button toggleWaterTurboPump = new Button(machineDebugComposite, SWT.NONE);
         toggleWaterTurboPump.setText("Toggle Water Turbo");
         toggleWaterTurboPump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleWaterTurboPump.addSelectionListener(new SelectionAdapter() {
@@ -770,7 +780,7 @@ public class MainView {
 
         });
 
-        Button toggleWaterKath1Pump = new Button(composite, SWT.NONE);
+        Button toggleWaterKath1Pump = new Button(machineDebugComposite, SWT.NONE);
         toggleWaterKath1Pump.setText("Toggle Water Kath1");
         toggleWaterKath1Pump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleWaterKath1Pump.addSelectionListener(new SelectionAdapter() {
@@ -788,7 +798,7 @@ public class MainView {
 
         });
 
-        Button toggleWaterKath2Pump = new Button(composite, SWT.NONE);
+        Button toggleWaterKath2Pump = new Button(machineDebugComposite, SWT.NONE);
         toggleWaterKath2Pump.setText("Toggle Water Kath2");
         toggleWaterKath2Pump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleWaterKath2Pump.addSelectionListener(new SelectionAdapter() {
@@ -806,7 +816,7 @@ public class MainView {
 
         });
 
-        Button toggleWaterKath3Pump = new Button(composite, SWT.NONE);
+        Button toggleWaterKath3Pump = new Button(machineDebugComposite, SWT.NONE);
         toggleWaterKath3Pump.setText("Toggle Water Kath3");
         toggleWaterKath3Pump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleWaterKath3Pump.addSelectionListener(new SelectionAdapter() {
@@ -824,7 +834,7 @@ public class MainView {
 
         });
 
-        Button toggleWaterShieldPump = new Button(composite, SWT.NONE);
+        Button toggleWaterShieldPump = new Button(machineDebugComposite, SWT.NONE);
         toggleWaterShieldPump.setText("Toggle Water Shield");
         toggleWaterShieldPump.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         toggleWaterShieldPump.addSelectionListener(new SelectionAdapter() {
@@ -842,11 +852,11 @@ public class MainView {
 
         });
 
-        Button toggleDigOut = new Button(composite, SWT.NONE);
+        Button toggleDigOut = new Button(machineDebugComposite, SWT.NONE);
         toggleDigOut.setText("Toggle Dig Out [2][0]");
         toggleDigOut.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        new Label(composite, SWT.NONE);
-        new Label(composite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
         toggleDigOut.addSelectionListener(new SelectionAdapter() {
             private boolean lastState = false;
 
@@ -863,7 +873,7 @@ public class MainView {
 
         });
 
-        Button startSql = new Button(composite, SWT.NONE);
+        Button startSql = new Button(machineDebugComposite, SWT.NONE);
         startSql.setText("Start SQL");
         startSql.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         startSql.addSelectionListener(new SelectionAdapter() {
@@ -879,10 +889,183 @@ public class MainView {
 
         });
 
-        Button stopSql = new Button(composite, SWT.NONE);
+        Button stopSql = new Button(machineDebugComposite, SWT.NONE);
         stopSql.setText("Stop SQL");
         stopSql.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        new Label(composite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
+
+        Group grpDigitalIo = new Group(machineDebugComposite, SWT.NONE);
+        grpDigitalIo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        grpDigitalIo.setText("Digital I/O");
+        grpDigitalIo.setLayout(new GridLayout(2, false));
+
+        Combo digitalOutputCombo = new Combo(grpDigitalIo, SWT.NONE);
+        digitalOutputCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        digitalOutputCombo.setText("DigitalOutput");
+        List<String> digitalOutputAddresses = new ArrayList<>();
+        for (DigitalOutput digitalOutput : WagoAddresses.DigitalOutput.values()) {
+            digitalOutputAddresses.add(digitalOutput.toString());
+        }
+        digitalOutputCombo.setItems(digitalOutputAddresses.toArray(new String[0]));
+
+        Button digitalOutputCheck = new Button(grpDigitalIo, SWT.CHECK | SWT.CENTER);
+        digitalOutputCheck.setAlignment(SWT.LEFT);
+        GridData gd_digitalOutputCheck = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
+        gd_digitalOutputCheck.widthHint = 50;
+        digitalOutputCheck.setLayoutData(gd_digitalOutputCheck);
+        digitalOutputCombo.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                try {
+                    digitalOutputCheck.setEnabled(true);
+                    digitalOutputCheck.setSelection(machineStateService
+                            .readDigitalOutput(WagoAddresses.DigitalOutput.valueOf(digitalOutputCombo.getText())));
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to read digitalOutput for machineDebug view.", e1);
+                    digitalOutputCheck.setEnabled(false);
+                }
+            }
+        });
+
+        digitalOutputCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    machineStateService.writeDigitalOutput(
+                            WagoAddresses.DigitalOutput.valueOf(digitalOutputCombo.getText()),
+                            digitalOutputCheck.getSelection());
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to write DigitalOutput for machineDebug view.", e1);
+                }
+            }
+
+        });
+
+        Combo digitalInputCombo = new Combo(grpDigitalIo, SWT.NONE);
+        digitalInputCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        digitalInputCombo.setText("DigitalInput");
+
+        List<String> digitalInputList = new ArrayList<>();
+        for (DigitalInput digitalInput : WagoAddresses.DigitalInput.values()) {
+            digitalInputList.add(digitalInput.toString());
+        }
+
+        digitalInputCombo.setItems(digitalInputList.toArray(new String[0]));
+
+        Button digitalInputCheck = new Button(grpDigitalIo, SWT.CHECK);
+        digitalInputCheck.setEnabled(false);
+        digitalInputCombo.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                try {
+                    digitalInputCheck.setSelection(machineStateService
+                            .readDigitalIntput(WagoAddresses.DigitalInput.valueOf(digitalInputCombo.getText())));
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to read DigitalInput for machineDebugView.", e1);
+                }
+
+            }
+        });
+
+        Group grpAnalogIo = new Group(machineDebugComposite, SWT.NONE);
+        grpAnalogIo.setLayout(new GridLayout(2, false));
+        grpAnalogIo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        grpAnalogIo.setText("Analog I/O");
+
+        Combo analogOutputCombo = new Combo(grpAnalogIo, SWT.NONE);
+        analogOutputCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        analogOutputCombo.setText("AnalogOutput");
+
+        List<String> analogOutputList = new ArrayList<>();
+        for (AnalogOutput analogOutput : AnalogOutput.values()) {
+            analogOutputList.add(analogOutput.toString());
+        }
+        analogOutputCombo.setItems(analogOutputList.toArray(new String[0]));
+
+        textAnalogOutput = new Text(grpAnalogIo, SWT.BORDER);
+        GridData gd_textAnlogOutput = new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1);
+        gd_textAnlogOutput.widthHint = 70;
+        textAnalogOutput.setLayoutData(gd_textAnlogOutput);
+
+        analogOutputCombo.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                try {
+                    textAnalogOutput.setText(String.valueOf(
+                            machineStateService.readAnalogOutput(AnalogOutput.valueOf(analogOutputCombo.getText()))));
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to read analog output state for machineDebugView.",
+                            e1);
+                }
+            }
+        });
+
+        textAnalogOutput.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                textAnalogOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
+            }
+        });
+
+        textAnalogOutput.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseUp(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseDown(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                try {
+                    machineStateService.writeAnalogOutput(AnalogOutput.valueOf(analogOutputCombo.getText()),
+                            Integer.valueOf(textAnalogOutput.getText()));
+                    textAnalogOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_GREEN));
+                } catch (NumberFormatException e1) {
+                    textAnalogOutput.setBackground(SWTResourceManager.getColor(SWT.COLOR_RED));
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to write AnalogOutput in machineDebugView.", e1);
+                }
+            }
+        });
+
+        Combo analogInputCombo = new Combo(grpAnalogIo, SWT.NONE);
+        analogInputCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        analogInputCombo.setText("AnalogInput");
+
+        List<String> analogInputList = new ArrayList<>();
+        for (AnalogInput analogInput : AnalogInput.values()) {
+            analogInputList.add(analogInput.toString());
+        }
+        analogInputCombo.setItems(analogInputList.toArray(new String[0]));
+
+        textAnalogInput = new Text(grpAnalogIo, SWT.BORDER);
+        textAnalogInput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        analogInputCombo.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                try {
+                    textAnalogInput.setText(String.valueOf(
+                            machineStateService.readAnalogInput(AnalogInput.valueOf(analogInputCombo.getText()))));
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to read AnalogInput in machineDebugView.", e1);
+                }
+            }
+        });
+
+        new Label(machineDebugComposite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
+        new Label(machineDebugComposite, SWT.NONE);
         stopSql.addSelectionListener(new SelectionAdapter() {
 
             @Override

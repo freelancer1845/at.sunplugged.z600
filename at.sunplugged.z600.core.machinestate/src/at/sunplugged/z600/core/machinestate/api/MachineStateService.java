@@ -1,5 +1,7 @@
 package at.sunplugged.z600.core.machinestate.api;
 
+import java.io.IOException;
+
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
@@ -76,5 +78,56 @@ public interface MachineStateService {
     public void registerMachineEventHandler(MachineEventHandler eventHandler);
 
     public void unregisterMachineEventHandler(MachineEventHandler eventHandler);
+
+    /**
+     * Shortcut method to access mbtService
+     * 
+     * @param digitalOutput
+     * @throws IOException
+     */
+    public void writeDigitalOutput(DigitalOutput digitalOutput, boolean value) throws IOException;
+
+    /**
+     * Shortcut method to access mbtService
+     * 
+     * @param digitalOutput
+     * @return
+     * @throws IOException
+     */
+    public boolean readDigitalOutput(DigitalOutput digitalOutput) throws IOException;
+
+    /**
+     * Shortcut method to access mbtService
+     * 
+     * @param digitalInput
+     * @return
+     * @throws IOException
+     */
+    public boolean readDigitalIntput(DigitalInput digitalInput) throws IOException;
+
+    /**
+     * Shortcut method to access mbtService
+     * 
+     * @param analogOutput
+     * @param value between 0-4096
+     * @throws IOException
+     */
+    public void writeAnalogOutput(AnalogOutput analogOutput, int value) throws IOException;
+
+    /**
+     * Shortcut method to access mbtService
+     * 
+     * @param analogOutput
+     * @throws IOException
+     */
+    public int readAnalogOutput(AnalogOutput analogOutput) throws IOException;
+
+    /**
+     * Shortcut method to access mbtService
+     * 
+     * @param analogInput
+     * @throws IOException
+     */
+    public int readAnalogInput(AnalogInput analogInput) throws IOException;
 
 }

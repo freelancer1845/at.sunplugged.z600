@@ -43,7 +43,6 @@ public class SpeedControl implements MachineEventHandler {
         ConveyorControlServiceImpl.getMachineStateService()
                 .fireMachineStateEvent(new ConveyorMachineEvent(Type.MODE_CHANGED, mode));
 
-        System.out.println("New Mode= " + mode.toString());
         switch (mode) {
         case RIGHT_TO_LEFT:
             engineOne.initializeEngine();

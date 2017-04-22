@@ -66,11 +66,11 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
         speedLabelGd.horizontalAlignment = GridData.HORIZONTAL_ALIGN_BEGINNING;
         this.add(speedLabel, speedLabelGd);
 
-        speedLeftLabel = labelFactory("speedLeftLabel");
+        speedLeftLabel = labelFactory("0.0");
 
-        speedCombindedLabel = labelFactory("speedCombinedLabel");
+        speedCombindedLabel = labelFactory("0.0");
 
-        speedRightLabel = labelFactory("speedRightLabel");
+        speedRightLabel = labelFactory("0.0");
 
         Label positionLabel = new Label("Position in [m]");
         GridData positionLabelGd = new GridData();
@@ -90,11 +90,11 @@ public class ConveyorFigure extends Figure implements MachineEventHandler {
         correctionLabelGd.horizontalAlignment = GridData.HORIZONTAL_ALIGN_BEGINNING;
         this.add(correctionLabel, correctionLabelGd);
 
-        correctionLeftLabel = labelFactory("correctionLeftLabel");
+        correctionLeftLabel = labelFactory("0");
 
-        directionLabel = labelFactory("directionLabel");
+        directionLabel = labelFactory("Stop");
 
-        correctionRightLabel = labelFactory("correctionRightLabel");
+        correctionRightLabel = labelFactory("0");
 
         Display display = Display.getDefault();
 

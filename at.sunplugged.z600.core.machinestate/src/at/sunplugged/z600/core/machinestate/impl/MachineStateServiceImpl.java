@@ -524,4 +524,34 @@ public class MachineStateServiceImpl implements MachineStateService {
         return eventAdmin;
     }
 
+    @Override
+    public void writeDigitalOutput(DigitalOutput digitalOutput, boolean value) throws IOException {
+        mbtService.writeDigOut(digitalOutput.getAddress(), value);
+    }
+
+    @Override
+    public boolean readDigitalOutput(DigitalOutput digitalOutput) throws IOException {
+        return mbtService.readDigOuts(digitalOutput.getAddress(), 1).get(digitalOutput.getAddress());
+    }
+
+    @Override
+    public boolean readDigitalIntput(DigitalInput digitalInput) throws IOException {
+        return mbtService.readDigIns(digitalInput.getAddress(), 1).get(digitalInput.getAddress());
+    }
+
+    @Override
+    public void writeAnalogOutput(AnalogOutput analogOutput, int value) throws IOException {
+        mbtService.writeOutputRegister(analogOutput.getAddress(), value);
+    }
+
+    @Override
+    public int readAnalogOutput(AnalogOutput analogOutput) throws IOException {
+        return mbtService.readOutputRegister(analogOutput.getAddress(), 1).get(analogOutput.getAddress());
+    }
+
+    @Override
+    public int readAnalogInput(AnalogInput analogInput) throws IOException {
+        return mbtService.readInputRegister(analogInput.getAddress(), 1).get(analogInput.getAddress());
+    }
+
 }
