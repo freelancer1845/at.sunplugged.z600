@@ -68,6 +68,7 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
+import at.sunplugged.z600.frontend.gui.utils.spi.UpdatableChart;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
@@ -109,6 +110,10 @@ public class MainView {
     private static VacuumService vacuumService;
 
     private static SettingsService settings;
+
+    public static SettingsService getSettings() {
+        return settings;
+    }
 
     private static ScriptInterpreterService scriptInterpreterService;
 
@@ -175,7 +180,7 @@ public class MainView {
 
         TabFolder tabFolder = new TabFolder(shell, SWT.NONE);
         tabFolder.setBackground(SWTResourceManager.getColor(SWT.COLOR_CYAN));
-        GridData gdTabFolder = new GridData(SWT.FILL, SWT.TOP, true, true, 1, 2);
+        GridData gdTabFolder = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2);
         gdTabFolder.heightHint = 718;
         gdTabFolder.widthHint = 438;
         tabFolder.setLayoutData(gdTabFolder);
@@ -1431,12 +1436,6 @@ public class MainView {
             }
         });
 
-        new Label(machineDebugComposite, SWT.NONE);
-        new Label(machineDebugComposite, SWT.NONE);
-        new Label(machineDebugComposite, SWT.NONE);
-        new Label(machineDebugComposite, SWT.NONE);
-        new Label(machineDebugComposite, SWT.NONE);
-        new Label(machineDebugComposite, SWT.NONE);
         stopSql.addSelectionListener(new SelectionAdapter() {
 
             @Override

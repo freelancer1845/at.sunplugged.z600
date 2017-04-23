@@ -14,6 +14,7 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import org.swtchart.Chart;
 import org.swtchart.IAxis;
 import org.swtchart.IAxisSet;
+import org.swtchart.ILineSeries;
 import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
 import org.swtchart.ISeriesSet;
@@ -37,10 +38,14 @@ public abstract class UpdatableChart {
     protected final String title;
 
     /** Underlying DataList. */
-    protected List<Double> dataList = new ArrayList<>();
+    protected List<Double> yDataList = new ArrayList<>();
+
+    protected List<Double> xDataList = new ArrayList<>();
 
     /** Array used for transferring data to the chart. */
     private double[] yArray = new double[] { 0 };
+
+    private double[] xArray = new double[] { 0 };
 
     /** Updater Thread. */
     private Thread updaterThread;
@@ -65,19 +70,30 @@ public abstract class UpdatableChart {
     }
 
     /**
-     * The implementation of this method should add new data to the "dataList"
-     * variable. You may leave that empty. Then no new data is added to the
-     * chart.
+     * The Implementation should return the xData. It is called at the same time
+     * as addNewDataY();
      */
-    protected abstract void addNewData();
+    protected abstract double addNewDataX();
+
+    /**
+     * THe Implementation should return the yData belonging to the xdata.
+     * 
+     */
+    protected abstract double addNewDataY();
+
+    private void addNewData() {
+        xDataList.add(addNewDataX());
+        yDataList.add(addNewDataY());
+    }
 
     /**
      * Implement this method if you want to have more than 1000 DataPoints in
      * one Chart.
      */
     protected void removeOldData() {
-        if (dataList.size() > 1000) {
-            dataList.remove(0);
+        if (yDataList.size() > 10000) {
+            yDataList.remove(0);
+            xDataList.remove(0);
         }
 
     }
@@ -112,7 +128,8 @@ public abstract class UpdatableChart {
     }
 
     public void resetChart() {
-        dataList.clear();
+        yDataList.clear();
+        xDataList.clear();
     }
 
     protected void setupBasicChart() {
@@ -186,16 +203,18 @@ public abstract class UpdatableChart {
 
     protected void updateChart() {
         ISeriesSet seriesSet = chart.getSeriesSet();
-        seriesSet.createSeries(SeriesType.LINE, "line series");
-        ISeries yseries = seriesSet.getSeries("line series");
-        yseries.setYSeries(yArray);
+        ILineSeries series = (ILineSeries) seriesSet.createSeries(SeriesType.LINE, "line series");
+        series.setSymbolSize(1);
+        series.setXSeries(xArray);
+        series.setYSeries(yArray);
         if (!isTouched) {
             if (!recentlyMoved) {
                 moveTicker = MOVE_TICKER_TIME;
 
                 chart.getAxisSet().getYAxis(0).adjustRange();
-                if (yArray.length > 90) {
-                    chart.getAxisSet().getXAxis(0).setRange(new Range(yArray.length - 100 + 10, yArray.length + 10));
+                double maxXValue = xDataList.get(xDataList.size() - 1);
+                if (maxXValue > 90) {
+                    chart.getAxisSet().getXAxis(0).setRange(new Range(maxXValue - 100 + 10, maxXValue + 10));
                 } else {
                     chart.getAxisSet().getXAxis(0).setRange(new Range(0, 100));
                 }
@@ -213,9 +232,13 @@ public abstract class UpdatableChart {
     }
 
     private void transferDataToDoubleArray() {
-        yArray = new double[dataList.size()];
-        for (int i = 0; i < dataList.size(); i++) {
-            yArray[i] = dataList.get(i);
+        yArray = new double[yDataList.size()];
+        for (int i = 0; i < yDataList.size(); i++) {
+            yArray[i] = yDataList.get(i);
+        }
+        xArray = new double[xDataList.size()];
+        for (int i = 0; i < xDataList.size(); i++) {
+            xArray[i] = xDataList.get(i);
         }
     }
 
