@@ -74,7 +74,6 @@ import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
-import at.sunplugged.z600.gui.factorys.VacuumTabitemFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
@@ -480,14 +479,6 @@ public class MainView {
 
         });
 
-        Button btnPausieren = new Button(grpSkriptAusfhrung, SWT.NONE);
-        btnPausieren.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnPausieren.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
-        btnPausieren.setText("Pausieren");
-        btnPausieren.setEnabled(false);
-
-        Label lblNewLabel = new Label(grpSkriptAusfhrung, SWT.NONE);
-
         Button btnStoppen = new Button(grpSkriptAusfhrung, SWT.NONE);
         btnStoppen.setFont(SWTResourceManager.getFont("Segoe UI", 12, SWT.NORMAL));
         btnStoppen.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -645,11 +636,391 @@ public class MainView {
         conveyorDebugTabItem.setControl(conveyorDebugComposite);
         ConveyorGroupFactory.createGroup(conveyorDebugComposite);
 
+        TabItem tbtmPowerSupply = new TabItem(tabFolder, SWT.NONE);
+        tbtmPowerSupply.setText("Power Supply");
+        Composite powerSupplyComposite = new Composite(tabFolder, SWT.NONE);
+
+        powerSupplyComposite.setLayout(new GridLayout(1, false));
+        tbtmPowerSupply.setControl(powerSupplyComposite);
+
+        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.PINNACLE);
+        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV1);
+        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV2);
+
+        TabItem tbtmScriptpage = new TabItem(tabFolder, SWT.NONE);
+        tbtmScriptpage.setText("ScriptPage");
+
+        Composite compositeScriptPage = new Composite(tabFolder, SWT.NONE);
+        tbtmScriptpage.setControl(compositeScriptPage);
+        compositeScriptPage.setLayout(new GridLayout(1, false));
+
+        Group group = new Group(compositeScriptPage, SWT.NONE);
+        group.setLayout(new GridLayout(3, true));
+        group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+        Button btnExecuteScript = new Button(group, SWT.NONE);
+        btnExecuteScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnExecuteScript.setText("Execute Script");
+
+        Button btnLoadScript = new Button(group, SWT.NONE);
+        btnLoadScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnLoadScript.setText("Load Script");
+
+        Button btnSaveScript = new Button(group, SWT.NONE);
+        btnSaveScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnSaveScript.setText("Save Script");
+
+        Label lblCurrentCommand = new Label(group, SWT.NONE);
+        lblCurrentCommand.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+        lblCurrentCommand.setText("Current Command:");
+
+        Button btnStopExecution = new Button(group, SWT.NONE);
+        btnStopExecution.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                scriptInterpreterService.stopExecution();
+            }
+        });
+        btnStopExecution.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnStopExecution.setText("Stop Execution");
+        new Label(group, SWT.NONE);
+        new Label(group, SWT.NONE);
+
+        StyledText styledTextScriptInput = new StyledText(compositeScriptPage, SWT.BORDER);
+        styledTextScriptInput.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        styledTextScriptInput.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                styledTextScriptInput.setStyleRange(new StyleRange(0, styledTextScriptInput.getCharCount(),
+                        SWTResourceManager.getColor(SWT.COLOR_BLACK), SWTResourceManager.getColor(SWT.COLOR_WHITE)));
+                styledTextScriptInput.setToolTipText("");
+                try {
+                    scriptInterpreterService.checkScript(styledTextScriptInput.getText());
+                } catch (ParseError e1) {
+                    if (e1.getLine() > -1) {
+                        int start = styledTextScriptInput.getOffsetAtLine(e1.getLine());
+                        int length = styledTextScriptInput.getLine(e1.getLine()).length();
+                        styledTextScriptInput.setStyleRange(
+                                new StyleRange(start, length, SWTResourceManager.getColor(SWT.COLOR_BLACK),
+                                        SWTResourceManager.getColor(SWT.COLOR_RED)));
+                        styledTextScriptInput.setToolTipText(e1.getMessage());
+                    }
+                }
+            }
+        });
+
+        btnLoadScript.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.OPEN);
+                fd.setText("Load");
+
+                String[] filter = { "*.sc" };
+                fd.setFilterExtensions(filter);
+                String selected = fd.open();
+                if (selected == null) {
+                    return;
+                }
+                try (BufferedReader reader = new BufferedReader(new FileReader(selected))) {
+                    StringBuilder sb = new StringBuilder();
+                    String line = reader.readLine();
+                    while (line != null) {
+                        sb.append(line);
+                        sb.append(System.lineSeparator());
+                        line = reader.readLine();
+                    }
+                    styledTextScriptInput.setText(sb.toString());
+
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to load file.", e1);
+                }
+            }
+
+        });
+
+        btnSaveScript.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
+                fd.setText("Save");
+
+                String[] filter = { "*.sc" };
+                fd.setFilterExtensions(filter);
+                String selected = fd.open();
+                if (selected == null) {
+                    return;
+                }
+                try {
+                    File file = new File(selected);
+                    if (!file.exists()) {
+                        file.createNewFile();
+                    } else {
+                        file.delete();
+                        file.createNewFile();
+                    }
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to save script.", e1);
+                }
+
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(selected))) {
+                    writer.write(styledTextScriptInput.getText());
+
+                } catch (IOException e1) {
+                    logService.log(LogService.LOG_ERROR, "Failed to save script.", e1);
+                }
+            }
+
+        });
+
+        btnExecuteScript.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    scriptInterpreterService.executeScript(styledTextScriptInput.getText());
+                } catch (ParseError e1) {
+                    MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
+                    messageBox.setText("Failed to parse Script");
+                    messageBox.setMessage(e1.getMessage());
+                    messageBox.open();
+
+                }
+            }
+
+        });
+        Display.getDefault().timerExec(500, new Runnable() {
+
+            @Override
+            public void run() {
+                String currentCommand = scriptInterpreterService.getCurrentCommandName();
+                if (currentCommand != null) {
+                    lblCurrentCommand.setText("Current: " + currentCommand);
+                } else {
+                    lblCurrentCommand.setText("Ready");
+                }
+                Display.getDefault().timerExec(500, this);
+
+            }
+
+        });
+
+        new Label(shell, SWT.NONE);
+
         TabItem tbtmMachinedebug = new TabItem(tabFolder, SWT.NONE);
         tbtmMachinedebug.setText("MachineDebug");
+        tabFolder.addSelectionListener(new SelectionAdapter() {
+
+            boolean done = false;
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (done == false) {
+                    if (tabFolder.getSelection()[0] == tbtmMachinedebug) {
+                        MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
+                        messageBox.setText("Debug Warning");
+                        messageBox.setMessage(
+                                "Using functions in this view may result in unexpected behaviour of the program and the machine. Use with caution!");
+                        int answer = messageBox.open();
+                        if (answer == SWT.OK) {
+                            done = true;
+                        } else {
+                            tabFolder.setSelection(0);
+                        }
+
+                    }
+                }
+            }
+        });
+
+        Composite machineDebugComposite = createMachineDebugViewComposite(tabFolder);
+        tbtmMachinedebug.setControl(machineDebugComposite);
+
+        return shell;
+    }
+
+    @Reference(unbind = "unbindLogService")
+    public synchronized void bindLogService(LogService logService) {
+        MainView.logService = logService;
+    }
+
+    public synchronized void unbindLogService(LogService logService) {
+        if (MainView.logService == logService) {
+            MainView.logService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindSrmCommunicator", cardinality = ReferenceCardinality.OPTIONAL)
+    public synchronized void bindSrmCommunicator(SrmCommunicator srmCommunicator) {
+        MainView.srmCommunicator = srmCommunicator;
+    }
+
+    public synchronized void unbindSrmCommunicator(SrmCommunicator srmCommunicator) {
+        if (MainView.srmCommunicator == srmCommunicator) {
+            MainView.srmCommunicator = null;
+        }
+    }
+
+    @Reference(unbind = "unbindMBTController")
+    public synchronized void bindMBTController(MbtService mbtController) {
+        MainView.mbtController = mbtController;
+    }
+
+    public synchronized void unbindMBTController(MbtService mbtController) {
+        if (MainView.mbtController == mbtController) {
+            MainView.mbtController = null;
+        }
+    }
+
+    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindMachineStateService(MachineStateService machineStateService) {
+        MainView.machineStateService = machineStateService;
+    }
+
+    public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
+        if (MainView.machineStateService == machineStateService) {
+            MainView.machineStateService = null;
+        }
+    }
+
+    public static MachineStateService getMachineStateService() {
+        return machineStateService;
+    }
+
+    @Reference(unbind = "unbindConveyorControlService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
+        MainView.conveyorControlService = conveyorControlService;
+    }
+
+    public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
+        if (MainView.conveyorControlService == conveyorControlService) {
+            MainView.conveyorControlService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindStandardThreadPoolService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService service) {
+        threadPool = service;
+    }
+
+    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService service) {
+        if (threadPool.equals(service)) {
+            threadPool = null;
+        }
+    }
+
+    @Reference(unbind = "unbindSettingsService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindSettingsService(SettingsService settingsService) {
+        settings = settingsService;
+    }
+
+    public synchronized void unbindSettingsService(SettingsService settingsService) {
+        if (settings.equals(settingsService)) {
+            settings = null;
+        }
+    }
+
+    @Reference(unbind = "unbindVacuumService", cardinality = ReferenceCardinality.MANDATORY)
+    public synchronized void bindVacuumService(VacuumService service) {
+        vacuumService = service;
+    }
+
+    public synchronized void unbindVacuumService(VacuumService service) {
+        if (vacuumService == service) {
+            vacuumService = null;
+        }
+    }
+
+    public static VacuumService getVacuumService() {
+        return vacuumService;
+    }
+
+    @Reference(unbind = "unbindScriptInterpreterService")
+    public synchronized void bindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
+        MainView.scriptInterpreterService = scriptInterpreterService;
+    }
+
+    public synchronized void unbindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
+        if (MainView.scriptInterpreterService == scriptInterpreterService) {
+            MainView.scriptInterpreterService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindDataService")
+    public synchronized void bindDataService(DataService dataService) {
+        MainView.dataService = dataService;
+    }
+
+    public synchronized void unbindDataService(DataService dataService) {
+        if (MainView.dataService == dataService) {
+            MainView.dataService = null;
+        }
+    }
+
+    @Reference(unbind = "unbindConveyorPositionCorrectionService")
+    public synchronized void bindConveyorPositionCorrectionService(
+            ConveyorPositionCorrectionService conveyorPositionCorrectionService) {
+        MainView.conveyorPositionCorrectionService = conveyorPositionCorrectionService;
+    }
+
+    public synchronized void unbindConveyorPositionCorrectionService(
+            ConveyorPositionCorrectionService conveyorPositionCorrectionService) {
+        if (MainView.conveyorPositionCorrectionService == conveyorPositionCorrectionService) {
+            MainView.conveyorPositionCorrectionService = null;
+        }
+    }
+
+    private final static class OutletAdapter extends SelectionAdapter {
+
+        private final Outlet outlet;
+
+        private int lastClick = 0;
+
+        public OutletAdapter(Outlet outlet) {
+            this.outlet = outlet;
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            try {
+                if (lastClick == 0) {
+
+                    machineStateService.getOutletControl().closeOutlet(outlet);
+                    lastClick = 1;
+                } else {
+                    machineStateService.getOutletControl().openOutlet(outlet);
+                    lastClick = 0;
+                }
+            } catch (IOException e1) {
+                logService.log(LogService.LOG_ERROR, "Failed to open outlet from machineDebugView.", e1);
+            }
+        }
+    }
+
+    private final static class PumpAdapter extends SelectionAdapter {
+
+        private final Pump pump;
+
+        public PumpAdapter(PumpIds pumpId) {
+            this.pump = machineStateService.getPumpRegistry().getPump(pumpId);
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            if (pump.getState() == PumpState.OFF) {
+                pump.startPump();
+            } else {
+                pump.stopPump();
+            }
+        }
+
+    }
+
+    private static Composite createMachineDebugViewComposite(TabFolder tabFolder) {
 
         Composite machineDebugComposite = new Composite(tabFolder, SWT.NONE);
-        tbtmMachinedebug.setControl(machineDebugComposite);
         machineDebugComposite.setLayout(new GridLayout(3, true));
 
         Button toggelOutletOne = new Button(machineDebugComposite, SWT.NONE);
@@ -1076,358 +1447,8 @@ public class MainView {
 
         });
 
-        TabItem tbtmPowerSupply = new TabItem(tabFolder, SWT.NONE);
-        tbtmPowerSupply.setText("Power Supply");
-        Composite powerSupplyComposite = new Composite(tabFolder, SWT.NONE);
-
-        powerSupplyComposite.setLayout(new GridLayout(1, false));
-        tbtmPowerSupply.setControl(powerSupplyComposite);
-
-        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.PINNACLE);
-        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV1);
-        PowerSupplyBasicFactory.createPowerSupplyGroup(powerSupplyComposite, PowerSourceId.SSV2);
-
-        TabItem tbtmScriptpage = new TabItem(tabFolder, SWT.NONE);
-        tbtmScriptpage.setText("ScriptPage");
-
-        Composite compositeScriptPage = new Composite(tabFolder, SWT.NONE);
-        tbtmScriptpage.setControl(compositeScriptPage);
-        compositeScriptPage.setLayout(new GridLayout(1, false));
-
-        Group group = new Group(compositeScriptPage, SWT.NONE);
-        group.setLayout(new GridLayout(3, true));
-        group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-
-        Button btnExecuteScript = new Button(group, SWT.NONE);
-        btnExecuteScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnExecuteScript.setText("Execute Script");
-
-        Button btnLoadScript = new Button(group, SWT.NONE);
-        btnLoadScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnLoadScript.setText("Load Script");
-
-        Button btnSaveScript = new Button(group, SWT.NONE);
-        btnSaveScript.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnSaveScript.setText("Save Script");
-
-        Label lblCurrentCommand = new Label(group, SWT.NONE);
-        lblCurrentCommand.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-        lblCurrentCommand.setText("Current Command:");
-
-        Button btnStopExecution = new Button(group, SWT.NONE);
-        btnStopExecution.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                scriptInterpreterService.stopExecution();
-            }
-        });
-        btnStopExecution.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnStopExecution.setText("Stop Execution");
-        new Label(group, SWT.NONE);
-        new Label(group, SWT.NONE);
-
-        StyledText styledTextScriptInput = new StyledText(compositeScriptPage, SWT.BORDER);
-        styledTextScriptInput.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        styledTextScriptInput.addModifyListener(new ModifyListener() {
-
-            @Override
-            public void modifyText(ModifyEvent e) {
-                styledTextScriptInput.setStyleRange(new StyleRange(0, styledTextScriptInput.getCharCount(),
-                        SWTResourceManager.getColor(SWT.COLOR_BLACK), SWTResourceManager.getColor(SWT.COLOR_WHITE)));
-                styledTextScriptInput.setToolTipText("");
-                try {
-                    scriptInterpreterService.checkScript(styledTextScriptInput.getText());
-                } catch (ParseError e1) {
-                    if (e1.getLine() > -1) {
-                        int start = styledTextScriptInput.getOffsetAtLine(e1.getLine());
-                        int length = styledTextScriptInput.getLine(e1.getLine()).length();
-                        styledTextScriptInput.setStyleRange(
-                                new StyleRange(start, length, SWTResourceManager.getColor(SWT.COLOR_BLACK),
-                                        SWTResourceManager.getColor(SWT.COLOR_RED)));
-                        styledTextScriptInput.setToolTipText(e1.getMessage());
-                    }
-                }
-            }
-        });
-
-        btnLoadScript.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.OPEN);
-                fd.setText("Load");
-
-                String[] filter = { "*.sc" };
-                fd.setFilterExtensions(filter);
-                String selected = fd.open();
-                if (selected == null) {
-                    return;
-                }
-                try (BufferedReader reader = new BufferedReader(new FileReader(selected))) {
-                    StringBuilder sb = new StringBuilder();
-                    String line = reader.readLine();
-                    while (line != null) {
-                        sb.append(line);
-                        sb.append(System.lineSeparator());
-                        line = reader.readLine();
-                    }
-                    styledTextScriptInput.setText(sb.toString());
-
-                } catch (IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Failed to load file.", e1);
-                }
-            }
-
-        });
-
-        btnSaveScript.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                FileDialog fd = new FileDialog(Display.getDefault().getActiveShell(), SWT.SAVE);
-                fd.setText("Save");
-
-                String[] filter = { "*.sc" };
-                fd.setFilterExtensions(filter);
-                String selected = fd.open();
-                if (selected == null) {
-                    return;
-                }
-                try {
-                    File file = new File(selected);
-                    if (!file.exists()) {
-                        file.createNewFile();
-                    } else {
-                        file.delete();
-                        file.createNewFile();
-                    }
-                } catch (IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Failed to save script.", e1);
-                }
-
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(selected))) {
-                    writer.write(styledTextScriptInput.getText());
-
-                } catch (IOException e1) {
-                    logService.log(LogService.LOG_ERROR, "Failed to save script.", e1);
-                }
-            }
-
-        });
-
-        btnExecuteScript.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    scriptInterpreterService.executeScript(styledTextScriptInput.getText());
-                } catch (ParseError e1) {
-                    MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
-                    messageBox.setText("Failed to parse Script");
-                    messageBox.setMessage(e1.getMessage());
-                    messageBox.open();
-
-                }
-            }
-
-        });
-        Display.getDefault().timerExec(500, new Runnable() {
-
-            @Override
-            public void run() {
-                String currentCommand = scriptInterpreterService.getCurrentCommandName();
-                if (currentCommand != null) {
-                    lblCurrentCommand.setText("Current: " + currentCommand);
-                } else {
-                    lblCurrentCommand.setText("Ready");
-                }
-                Display.getDefault().timerExec(500, this);
-
-            }
-
-        });
-
-        new Label(shell, SWT.NONE);
         toggleCryoTwo.addSelectionListener(new PumpAdapter(PumpIds.CRYO_TWO));
 
-        return shell;
-    }
-
-    @Reference(unbind = "unbindLogService")
-    public synchronized void bindLogService(LogService logService) {
-        MainView.logService = logService;
-    }
-
-    public synchronized void unbindLogService(LogService logService) {
-        if (MainView.logService == logService) {
-            MainView.logService = null;
-        }
-    }
-
-    @Reference(unbind = "unbindSrmCommunicator", cardinality = ReferenceCardinality.OPTIONAL)
-    public synchronized void bindSrmCommunicator(SrmCommunicator srmCommunicator) {
-        MainView.srmCommunicator = srmCommunicator;
-    }
-
-    public synchronized void unbindSrmCommunicator(SrmCommunicator srmCommunicator) {
-        if (MainView.srmCommunicator == srmCommunicator) {
-            MainView.srmCommunicator = null;
-        }
-    }
-
-    @Reference(unbind = "unbindMBTController")
-    public synchronized void bindMBTController(MbtService mbtController) {
-        MainView.mbtController = mbtController;
-    }
-
-    public synchronized void unbindMBTController(MbtService mbtController) {
-        if (MainView.mbtController == mbtController) {
-            MainView.mbtController = null;
-        }
-    }
-
-    @Reference(unbind = "unbindMachineStateService", cardinality = ReferenceCardinality.MANDATORY)
-    public synchronized void bindMachineStateService(MachineStateService machineStateService) {
-        MainView.machineStateService = machineStateService;
-    }
-
-    public synchronized void unbindMachineStateService(MachineStateService machineStateService) {
-        if (MainView.machineStateService == machineStateService) {
-            MainView.machineStateService = null;
-        }
-    }
-
-    public static MachineStateService getMachineStateService() {
-        return machineStateService;
-    }
-
-    @Reference(unbind = "unbindConveyorControlService", cardinality = ReferenceCardinality.MANDATORY)
-    public synchronized void bindConveyorControlService(ConveyorControlService conveyorControlService) {
-        MainView.conveyorControlService = conveyorControlService;
-    }
-
-    public synchronized void unbindConveyorControlService(ConveyorControlService conveyorControlService) {
-        if (MainView.conveyorControlService == conveyorControlService) {
-            MainView.conveyorControlService = null;
-        }
-    }
-
-    @Reference(unbind = "unbindStandardThreadPoolService", cardinality = ReferenceCardinality.MANDATORY)
-    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService service) {
-        threadPool = service;
-    }
-
-    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService service) {
-        if (threadPool.equals(service)) {
-            threadPool = null;
-        }
-    }
-
-    @Reference(unbind = "unbindSettingsService", cardinality = ReferenceCardinality.MANDATORY)
-    public synchronized void bindSettingsService(SettingsService settingsService) {
-        settings = settingsService;
-    }
-
-    public synchronized void unbindSettingsService(SettingsService settingsService) {
-        if (settings.equals(settingsService)) {
-            settings = null;
-        }
-    }
-
-    @Reference(unbind = "unbindVacuumService", cardinality = ReferenceCardinality.MANDATORY)
-    public synchronized void bindVacuumService(VacuumService service) {
-        vacuumService = service;
-    }
-
-    public synchronized void unbindVacuumService(VacuumService service) {
-        if (vacuumService == service) {
-            vacuumService = null;
-        }
-    }
-
-    public static VacuumService getVacuumService() {
-        return vacuumService;
-    }
-
-    @Reference(unbind = "unbindScriptInterpreterService")
-    public synchronized void bindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
-        MainView.scriptInterpreterService = scriptInterpreterService;
-    }
-
-    public synchronized void unbindScriptInterpreterService(ScriptInterpreterService scriptInterpreterService) {
-        if (MainView.scriptInterpreterService == scriptInterpreterService) {
-            MainView.scriptInterpreterService = null;
-        }
-    }
-
-    @Reference(unbind = "unbindDataService")
-    public synchronized void bindDataService(DataService dataService) {
-        MainView.dataService = dataService;
-    }
-
-    public synchronized void unbindDataService(DataService dataService) {
-        if (MainView.dataService == dataService) {
-            MainView.dataService = null;
-        }
-    }
-
-    @Reference(unbind = "unbindConveyorPositionCorrectionService")
-    public synchronized void bindConveyorPositionCorrectionService(
-            ConveyorPositionCorrectionService conveyorPositionCorrectionService) {
-        MainView.conveyorPositionCorrectionService = conveyorPositionCorrectionService;
-    }
-
-    public synchronized void unbindConveyorPositionCorrectionService(
-            ConveyorPositionCorrectionService conveyorPositionCorrectionService) {
-        if (MainView.conveyorPositionCorrectionService == conveyorPositionCorrectionService) {
-            MainView.conveyorPositionCorrectionService = null;
-        }
-    }
-
-    private final static class OutletAdapter extends SelectionAdapter {
-
-        private final Outlet outlet;
-
-        private int lastClick = 0;
-
-        public OutletAdapter(Outlet outlet) {
-            this.outlet = outlet;
-        }
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            try {
-                if (lastClick == 0) {
-
-                    machineStateService.getOutletControl().closeOutlet(outlet);
-                    lastClick = 1;
-                } else {
-                    machineStateService.getOutletControl().openOutlet(outlet);
-                    lastClick = 0;
-                }
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-        }
-    }
-
-    private final static class PumpAdapter extends SelectionAdapter {
-
-        private final Pump pump;
-
-        public PumpAdapter(PumpIds pumpId) {
-            this.pump = machineStateService.getPumpRegistry().getPump(pumpId);
-        }
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            if (pump.getState() == PumpState.OFF) {
-                pump.startPump();
-            } else {
-                pump.stopPump();
-            }
-        }
-
+        return machineDebugComposite;
     }
 }
