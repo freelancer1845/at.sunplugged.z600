@@ -45,6 +45,10 @@ public class PositionControl {
 
     private Future<?> moveFuture;
 
+    private boolean explicitLeft = false;
+
+    private boolean explicitRight = false;
+
     public PositionControl() {
         this.machineStateService = ConveyorPositionCorrectionServiceImpl.getMachineStateService();
         this.mbtService = ConveyorPositionCorrectionServiceImpl.getMbtService();
@@ -55,7 +59,7 @@ public class PositionControl {
 
     public void tick() throws IOException {
 
-        if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
+        if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT || explicitLeft == true) {
             boolean lightSwitchLeftFront = machineStateService
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_LEFT_FRONT);
             boolean lightSwitchLeftBack = machineStateService
@@ -81,7 +85,7 @@ public class PositionControl {
                 leftTimerForward.stop();
             }
 
-        } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
+        } else if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT || explicitRight == true) {
             boolean lightSwitchRightFront = machineStateService
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_RIGHT_FRONT);
             boolean lightSwitchRightBack = machineStateService
@@ -314,6 +318,14 @@ public class PositionControl {
             runtime = value;
         }
 
+    }
+
+    public void setExplicitLeft(boolean explicitLeft) {
+        this.explicitLeft = explicitLeft;
+    }
+
+    public void setExplicitRight(boolean explicitRight) {
+        this.explicitRight = explicitRight;
     }
 
 }

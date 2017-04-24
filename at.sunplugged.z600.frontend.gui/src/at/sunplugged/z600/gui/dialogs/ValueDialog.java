@@ -6,17 +6,17 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.wb.swt.SWTResourceManager;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 public class ValueDialog {
 
@@ -118,7 +118,12 @@ public class ValueDialog {
             public void modifyText(ModifyEvent e) {
                 try {
                     String currentText = txtInputfield.getText();
-
+                    if (currentText.isEmpty() == true) {
+                        btnOk.setEnabled(false);
+                        return;
+                    } else {
+                        btnOk.setEnabled(true);
+                    }
                     double value = Double.valueOf(currentText.replace(",", "."));
                     if (value > maxValue) {
                         txtInputfield.setBackground(SWTResourceManager.getColor(SWT.COLOR_RED));
@@ -256,10 +261,12 @@ public class ValueDialog {
         btnOk = new Button(compositeBottomButton, SWT.NONE);
         btnOk.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         btnOk.setText("Ok");
+        btnOk.setEnabled(false);
         btnOk.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+
                 answer = Answer.OK;
                 value = Double.valueOf(txtInputfield.getText().replace(",", "."));
                 shell.dispose();

@@ -5,8 +5,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -17,16 +15,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.gui.dialogs.ValueDialog;
+import at.sunplugged.z600.gui.dialogs.ValueDialog.Answer;
 
 @Component(immediate = true)
 public final class ConveyorGroupFactory {
@@ -206,6 +204,20 @@ public final class ConveyorGroupFactory {
             }
         });
 
+        Button setCurrentPosition = new Button(group, SWT.NONE);
+        setCurrentPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        setCurrentPosition.setText("Set the current Position in [m]");
+        setCurrentPosition.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                ValueDialog valueDialog = new ValueDialog("Set Conveyor Position", "Set the conveyor Position in m",
+                        -Double.MAX_VALUE, Double.MAX_VALUE, parent.getShell());
+                if (valueDialog.open() == Answer.OK) {
+                    conveyorService.setPosition(valueDialog.getValue());
+                }
+            }
+        });
+
         Label horziontalLine = new Label(group, SWT.SEPARATOR | SWT.HORIZONTAL);
         horziontalLine.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
@@ -333,13 +345,14 @@ public final class ConveyorGroupFactory {
             }
         });
 
-        createEngineGroup(parent, conveyorService.getEngineOne(), "Left Engine");
-        createEngineGroup(parent, conveyorService.getEngineTwo(), "Right Engine");
+        createEngineGroup(parent, conveyorService.getEngineOne(), conveyorService.getEngineTwo(), "Left Engine", false);
+        createEngineGroup(parent, conveyorService.getEngineTwo(), conveyorService.getEngineOne(), "Right Engine", true);
 
         return group;
     }
 
-    private static Group createEngineGroup(Composite parent, Engine engine, String name) {
+    private static Group createEngineGroup(Composite parent, Engine driveEngine, Engine otherEngine, String name,
+            boolean isRightEngine) {
         Group group = new Group(parent, SWT.NONE);
         group.setLayout(new GridLayout(2, true));
         group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -377,13 +390,14 @@ public final class ConveyorGroupFactory {
                     return;
                 }
                 if (leftRadio.getSelection() == true) {
-                    engine.setDirection(0);
+                    driveEngine.setDirection(1);
                 } else if (rightRadio.getSelection() == true) {
-                    engine.setDirection(1);
+                    driveEngine.setDirection(0);
                 }
-                engine.setMaximumSpeed((int) (576000 * speed / (2 * Math.PI * (80 + 3))));
-                engine.startEngine();
-
+                conveyorPositionService.start();
+                driveEngine.setMaximumSpeed((int) (576000 * speed / (2 * Math.PI * (80 + 3))));
+                otherEngine.setLoose();
+                driveEngine.startEngine();
             }
         });
 
@@ -393,7 +407,22 @@ public final class ConveyorGroupFactory {
         stopButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                engine.stopEngine();
+                driveEngine.stopEngine();
+                conveyorPositionService.stop();
+            }
+        });
+
+        Button positionControl = new Button(group, SWT.CHECK);
+        positionControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        positionControl.setText("Use position Control");
+        positionControl.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (isRightEngine) {
+                    conveyorPositionService.setExplicitRight(positionControl.getSelection());
+                } else {
+                    conveyorPositionService.setExplicitLeft(positionControl.getSelection());
+                }
             }
         });
 

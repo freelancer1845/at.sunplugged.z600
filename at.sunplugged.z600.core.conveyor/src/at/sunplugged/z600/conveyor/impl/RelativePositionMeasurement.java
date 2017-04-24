@@ -67,6 +67,8 @@ public class RelativePositionMeasurement implements MachineEventHandler {
     public void setPosition(double position) {
         leftPosition = position;
         rightPosition = position;
+        ConveyorControlServiceImpl.getMachineStateService()
+                .fireMachineStateEvent(new ConveyorMachineEvent(ConveyorMachineEvent.Type.NEW_DISTANCE, getPosition()));
     }
 
 }

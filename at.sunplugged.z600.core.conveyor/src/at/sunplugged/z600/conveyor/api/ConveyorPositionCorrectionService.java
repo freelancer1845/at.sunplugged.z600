@@ -6,6 +6,10 @@ public interface ConveyorPositionCorrectionService {
 
     public void stop();
 
+    public void setExplicitLeft(boolean value);
+
+    public void setExplicitRight(boolean value);
+
     public boolean isRunning();
 
     public long getRuntimeLeft();

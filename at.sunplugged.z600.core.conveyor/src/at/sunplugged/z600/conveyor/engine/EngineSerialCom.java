@@ -46,6 +46,10 @@ public class EngineSerialCom implements Engine {
 
     private boolean ignoreCommands = true;
 
+    private Direction direction = Direction.CLOCKWISE;
+
+    private boolean running = false;
+
     public EngineSerialCom(String portName, int engineAddress) {
         this.portName = portName;
         this.engineAddress = engineAddress;
@@ -152,18 +156,22 @@ public class EngineSerialCom implements Engine {
 
     public void startEngine() {
         sendCommand("A");
+        running = true;
     }
 
     public void setLoose() {
         sendCommand("S");
+        running = false;
     }
 
     public void stopEngine() {
         sendCommand("S1");
+        running = false;
     }
 
     public void stopEngineHard() {
         sendCommand("S0");
+        running = false;
     }
 
     public void setDirection(int direction) {
@@ -253,6 +261,26 @@ public class EngineSerialCom implements Engine {
                 }
             }
         });
+    }
+
+    @Override
+    public void setDirection(Direction direction) {
+        if (direction == Direction.COUNTER_CLOCKWISE) {
+            setDirection(0);
+        } else if (direction == Direction.CLOCKWISE) {
+            setDirection(1);
+        }
+        this.direction = direction;
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
+    }
+
+    @Override
+    public Direction getDirection() {
+        return direction;
     }
 
 }

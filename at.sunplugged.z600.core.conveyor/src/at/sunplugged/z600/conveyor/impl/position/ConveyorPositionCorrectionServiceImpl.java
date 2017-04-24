@@ -13,7 +13,6 @@ import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
-import at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.mbt.api.MbtService;
@@ -70,6 +69,16 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void setExplicitLeft(boolean value) {
+        positionControl.setExplicitLeft(value);
+    }
+
+    @Override
+    public void setExplicitRight(boolean value) {
+        positionControl.setExplicitRight(value);
     }
 
     @Override
