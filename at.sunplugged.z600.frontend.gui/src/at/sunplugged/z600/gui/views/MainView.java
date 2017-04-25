@@ -153,7 +153,7 @@ public class MainView {
 
     public static Shell createMainWindow() {
         Shell shell = createContents();
-        shell.addListener(SWT.CLOSE, new Listener() {
+        shell.addListener(SWT.Close, new Listener() {
 
             @Override
             public void handleEvent(Event event) {
