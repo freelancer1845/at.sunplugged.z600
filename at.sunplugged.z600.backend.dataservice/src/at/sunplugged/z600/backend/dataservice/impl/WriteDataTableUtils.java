@@ -127,12 +127,14 @@ public class WriteDataTableUtils {
         dataMap.put(ColumnNames.PINNACLE_CURRENT, currentSource.getCurrent());
 
         // SSV ONE
+        currentSource = powerSourceRegistry.getPowerSource(PowerSourceId.SSV1);
         dataMap.put(ColumnNames.SSV_ONE_POWER, currentSource.getPower());
         dataMap.put(ColumnNames.SSV_ONE_POWER_SETPOINT, currentSource.getSetPointpower());
         dataMap.put(ColumnNames.SSV_ONE_VOLTAGE, currentSource.getVoltage());
         dataMap.put(ColumnNames.SSV_ONE_CURRENT, currentSource.getCurrent());
 
         // SSV TWO
+        currentSource = powerSourceRegistry.getPowerSource(PowerSourceId.SSV2);
         dataMap.put(ColumnNames.SSV_TWO_POWER, currentSource.getPower());
         dataMap.put(ColumnNames.SSV_TWO_POWER_SETPOINT, currentSource.getSetPointpower());
         dataMap.put(ColumnNames.SSV_TWO_VOLTAGE, currentSource.getVoltage());

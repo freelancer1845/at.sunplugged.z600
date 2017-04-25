@@ -43,7 +43,7 @@ public class DataSavingThread extends Thread {
     @Override
     public void run() {
         running = true;
-        String tableName = "TestTable" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMuuuuHHmmss"));
+        String tableName = "Zylkus" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("uuuuMMddHHmm"));
         while (isRunning()) {
             try {
                 WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
