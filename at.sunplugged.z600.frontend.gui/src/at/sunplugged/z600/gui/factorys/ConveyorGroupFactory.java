@@ -44,7 +44,9 @@ public final class ConveyorGroupFactory {
         Group group = new Group(parent, SWT.NONE);
         group.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         group.setText("Bandlauf");
-        group.setLayout(new GridLayout(2, true));
+        GridLayout layout = new GridLayout(2, true);
+        layout.verticalSpacing = 15;
+        group.setLayout(layout);
 
         Label lblGeschwindigkeit = new Label(group, SWT.NONE);
         lblGeschwindigkeit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -218,11 +220,13 @@ public final class ConveyorGroupFactory {
             }
         });
 
-        Label horziontalLine = new Label(group, SWT.SEPARATOR | SWT.HORIZONTAL);
-        horziontalLine.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        Group positionGroup = new Group(parent, SWT.NONE);
+        positionGroup.setLayout(new GridLayout(2, true));
+        positionGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        positionGroup.setText("Conveyor Belt Centralization");
 
-        Button btnStartPositionControl = new Button(group, SWT.NONE);
-        btnStartPositionControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        Button btnStartPositionControl = new Button(positionGroup, SWT.NONE);
+        btnStartPositionControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true, 1, 1));
         btnStartPositionControl.setText("Start Position Control");
         btnStartPositionControl.addSelectionListener(new SelectionAdapter() {
 
@@ -232,7 +236,8 @@ public final class ConveyorGroupFactory {
             }
 
         });
-        Button btnStopPositionControl = new Button(group, SWT.NONE);
+
+        Button btnStopPositionControl = new Button(positionGroup, SWT.NONE);
         btnStopPositionControl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnStopPositionControl.setText("Stop Position Control");
         btnStopPositionControl.addSelectionListener(new SelectionAdapter() {
@@ -243,7 +248,7 @@ public final class ConveyorGroupFactory {
             }
 
         });
-        Label labelPositionControlState = new Label(group, SWT.NONE);
+        Label labelPositionControlState = new Label(positionGroup, SWT.NONE);
         labelPositionControlState.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         labelPositionControlState.setText("PositionControlState");
         Display.getDefault().timerExec(500, new Runnable() {
@@ -260,7 +265,7 @@ public final class ConveyorGroupFactory {
 
         });
 
-        Button btnCenterLeft = new Button(group, SWT.NONE);
+        Button btnCenterLeft = new Button(positionGroup, SWT.NONE);
         btnCenterLeft.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnCenterLeft.setText("Recenter Left");
         btnCenterLeft.addSelectionListener(new SelectionAdapter() {
@@ -270,7 +275,7 @@ public final class ConveyorGroupFactory {
             }
         });
 
-        Button btnCenterRight = new Button(group, SWT.NONE);
+        Button btnCenterRight = new Button(positionGroup, SWT.NONE);
         btnCenterRight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnCenterRight.setText("Recenter Right");
         btnCenterRight.addSelectionListener(new SelectionAdapter() {
@@ -280,7 +285,7 @@ public final class ConveyorGroupFactory {
             }
         });
 
-        Group manualGroup = new Group(group, SWT.NONE);
+        Group manualGroup = new Group(positionGroup, SWT.NONE);
         manualGroup.setText("Manual Position Control");
         manualGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
         manualGroup.setLayout(new GridLayout(6, true));
