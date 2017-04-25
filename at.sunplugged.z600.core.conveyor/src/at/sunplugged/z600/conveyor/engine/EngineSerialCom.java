@@ -15,6 +15,7 @@ import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.api.EngineException;
 import at.sunplugged.z600.conveyor.constants.EngineConstants;
 import at.sunplugged.z600.conveyor.impl.ConveyorControlServiceImpl;
 import gnu.io.CommPort;
@@ -130,11 +131,11 @@ public class EngineSerialCom implements Engine {
         sendCommand("!" + mode);
     }
 
-    public void setMaximumSpeed(int speed) {
+    public void setMaximumSpeed(int speed) throws EngineException {
         if (speed <= 60 || speed >= 25000) {
             logService.log(LogService.LOG_WARNING,
                     "Setting maximum speed to \"" + speed + "\" is not allowed (61- 24999)");
-            return;
+            throw new EngineException("Setting maximum speed to \"" + speed + "\" is not allowed (61- 24999)");
         }
         int maximumSpeed = Integer.valueOf(
                 ConveyorControlServiceImpl.getSettingsService().getProperty(ParameterIds.ENGINE_MAXIMUM_SPEED));
@@ -142,7 +143,7 @@ public class EngineSerialCom implements Engine {
         if (speed > maximumSpeed) {
             logService.log(LogService.LOG_DEBUG,
                     "Setting maximum speed higher than DEBUG value: \"" + maximumSpeed + "\"");
-            return;
+            throw new EngineException("Setting maximum speed to \"" + speed + "\" is not allowed (61- 24999)");
         }
         sendCommand("o" + speed);
         currentMaximumSpeed = speed;

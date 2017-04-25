@@ -21,7 +21,7 @@ public interface Engine {
      */
     public void setDirection(Direction direction);
 
-    public void setMaximumSpeed(int speed);
+    public void setMaximumSpeed(int speed) throws EngineException;
 
     public int getCurrentMaximumSpeed();
 

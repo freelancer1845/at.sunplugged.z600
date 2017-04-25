@@ -1,10 +1,13 @@
 package at.sunplugged.z600.conveyor.impl;
 
+import org.osgi.service.log.LogService;
+
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent.Type;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.api.EngineException;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 
@@ -42,35 +45,45 @@ public class SpeedControl implements MachineEventHandler {
         currentMode = mode;
         ConveyorControlServiceImpl.getMachineStateService()
                 .fireMachineStateEvent(new ConveyorMachineEvent(Type.MODE_CHANGED, mode));
-
-        switch (mode) {
-        case RIGHT_TO_LEFT:
-            engineOne.initializeEngine();
-            engineTwo.initializeEngine();
-            engineOne.setDirection(0);
-            engineTwo.setDirection(0);
-            engineTwo.setLoose();
-            // TODO : For now this is only copy paste from previous program.
-            // Implement some calibration
-            engineOne.setMaximumSpeed((int) (576000 * setPointSpeed / (2 * Math.PI * (80 + 3))));
-            engineOne.startEngine();
-            break;
-        case LEFT_TO_RIGHT:
-            engineOne.initializeEngine();
-            engineTwo.initializeEngine();
-            engineOne.setDirection(1);
-            engineTwo.setDirection(1);
-            engineOne.setLoose();
-            // TODO : For now this is only copy paste from previous program.
-            // Implement some calibration
-            engineTwo.setMaximumSpeed((int) (576000 * setPointSpeed / (2 * Math.PI * (80 + 3))));
-            engineTwo.startEngine();
-            break;
-        case STOP:
+        try {
+            switch (mode) {
+            case RIGHT_TO_LEFT:
+                engineOne.initializeEngine();
+                engineTwo.initializeEngine();
+                engineOne.setDirection(0);
+                engineTwo.setDirection(0);
+                engineTwo.setLoose();
+                // TODO : For now this is only copy paste from previous program.
+                // Implement some calibration
+                engineOne.setMaximumSpeed((int) (576000 * setPointSpeed / (2 * Math.PI * (80 + 3))));
+                engineOne.startEngine();
+                break;
+            case LEFT_TO_RIGHT:
+                engineOne.initializeEngine();
+                engineTwo.initializeEngine();
+                engineOne.setDirection(1);
+                engineTwo.setDirection(1);
+                engineOne.setLoose();
+                // TODO : For now this is only copy paste from previous program.
+                // Implement some calibration
+                engineTwo.setMaximumSpeed((int) (576000 * setPointSpeed / (2 * Math.PI * (80 + 3))));
+                engineTwo.startEngine();
+                break;
+            case STOP:
+                engineOne.stopEngine();
+                engineTwo.stopEngine();
+                break;
+            }
+        } catch (EngineException e) {
+            ConveyorControlServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                    "Engine exception caught while setting mode.", e);
             engineOne.stopEngine();
             engineTwo.stopEngine();
-            break;
+            currentMode = Mode.STOP;
+            ConveyorControlServiceImpl.getMachineStateService()
+                    .fireMachineStateEvent(new ConveyorMachineEvent(Type.MODE_CHANGED, currentMode));
         }
+
     }
 
     public Mode getMode() {
@@ -86,13 +99,18 @@ public class SpeedControl implements MachineEventHandler {
             ConveyorMachineEvent conveyorEvent = (ConveyorMachineEvent) event;
             if (conveyorEvent.getConveyorEventType() == Type.LEFT_SPEED_CHANGED
                     || conveyorEvent.getConveyorEventType() == Type.RIGHT_SPEED_CHANGED) {
-                handleSpeedChange(conveyorEvent);
+                try {
+                    handleSpeedChange(conveyorEvent);
+                } catch (EngineException e) {
+                    ConveyorControlServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                            "Engine Exception caught while updating speed.", e);
+                }
             }
         }
 
     }
 
-    private void handleSpeedChange(ConveyorMachineEvent conveyorEvent) {
+    private void handleSpeedChange(ConveyorMachineEvent conveyorEvent) throws EngineException {
         int currentEngineSpeed;
         int newEngineSpeed;
         if (currentMode == Mode.LEFT_TO_RIGHT) {

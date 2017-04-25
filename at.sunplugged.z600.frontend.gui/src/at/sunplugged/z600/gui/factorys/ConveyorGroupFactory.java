@@ -14,17 +14,26 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
+import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
+import at.sunplugged.z600.core.machinestate.api.PowerSource;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.api.EngineException;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.dialogs.ValueDialog.Answer;
+import at.sunplugged.z600.gui.views.MainView;
 
 @Component(immediate = true)
 public final class ConveyorGroupFactory {
@@ -220,6 +229,50 @@ public final class ConveyorGroupFactory {
             }
         });
 
+        Button createStopCathodeHook = new Button(group, SWT.CHECK);
+        createStopCathodeHook.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        createStopCathodeHook.setText("Create Stop-Powersource Hook");
+        createStopCathodeHook.setToolTipText(
+                "This creates a hook that will stop all powersources as soon as the conveyor stops moving. If the conveyor isn't moving no hook is created. (See log-Info)");
+        createStopCathodeHook.addSelectionListener(new SelectionAdapter() {
+
+            private MachineEventHandler machineEventHandler = new MachineEventHandler() {
+
+                @Override
+                public void handleEvent(MachineStateEvent event) {
+                    if (event.getType().equals(MachineStateEvent.Type.CONVEYOR_EVENT)) {
+                        ConveyorMachineEvent conveyorEvent = (ConveyorMachineEvent) event;
+                        if (conveyorEvent.getConveyorEventType().equals(ConveyorMachineEvent.Type.MODE_CHANGED)) {
+                            if (conveyorEvent.getValue() == ConveyorControlService.Mode.STOP) {
+                                MainView.getLogService().log(LogService.LOG_INFO,
+                                        "Powersource shutdown hook activated. Shutting down powersources.");
+                                for (PowerSourceId id : PowerSourceId.values()) {
+                                    PowerSource powerSource = MainView.getMachineStateService().getPowerSourceRegistry()
+                                            .getPowerSource(id);
+                                    if (powerSource.getState() != PowerSource.State.OFF) {
+                                        powerSource.off();
+                                    }
+                                }
+                                MainView.getMachineStateService().unregisterMachineEventHandler(this);
+                            }
+                        }
+                    }
+                }
+            };
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (createStopCathodeHook.getSelection() == true) {
+                    MainView.getMachineStateService().registerMachineEventHandler(machineEventHandler);
+                    MainView.getLogService().log(LogService.LOG_INFO, "Powersource shutdown hook set.");
+                }
+                if (createStopCathodeHook.getSelection() == false) {
+                    MainView.getMachineStateService().unregisterMachineEventHandler(machineEventHandler);
+                    MainView.getLogService().log(LogService.LOG_INFO, "Powersource shutdown hook removed by user.");
+                }
+            }
+        });
+
         Group positionGroup = new Group(parent, SWT.NONE);
         positionGroup.setLayout(new GridLayout(2, true));
         positionGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -400,7 +453,14 @@ public final class ConveyorGroupFactory {
                     driveEngine.setDirection(0);
                 }
                 conveyorPositionService.start();
-                driveEngine.setMaximumSpeed((int) (576000 * speed / (2 * Math.PI * (80 + 3))));
+                try {
+                    driveEngine.setMaximumSpeed((int) (576000 * speed / (2 * Math.PI * (80 + 3))));
+                } catch (EngineException e1) {
+                    MainView.getLogService().log(LogService.LOG_ERROR, "Failed to set maximum speed. Stopping Engine.");
+                    driveEngine.stopEngine();
+                    otherEngine.stopEngine();
+                    return;
+                }
                 otherEngine.setLoose();
                 driveEngine.startEngine();
             }

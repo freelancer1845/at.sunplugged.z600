@@ -10,6 +10,7 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.api.EngineException;
 
 public class CalibrationRunnable implements Runnable {
 
@@ -42,6 +43,8 @@ public class CalibrationRunnable implements Runnable {
             doTestRun(1200, 0, 10000);
         } catch (InterruptedException e) {
             logService.log(LogService.LOG_DEBUG, "Calibration interrupted!");
+        } catch (EngineException e) {
+            logService.log(LogService.LOG_ERROR, "Engine Exception caught.", e);
         } finally {
             engineOne.stopEngine();
             engineTwo.stopEngine();
@@ -49,7 +52,8 @@ public class CalibrationRunnable implements Runnable {
 
     }
 
-    private void doTestRun(int maximumFrequency, int direction, long delay) throws InterruptedException {
+    private void doTestRun(int maximumFrequency, int direction, long delay)
+            throws InterruptedException, EngineException {
         logService.log(LogService.LOG_DEBUG, "Doing Calibration run. MaximumFrequency: \"" + maximumFrequency
                 + "\" Direction: \"" + direction + "\" Delay(ms): \"" + delay + "\"");
         if (direction == 1) {
