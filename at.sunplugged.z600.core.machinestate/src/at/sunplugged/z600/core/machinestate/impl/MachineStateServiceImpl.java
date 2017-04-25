@@ -105,16 +105,6 @@ public class MachineStateServiceImpl implements MachineStateService {
             logService.log(LogService.LOG_ERROR, "Can't start machineStateService since mbt is not connected!");
             return;
         }
-        try {
-            if (mbtService.readDigIns(WagoAddresses.DigitalInput.PRESSURE_FOR_OUTLETS.getAddress(), 1)
-                    .get(WagoAddresses.DigitalInput.PRESSURE_FOR_OUTLETS.getAddress()) == false) {
-                logService.log(LogService.LOG_ERROR,
-                        "Won't start machineStateService since pressure for outlet control is not working!!!");
-                return;
-            }
-        } catch (IOException e) {
-            return;
-        }
         if (this.updaterThread == null) {
             this.updaterThread = new InputUpdaterThread();
             this.updaterThread.start();
@@ -124,6 +114,12 @@ public class MachineStateServiceImpl implements MachineStateService {
         } else {
             logService.log(LogService.LOG_DEBUG,
                     "Tried to start MachineStateService updater thread although it is already running.");
+        }
+        try {
+            openWaterOutlets();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to open all water outlets when starting machineStateService.",
+                    e);
         }
 
     }
@@ -144,6 +140,14 @@ public class MachineStateServiceImpl implements MachineStateService {
             }
         }
 
+    }
+
+    private void openWaterOutlets() throws IOException {
+        waterControl.setOutletState(WaterOutlet.KATH_ONE, true);
+        waterControl.setOutletState(WaterOutlet.KATH_TWO, true);
+        waterControl.setOutletState(WaterOutlet.KATH_THREE, true);
+        waterControl.setOutletState(WaterOutlet.TURBO_PUMP, true);
+        waterControl.setOutletState(WaterOutlet.SHIELD, true);
     }
 
     private void closeWaterOutlets() throws IOException {

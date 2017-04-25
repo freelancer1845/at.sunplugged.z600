@@ -23,6 +23,7 @@ import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
 import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
@@ -154,8 +155,8 @@ public class Viewer implements MachineEventHandler {
 
             @Override
             public void handleEvent(MachineStateEvent event) {
-                if (event.getType() == Type.DIGITAL_OUTPUT_CHANGED) {
-                    if (event.getOrigin().equals(DigitalOutput.WATERPUMP)) {
+                if (event.getType() == Type.DIGITAL_INPUT_CHANGED) {
+                    if (event.getOrigin().equals(DigitalInput.COOLING_PUMP_OK)) {
                         if ((boolean) event.getValue() == true) {
                             setState(PumpState.ON);
                         } else {
