@@ -73,6 +73,7 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
+import at.sunplugged.z600.gui.dialogs.StandardProcessDialog;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
@@ -718,7 +719,11 @@ public class MainView {
         });
         btnStopExecution.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         btnStopExecution.setText("Stop Execution");
-        new Label(group, SWT.NONE);
+
+        Button btnScriptWizard = new Button(group, SWT.NONE);
+        btnScriptWizard.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+        btnScriptWizard.setText("Single Cycle Wizard");
+
         new Label(group, SWT.NONE);
 
         StyledText styledTextScriptInput = new StyledText(compositeScriptPage, SWT.BORDER);
@@ -825,6 +830,16 @@ public class MainView {
                 }
             }
 
+        });
+
+        btnScriptWizard.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                StandardProcessDialog dialog = new StandardProcessDialog(group.getShell());
+                if (dialog.open() == SWT.OK) {
+                    styledTextScriptInput.append(dialog.getScript());
+                }
+            }
         });
         Display.getDefault().timerExec(500, new Runnable() {
 

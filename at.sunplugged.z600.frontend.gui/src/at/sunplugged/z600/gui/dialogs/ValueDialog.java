@@ -127,11 +127,11 @@ public class ValueDialog {
                     double value = Double.valueOf(currentText.replace(",", "."));
                     if (value > maxValue) {
                         txtInputfield.setBackground(SWTResourceManager.getColor(SWT.COLOR_RED));
-                        txtInputfield.setToolTipText("Value greater than max allowed %d" + maxValue);
+                        txtInputfield.setToolTipText("Value greater than max allowed " + maxValue);
                         btnOk.setEnabled(false);
                     } else if (value < minValue) {
                         txtInputfield.setBackground(SWTResourceManager.getColor(SWT.COLOR_RED));
-                        txtInputfield.setToolTipText("Value smaller that min allowed %d" + minValue);
+                        txtInputfield.setToolTipText("Value smaller that min allowed " + minValue);
                         btnOk.setEnabled(false);
                     } else {
                         txtInputfield.setBackground(SWTResourceManager.getColor(SWT.COLOR_WHITE));
