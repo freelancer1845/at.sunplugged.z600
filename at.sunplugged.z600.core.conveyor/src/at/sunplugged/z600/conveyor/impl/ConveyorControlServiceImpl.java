@@ -1,5 +1,6 @@
 package at.sunplugged.z600.conveyor.impl;
 
+import java.time.LocalTime;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -113,6 +114,11 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
                         String.format(
                                 "Started distance travel. CurrentPosition: \"%.4f\" TargetPosition: \"%.4f\" Distance: \"%.4f\" Speed: \"%.4f\"",
                                 currentPosition, targetPosition, distance, speed));
+                LocalTime now = LocalTime.now();
+                now = now.plusSeconds((long) (distance * 10 / speed));
+
+                logService.log(LogService.LOG_INFO, String.format("Estimed time of finish \"%02d:%02d:%02d\"",
+                        now.getHour(), now.getMinute(), now.getSecond()));
                 while (true) {
                     try {
 

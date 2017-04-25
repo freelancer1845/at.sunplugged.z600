@@ -82,7 +82,7 @@ public class ScriptMonitor extends Thread {
     }
 
     private void handleSetpointPowersourceCommand(SetpointPowersourceCommand command) {
-        if (command.getSetpoint() != 0) {
+        if (command.getSetpoint() > 0) {
             powerSourceCommands.put(command.getId(), command);
         } else {
             powerSourceCommands.remove(command.getId());
