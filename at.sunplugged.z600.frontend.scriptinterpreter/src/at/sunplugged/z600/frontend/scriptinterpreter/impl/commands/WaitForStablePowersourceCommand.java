@@ -11,6 +11,8 @@ import at.sunplugged.z600.frontend.scriptinterpreter.impl.ScriptInterpreterServi
 
 public class WaitForStablePowersourceCommand extends AbstractCommand {
 
+    private final static long STABLE_TICK_LENTH = 100;
+
     private final PowerSourceId id;
 
     public WaitForStablePowersourceCommand(PowerSourceId id) {
@@ -32,6 +34,7 @@ public class WaitForStablePowersourceCommand extends AbstractCommand {
         PowerSource powerSource = ScriptInterpreterServiceImpl.getMachineStateService().getPowerSourceRegistry()
                 .getPowerSource(id);
         int counter = 0;
+        long timeoutCounter = 0;
         while (counter < 10) {
             if (powerSource.getState() == PowerSource.State.OFF) {
                 break;
@@ -44,8 +47,11 @@ public class WaitForStablePowersourceCommand extends AbstractCommand {
             } else {
                 counter = 0;
             }
-
-            Thread.sleep(100);
+            Thread.sleep(STABLE_TICK_LENTH);
+            timeoutCounter += STABLE_TICK_LENTH;
+            if (TimeUnit.MINUTES.convert(timeoutCounter, TimeUnit.MILLISECONDS) > 3) {
+                throw new ScriptExecutionException("Timeout while waiting for stable powersource. Command: " + name());
+            }
         }
     }
 
