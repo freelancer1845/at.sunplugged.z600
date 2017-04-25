@@ -61,6 +61,7 @@ public class CryoPumpsStartThread extends Thread {
     }
 
     public void restart() {
+
         state = CryoPumpsThreadState.INIT_STATE;
         this.interrupt();
     }
@@ -191,6 +192,7 @@ public class CryoPumpsStartThread extends Thread {
         switch (state) {
         case INIT_STATE:
             state = CryoPumpsThreadState.START_PRE_PUMP;
+            Thread.interrupted();
             break;
         case START_PRE_PUMP:
             state = CryoPumpsThreadState.EVACUATE_CRYO;

@@ -74,6 +74,7 @@ public class TurboPumpStartThread extends Thread {
                 switch (state) {
                 case INIT_STATE:
                     state = TurboPumpThreadState.START_PRE_PUMPS;
+                    Thread.interrupted();
                     break;
                 case START_PRE_PUMPS:
                     if (isCanceled()) {
@@ -228,7 +229,7 @@ public class TurboPumpStartThread extends Thread {
         outletControl.openOutlet(Outlet.OUTLET_TWO);
         Thread.sleep(500);
         Pump turboPump = pumpRegistry.getPump(PumpIds.TURBO_PUMP);
-        if (turboPump.getState().equals(PumpState.OFF)) {
+        if (turboPump.getState().equals(PumpState.OFF) || turboPump.getState().equals(PumpState.STOPPING)) {
             turboPump.startPump().get(5, TimeUnit.MINUTES);
         }
     }

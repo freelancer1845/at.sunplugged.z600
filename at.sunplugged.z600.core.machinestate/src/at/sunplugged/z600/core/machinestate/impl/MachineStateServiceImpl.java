@@ -105,6 +105,16 @@ public class MachineStateServiceImpl implements MachineStateService {
             logService.log(LogService.LOG_ERROR, "Can't start machineStateService since mbt is not connected!");
             return;
         }
+        try {
+            if (mbtService.readDigIns(WagoAddresses.DigitalInput.PRESSURE_FOR_OUTLETS.getAddress(), 1)
+                    .get(WagoAddresses.DigitalInput.PRESSURE_FOR_OUTLETS.getAddress()) == false) {
+                logService.log(LogService.LOG_ERROR,
+                        "Won't start machineStateService since pressure for outlet control is not working!!!");
+                return;
+            }
+        } catch (IOException e) {
+            return;
+        }
         if (this.updaterThread == null) {
             this.updaterThread = new InputUpdaterThread();
             this.updaterThread.start();

@@ -226,6 +226,8 @@ public class MainView {
                 VacuumService.State state = vacuumService.getState();
                 if (state == VacuumService.State.READY) {
                     vacuumService.startEvacuation();
+                } else if (state == VacuumService.State.SHUTTING_DOWN) {
+                    vacuumService.startEvacuation();
                 } else {
                     vacuumService.shutdown();
                 }
@@ -237,7 +239,8 @@ public class MainView {
                 VacuumService.State state = vacuumService.getState();
                 switch (state) {
                 case READY:
-                    setBtnText("Start", state);
+                case SHUTTING_DOWN:
+                    setBtnText("Start/Restart", state);
                     break;
                 case STARTING:
                 case EVACUATING:

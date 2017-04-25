@@ -93,8 +93,19 @@ public class VacuumServiceImpl implements VacuumService {
             cryoPumpThread.start();
             state = State.STARTING;
         } else if (state == State.SHUTTING_DOWN) {
-            turboPumpThread.restart();
-            cryoPumpThread.restart();
+            if (cryoState == CryoPumpsThreadState.INIT_STATE && cryoPumpThread.isAlive()) {
+                cryoPumpThread = new CryoPumpsStartThread();
+                cryoPumpThread.start();
+            } else {
+                cryoPumpThread.restart();
+            }
+            if (turboState == TurboPumpThreadState.INIT_STATE) {
+                turboPumpThread = new TurboPumpStartThread();
+                turboPumpThread.start();
+            } else {
+                turboPumpThread.restart();
+            }
+
             logService.log(LogService.LOG_DEBUG, "Restarting evacuation.");
         } else {
             logService.log(LogService.LOG_WARNING,

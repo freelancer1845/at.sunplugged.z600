@@ -61,7 +61,6 @@ public class TurboPump implements Pump, MachineEventHandler {
             MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
                     "Turbo pump restarted while shutting down.");
             stopHook.cancel(true);
-            return null;
         }
         FutureEvent startEvent = new FutureEvent(machineStateService, new PumpStateEvent(PUMP_ID, PumpState.ON));
 
