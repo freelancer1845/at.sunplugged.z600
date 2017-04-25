@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
@@ -68,7 +69,6 @@ import at.sunplugged.z600.core.machinestate.api.WagoAddresses.AnalogOutput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
-import at.sunplugged.z600.frontend.gui.utils.spi.UpdatableChart;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ParseError;
 import at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
@@ -78,7 +78,6 @@ import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
-import org.eclipse.swt.widgets.Text;
 
 @Component
 public class MainView {
@@ -1447,6 +1446,16 @@ public class MainView {
         });
 
         toggleCryoTwo.addSelectionListener(new PumpAdapter(PumpIds.CRYO_TWO));
+
+        Button loadSettingsButton = new Button(machineDebugComposite, SWT.NONE);
+        loadSettingsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        loadSettingsButton.setText("Load New Settigs");
+        loadSettingsButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                settings.loadSettings();
+            }
+        });
 
         return machineDebugComposite;
     }

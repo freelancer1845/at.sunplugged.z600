@@ -72,6 +72,10 @@ public class VacuumServiceImpl implements VacuumService {
             state = State.READY;
             return;
         }
+        if (cryoState == CryoPumpsThreadState.SHUTDOWN || turboState == TurboPumpThreadState.SHUTDOWN) {
+            state = State.SHUTTING_DOWN;
+            return;
+        }
         state = State.STARTING;
     }
 

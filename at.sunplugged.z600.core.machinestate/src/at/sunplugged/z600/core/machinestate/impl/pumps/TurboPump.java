@@ -3,6 +3,7 @@ package at.sunplugged.z600.core.machinestate.impl.pumps;
 import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.settings.api.ParameterIds;
@@ -111,6 +112,8 @@ public class TurboPump implements Pump, MachineEventHandler {
                 throw new IllegalPumpConditionsException(String.format(
                         "Turbo pump is already stopping. Time left: %d s", stopHook.getDelay(TimeUnit.SECONDS)));
             }
+            MachineStateServiceImpl.getLogService().log(LogService.LOG_INFO,
+                    "Turbo pump is shutting down. Waiting 5 Minutes...");
             changeState(PumpState.STOPPING);
 
             MachineStateServiceImpl.getLogService().log(LogService.LOG_DEBUG,
