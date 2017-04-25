@@ -30,7 +30,7 @@ public class DoubleRangeModifyListener implements ModifyListener {
             } else {
                 setFieldWhite();
             }
-            double value = Double.valueOf(currentText.replace(",", "."));
+            double value = Double.valueOf(currentText);
             if (value > max) {
                 setFieldRed();
                 text.setToolTipText("Value greater than max allowed " + text);

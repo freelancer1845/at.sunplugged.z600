@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -300,7 +301,7 @@ public class StandardProcessDialog {
         ssvTwoText = new Text(powerSourceGroup, SWT.BORDER);
         ssvTwoText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         ssvTwoText.setText("0.0");
-        ssvTwoText.addModifyListener(new DoubleRangeModifyListener(pinnacleText,
+        ssvTwoText.addModifyListener(new DoubleRangeModifyListener(ssvTwoText,
                 MainView.getSettings().getPropertAsDouble(ParameterIds.LOWER_SAFETY_LIMIT_POWER_AT_POWER_SORUCE),
                 MainView.getSettings().getPropertAsDouble(ParameterIds.MAX_POWER)));
         ssvTwoText.setEnabled(false);
@@ -324,7 +325,18 @@ public class StandardProcessDialog {
             public void widgetSelected(SelectionEvent e) {
 
                 answer = SWT.OK;
-                script = createScript();
+                try {
+                    script = createScript();
+                } catch (NumberFormatException e1) {
+                    MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
+                    messageBox.setText("Error parsing Arguments.");
+                    messageBox.setMessage(
+                            "Failed to parse all numbers. Wrong format. Error: \"" + e1.getMessage() + "\"");
+                    messageBox.open();
+                    answer = SWT.CANCEL;
+                    return;
+                }
+
                 shell.dispose();
             }
 

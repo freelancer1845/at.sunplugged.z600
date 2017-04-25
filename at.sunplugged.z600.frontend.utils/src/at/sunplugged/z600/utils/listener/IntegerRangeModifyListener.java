@@ -29,7 +29,7 @@ public class IntegerRangeModifyListener implements ModifyListener {
             } else {
                 setFieldWhite();
             }
-            int value = Integer.valueOf(currentText.replace(",", "."));
+            int value = Integer.valueOf(currentText);
             if (value > max) {
                 setFieldRed();
                 text.setToolTipText("Value greater than max allowed " + text);
