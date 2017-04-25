@@ -29,9 +29,11 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
@@ -151,6 +153,32 @@ public class MainView {
 
     public static Shell createMainWindow() {
         Shell shell = createContents();
+        shell.addListener(SWT.CLOSE, new Listener() {
+
+            @Override
+            public void handleEvent(Event event) {
+                int style = SWT.APPLICATION_MODAL | SWT.YES | SWT.NO;
+                MessageBox messageBox = new MessageBox(shell, style);
+                messageBox.setText("Close");
+                messageBox.setMessage("Close the program?");
+                int answer = messageBox.open();
+                event.doit = answer == SWT.YES;
+                if (answer == SWT.YES) {
+                    handleCloseing();
+                }
+            }
+
+            private void handleCloseing() {
+                if (vacuumService.getState() != VacuumService.State.READY) {
+                    vacuumService.stopEvacuationHard();
+                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING);
+                    messageBox.setText("Evacuation Error");
+                    messageBox.setMessage(
+                            "Evacuation not stopped properly!!! Wait at least 5 minutes or know what you are doing!");
+                }
+            }
+
+        });
         return shell;
     }
 
