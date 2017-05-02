@@ -85,6 +85,7 @@ import at.sunplugged.z600.srm50.api.SrmCommunicator;
 @Component
 public class MainView {
 
+    // Test Comment
     protected Shell shell;
 
     private static LogService logService;
@@ -326,7 +327,7 @@ public class MainView {
         btnSetpressure.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ValueDialog dialog = new ValueDialog("Druck", "Gewünschten Druck in [mbar] setzen.",
+                ValueDialog dialog = new ValueDialog("Druck", "GewÃ¼nschten Druck in [mbar] setzen.",
                         settings.getPropertAsDouble(ParameterIds.VACUUM_LOWER_LIMIT_MBAR),
                         settings.getPropertAsDouble(ParameterIds.VACUUM_UPPER_LIMIT_MBAR), shell);
                 if (dialog.open() == ValueDialog.Answer.OK) {
