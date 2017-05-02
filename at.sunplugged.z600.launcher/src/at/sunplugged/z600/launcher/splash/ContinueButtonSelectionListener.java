@@ -49,12 +49,14 @@ public class ContinueButtonSelectionListener implements SelectionListener {
             messageBox.setMessage("The Pressure for the outlets may be off. Please Check and continue with caution!");
             messageBox.open();
         }
-        if (machineStateService.getDigitalInputState(DigitalInput.COOLING_PUMP_OK) == false) {
-            MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
-            messageBox.setMessage("Cooling Pump Error");
-            messageBox.setMessage("Cooling may not be running!");
-            messageBox.open();
-        }
+        // if
+        // (machineStateService.getDigitalInputState(DigitalInput.COOLING_PUMP_OK)
+        // == false) {
+        // MessageBox messageBox = new MessageBox(shell, SWT.ERROR | SWT.OK);
+        // messageBox.setMessage("Cooling Pump Error");
+        // messageBox.setMessage("Cooling may not be running!");
+        // messageBox.open();
+        // }
     }
 
     @Override
