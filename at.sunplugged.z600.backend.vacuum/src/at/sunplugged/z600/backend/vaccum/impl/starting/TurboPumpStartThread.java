@@ -20,6 +20,7 @@ import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
+import at.sunplugged.z600.core.machinestate.api.WaterControl.WaterOutlet;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.FutureEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.FuturePressureReachedEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
@@ -227,6 +228,7 @@ public class TurboPumpStartThread extends Thread {
 
     private void startTurboPump() throws InterruptedException, TimeoutException, IOException {
         outletControl.openOutlet(Outlet.OUTLET_TWO);
+        machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, true);
         Thread.sleep(500);
         Pump turboPump = pumpRegistry.getPump(PumpIds.TURBO_PUMP);
         if (turboPump.getState().equals(PumpState.OFF) || turboPump.getState().equals(PumpState.STOPPING)) {

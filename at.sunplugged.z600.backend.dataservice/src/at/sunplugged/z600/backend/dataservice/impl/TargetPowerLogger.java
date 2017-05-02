@@ -1,0 +1,171 @@
+package at.sunplugged.z600.backend.dataservice.impl;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.osgi.service.log.LogService;
+
+import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.core.machinestate.api.PowerSource;
+import at.sunplugged.z600.core.machinestate.api.PowerSource.State;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
+import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+
+public class TargetPowerLogger implements MachineEventHandler {
+
+    private static TargetPowerLogger instance = null;
+
+    private Map<PowerSourceId, String> powerSourceTargetMap = new HashMap<>();
+
+    private Map<PowerSourceId, ScheduledFuture<?>> powerSourceUpdaterMap = new HashMap<>();
+
+    private Map<PowerSourceId, PowerDataPoint> timePowerData = new HashMap<>();
+
+    private StandardThreadPoolService threadPool;
+
+    private TargetPowerLogger() {
+        this.threadPool = DataServiceImpl.getStandardThreadPoolService();
+        DataServiceImpl.getMachineStateService().registerMachineEventHandler(this);
+
+    }
+
+    /**
+     * This maps the given target to the powersource. If targetId is empty, null
+     * or does not exist no logging is done.
+     * 
+     * @param targetId
+     *            of the material. Get the TargetId from the dataService via
+     *            getTargetMaterials()
+     * @param powerSourceId
+     *            the material will be mapped to.
+     */
+    public void mapTargetToPowersource(String targetId, PowerSourceId powerSourceId) {
+        if (targetId == null || targetId.isEmpty() == true) {
+            doStateOff(powerSourceId);
+        }
+
+        powerSourceTargetMap.put(powerSourceId, targetId);
+
+        // This is the case if the mapping is done after the power source was
+        // started
+        if (DataServiceImpl.getMachineStateService().getPowerSourceRegistry().getPowerSource(powerSourceId)
+                .getState() != State.OFF && powerSourceUpdaterMap.containsKey(powerSourceId) == false) {
+            handlePowerSourceStateEvent(
+                    DataServiceImpl.getMachineStateService().getPowerSourceRegistry().getPowerSource(powerSourceId),
+                    State.STARTING);
+        }
+    }
+
+    public static TargetPowerLogger getInstance() {
+        if (instance == null) {
+            instance = new TargetPowerLogger();
+        }
+        return instance;
+    }
+
+    @Override
+    public void handleEvent(MachineStateEvent event) {
+        if (event.getType().equals(MachineStateEvent.Type.POWER_SOURCE_STATE_CHANGED)) {
+            handlePowerSourceStateEvent((PowerSource) event.getOrigin(), (State) event.getValue());
+        }
+    }
+
+    private void handlePowerSourceStateEvent(PowerSource source, State newState) {
+
+        if (newState == State.STARTING) {
+            String targetId = powerSourceTargetMap.get(source.getId());
+            if (targetId == null) {
+                return;
+            } else if (targetId.isEmpty() == true) {
+                return;
+            }
+            if (powerSourceUpdaterMap.containsKey(source.getId())) {
+                powerSourceUpdaterMap.get(source.getId()).cancel(false);
+            }
+            powerSourceUpdaterMap.put(source.getId(), threadPool.timedPeriodicExecute(
+                    new PowerSourceMaterialLoggerRunnable(source.getId()), 0, 1, TimeUnit.SECONDS));
+        } else if (newState == State.OFF) {
+            doStateOff(source.getId());
+        }
+
+    }
+
+    private void doStateOff(PowerSourceId id) {
+        if (powerSourceUpdaterMap.containsKey(id)) {
+            powerSourceUpdaterMap.get(id).cancel(false);
+            powerSourceUpdaterMap.remove(id);
+        }
+    }
+
+    private final class PowerSourceMaterialLoggerRunnable implements Runnable {
+
+        private final PowerSourceId id;
+
+        public PowerSourceMaterialLoggerRunnable(PowerSourceId id) {
+            this.id = id;
+        }
+
+        @Override
+        public void run() {
+            if (timePowerData.containsKey(id) == false) {
+                timePowerData.put(id, new PowerDataPoint(0, System.currentTimeMillis()));
+            }
+            if (powerSourceTargetMap.containsKey(id)) {
+                String targetId = powerSourceTargetMap.get(id);
+                if (targetId == null) {
+                    doStateOff(id);
+                    return;
+                }
+
+                PowerDataPoint lastPoint = timePowerData.get(id);
+
+                long currentTime = System.currentTimeMillis();
+                double currentPower = DataServiceImpl.getMachineStateService().getPowerSourceRegistry()
+                        .getPowerSource(id).getPower();
+                double timePassedInMms = currentTime - lastPoint.getTimePoint();
+
+                double workDone = (currentPower + lastPoint.getPowerPoint()) / 2 * timePassedInMms / 1000 / 3600;
+
+                try {
+                    addWorkDoneToSqlTable(targetId, workDone);
+                } catch (DataServiceException | SQLException e) {
+                    DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                            "Failed to add workDone data to target consumption table.", e);
+                    doStateOff(id);
+                }
+            }
+
+        }
+
+    }
+
+    private final class PowerDataPoint {
+        private final long timePoint;
+
+        private final double powerPoint;
+
+        public PowerDataPoint(long timePoint, double powerPoint) {
+            this.timePoint = timePoint;
+            this.powerPoint = powerPoint;
+        }
+
+        public double getPowerPoint() {
+            return powerPoint;
+        }
+
+        public long getTimePoint() {
+            return timePoint;
+        }
+
+    }
+
+    private void addWorkDoneToSqlTable(String targetId, double workDone) throws DataServiceException, SQLException {
+        WriteDataTableUtils.addWorkToTargetIdConsumptionTable(DataServiceImpl.getSqlConnection(), targetId, workDone);
+    }
+
+}

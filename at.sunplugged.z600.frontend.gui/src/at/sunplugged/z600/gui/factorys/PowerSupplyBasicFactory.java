@@ -1,17 +1,21 @@
 package at.sunplugged.z600.gui.factorys;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -35,7 +39,7 @@ public class PowerSupplyBasicFactory {
         grpPinnacle.setLayout(new GridLayout(1, false));
 
         Group grpData = new Group(grpPinnacle, SWT.NONE);
-        grpData.setLayout(new GridLayout(6, true));
+        grpData.setLayout(new GridLayout(7, true));
         grpData.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         grpData.setText("Data");
 
@@ -73,8 +77,43 @@ public class PowerSupplyBasicFactory {
 
         });
 
+        Combo targetIdcombo = new Combo(grpData, SWT.NONE);
+        targetIdcombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        targetIdcombo.setText("Choose Target...");
+        targetIdcombo.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                String[] targetMaterials = MainView.getDataService().getTargetMaterials();
+                String[] completeList = new String[targetMaterials.length + 1];
+                for (int i = 0; i < targetMaterials.length; i++) {
+                    completeList[i] = targetMaterials[i];
+                }
+                completeList[targetMaterials.length] = "none";
+
+                targetIdcombo.setItems(completeList);
+            }
+        });
+
+        targetIdcombo.addModifyListener(new ModifyListener() {
+
+            @Override
+            public void modifyText(ModifyEvent e) {
+                String text = targetIdcombo.getText();
+                if (text.equals("none")) {
+                    MainView.getDataService().mapTargetToPowersource(id, null);
+                } else {
+                    MainView.getDataService().mapTargetToPowersource(id, text);
+                }
+            }
+        });
+
         Composite pinnacleChartComposite = new Composite(grpData, SWT.NONE);
-        GridData pinnacleChartCompositeGd = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
+        GridData pinnacleChartCompositeGd = new GridData(SWT.FILL, SWT.FILL, true, true, 7, 1);
         pinnacleChartComposite.setLayoutData(pinnacleChartCompositeGd);
         pinnacleChartComposite.setLayout(new FillLayout());
 

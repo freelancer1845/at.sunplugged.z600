@@ -18,6 +18,35 @@ import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeas
 
 public class WriteDataTableUtils {
 
+    public static void addWorkToTargetIdConsumptionTable(SqlConnection connection, String targetId, double workDone)
+            throws DataServiceException, SQLException {
+        if (connection.isOpen() == false) {
+            throw new DataServiceException(
+                    "Failed to write add work to TargetIdConsumptionTable, Connection not open!");
+        }
+        if (SqlUtils.checkIfTableExists(connection, TableNames.TARGET_CONSUMPTION_TABLE) == false) {
+            createTargetConsumtionTable(connection);
+        }
+        Statement stm = connection.getStatement();
+        String sql2 = "IF NOT EXISTS (select * from " + TableNames.TARGET_CONSUMPTION_TABLE + " where TargetId = '"
+                + targetId + "')\n BEGIN INSERT INTO " + TableNames.TARGET_CONSUMPTION_TABLE + " (id, "
+                + ColumnNames.TARGET_WORK_DONE + ") VALUES ('" + targetId + "', " + 0 + ") END;  UPDATE "
+                + TableNames.TARGET_CONSUMPTION_TABLE + " SET " + ColumnNames.TARGET_WORK_DONE + " = "
+                + ColumnNames.TARGET_WORK_DONE + " + " + workDone + " WHERE TargetId ='" + targetId + "'";
+        stm.execute(sql2);
+        stm.close();
+
+    }
+
+    private static void createTargetConsumtionTable(SqlConnection connection) throws SQLException {
+        Statement stm = connection.getStatement();
+        String sql = "CREATE TABLE [" + TableNames.TARGET_CONSUMPTION_TABLE + "] (";
+        sql += "TargetId VARCHAR(256), ";
+        sql += ColumnNames.TARGET_WORK_DONE + " FLOAT)";
+        stm.executeUpdate(sql);
+        stm.close();
+    }
+
     public static void writeDataTable(SqlConnection connection, String tableName)
             throws DataServiceException, SQLException {
         if (connection.isOpen() == false) {

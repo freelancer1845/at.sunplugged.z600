@@ -64,12 +64,10 @@ public class TurboPump implements Pump, MachineEventHandler {
         }
         FutureEvent startEvent = new FutureEvent(machineStateService, new PumpStateEvent(PUMP_ID, PumpState.ON));
 
-        if (machineStateService.getWaterControl().getOutletState(WaterOutlet.TURBO_PUMP) == false) {
-            try {
-                machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, true);
-            } catch (IOException e) {
-                throw new IllegalPumpConditionsException("Couldn't open water outlet for turbo pump!", e);
-            }
+        try {
+            machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, true);
+        } catch (IOException e) {
+            throw new IllegalPumpConditionsException("Couldn't open water outlet for turbo pump!", e);
         }
         double pressure = machineStateService.getPressureMeasurmentControl()
                 .getCurrentValue(PressureMeasurementSite.TURBO_PUMP);

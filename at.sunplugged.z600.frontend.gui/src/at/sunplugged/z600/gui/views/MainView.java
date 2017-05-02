@@ -121,6 +121,10 @@ public class MainView {
 
     private static DataService dataService;
 
+    public static DataService getDataService() {
+        return dataService;
+    }
+
     private static BundleContext context;
 
     private static Viewer diagramViewer;

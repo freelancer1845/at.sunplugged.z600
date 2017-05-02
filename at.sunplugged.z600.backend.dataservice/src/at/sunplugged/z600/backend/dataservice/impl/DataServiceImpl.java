@@ -4,9 +4,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.framework.BundleContext;
@@ -28,6 +30,7 @@ import at.sunplugged.z600.common.utils.Events;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 
 /**
  * Standard implementation of the DataService interface. Connection String
@@ -55,7 +58,11 @@ public class DataServiceImpl implements DataService {
 
     private static ConveyorPositionCorrectionService conveyorPositionCorrectionService;
 
-    private SqlConnection sqlConnection = null;
+    private static SqlConnection sqlConnection = null;
+
+    public static SqlConnection getSqlConnection() {
+        return sqlConnection;
+    }
 
     @Activate
     protected synchronized void activate(BundleContext context) {
@@ -92,6 +99,46 @@ public class DataServiceImpl implements DataService {
         } catch (SQLException e) {
             logService.log(LogService.LOG_ERROR, "Failed to save settings to sql database.", e);
         }
+    }
+
+    @Override
+    public void startUpdate() throws DataServiceException {
+        DataSavingThread.startInstance(sqlConnection);
+
+    }
+
+    @Override
+    public void stopUpdate() {
+        DataSavingThread.stopInstance();
+    }
+
+    @Override
+    public String[] getTargetMaterials() {
+        try {
+            if (SqlUtils.checkIfTableExists(sqlConnection, TableNames.TARGET_IDS) == false) {
+                logService.log(LogService.LOG_ERROR,
+                        "TargetID's table not found in sql database. Can't map powersources to targets...");
+                return new String[0];
+            } else {
+                Statement stm = sqlConnection.getStatement();
+                stm.executeQuery("SELECT Name FROM " + TableNames.TARGET_IDS);
+                ResultSet resultSet = stm.getResultSet();
+                List<String> arrayList = new ArrayList<>();
+                while (resultSet.next() == true) {
+                    arrayList.add(resultSet.getString(0));
+                }
+                stm.close();
+                return arrayList.toArray(new String[0]);
+            }
+        } catch (SQLException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to read TargetID's from sql database...", e);
+            return new String[0];
+        }
+    }
+
+    @Override
+    public void mapTargetToPowersource(PowerSourceId id, String targetName) {
+        TargetPowerLogger.getInstance().mapTargetToPowersource(targetName, id);
     }
 
     private void connectToSqlServer(String address, String username, String password) throws DataServiceException {
@@ -339,17 +386,6 @@ public class DataServiceImpl implements DataService {
 
     public static ConveyorPositionCorrectionService getConveyorPositionService() {
         return DataServiceImpl.conveyorPositionCorrectionService;
-    }
-
-    @Override
-    public void startUpdate() throws DataServiceException {
-        DataSavingThread.startInstance(sqlConnection);
-
-    }
-
-    @Override
-    public void stopUpdate() {
-        DataSavingThread.stopInstance();
     }
 
 }

@@ -2,6 +2,8 @@ package at.sunplugged.z600.core.machinestate.api;
 
 import java.util.concurrent.TimeUnit;
 
+import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
+
 /**
  * Interface every power source should implement.
  * 
@@ -63,4 +65,6 @@ public interface PowerSource {
      * @return
      */
     public State getState();
+
+    public PowerSourceId getId();
 }

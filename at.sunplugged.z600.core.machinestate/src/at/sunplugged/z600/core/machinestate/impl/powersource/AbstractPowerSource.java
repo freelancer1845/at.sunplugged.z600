@@ -220,4 +220,9 @@ public abstract class AbstractPowerSource implements PowerSource {
         controlFuture = null;
     }
 
+    @Override
+    public PowerSourceId getId() {
+        return id;
+    }
+
 }
