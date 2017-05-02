@@ -10,7 +10,6 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-import at.sunplugged.z600.core.machinestate.api.PowerSource;
 import at.sunplugged.z600.core.machinestate.api.PowerSource.State;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
@@ -55,9 +54,7 @@ public class TargetPowerLogger implements MachineEventHandler {
         // started
         if (DataServiceImpl.getMachineStateService().getPowerSourceRegistry().getPowerSource(powerSourceId)
                 .getState() != State.OFF && powerSourceUpdaterMap.containsKey(powerSourceId) == false) {
-            handlePowerSourceStateEvent(
-                    DataServiceImpl.getMachineStateService().getPowerSourceRegistry().getPowerSource(powerSourceId),
-                    State.STARTING);
+            handlePowerSourceStateEvent(powerSourceId, State.STARTING);
         }
     }
 
@@ -71,26 +68,26 @@ public class TargetPowerLogger implements MachineEventHandler {
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (event.getType().equals(MachineStateEvent.Type.POWER_SOURCE_STATE_CHANGED)) {
-            handlePowerSourceStateEvent((PowerSource) event.getOrigin(), (State) event.getValue());
+            handlePowerSourceStateEvent((PowerSourceId) event.getOrigin(), (State) event.getValue());
         }
     }
 
-    private void handlePowerSourceStateEvent(PowerSource source, State newState) {
+    private void handlePowerSourceStateEvent(PowerSourceId id, State newState) {
 
         if (newState == State.STARTING) {
-            String targetId = powerSourceTargetMap.get(source.getId());
+            String targetId = powerSourceTargetMap.get(id);
             if (targetId == null) {
                 return;
             } else if (targetId.isEmpty() == true) {
                 return;
             }
-            if (powerSourceUpdaterMap.containsKey(source.getId())) {
-                powerSourceUpdaterMap.get(source.getId()).cancel(false);
+            if (powerSourceUpdaterMap.containsKey(id)) {
+                powerSourceUpdaterMap.get(id).cancel(false);
             }
-            powerSourceUpdaterMap.put(source.getId(), threadPool.timedPeriodicExecute(
-                    new PowerSourceMaterialLoggerRunnable(source.getId()), 0, 1, TimeUnit.SECONDS));
+            powerSourceUpdaterMap.put(id,
+                    threadPool.timedPeriodicExecute(new PowerSourceMaterialLoggerRunnable(id), 0, 1, TimeUnit.SECONDS));
         } else if (newState == State.OFF) {
-            doStateOff(source.getId());
+            doStateOff(id);
         }
 
     }
