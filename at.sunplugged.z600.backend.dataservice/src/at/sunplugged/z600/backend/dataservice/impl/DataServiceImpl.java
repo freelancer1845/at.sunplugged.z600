@@ -125,7 +125,7 @@ public class DataServiceImpl implements DataService {
                 ResultSet resultSet = stm.getResultSet();
                 List<String> arrayList = new ArrayList<>();
                 while (resultSet.next() == true) {
-                    arrayList.add(resultSet.getString(0));
+                    arrayList.add(resultSet.getString(1));
                 }
                 stm.close();
                 return arrayList.toArray(new String[0]);

@@ -1,5 +1,7 @@
 package at.sunplugged.z600.gui.dialogs;
 
+import java.util.Locale;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -125,10 +127,10 @@ public class StandardProcessDialog {
     private String createConveyorCommand() {
         StringBuilder stringBuilder = new StringBuilder();
         if (leftToRight.getSelection() == true) {
-            stringBuilder.append(String.format(Commands.START_CONVEYOR_TIME_UNDER_CATHODE + "(%s, %.4f, %d)",
+            stringBuilder.append(String.format(Locale.US, Commands.START_CONVEYOR_TIME_UNDER_CATHODE + "(%s, %.4f, %d)",
                     "LEFT_TO_RIGHT", Double.valueOf(distanceText.getText()), Integer.valueOf(timeText.getText())));
         } else if (rightToLeft.getSelection() == true) {
-            stringBuilder.append(String.format(Commands.START_CONVEYOR_TIME_UNDER_CATHODE + "(%s, %.4f, %d)",
+            stringBuilder.append(String.format(Locale.US, Commands.START_CONVEYOR_TIME_UNDER_CATHODE + "(%s, %.4f, %d)",
                     "RIGHT_TO_LEFT", Double.valueOf(distanceText.getText()), Integer.valueOf(timeText.getText())));
         }
         stringBuilder.append(System.lineSeparator());
@@ -141,15 +143,15 @@ public class StandardProcessDialog {
     private Object createPowerSourceStopCommand() {
         StringBuilder stringBuilder = new StringBuilder();
         if (pinnacleButton.getSelection() == true) {
-            stringBuilder.append(String.format(POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.PINNACLE, 0.0));
+            stringBuilder.append(String.format(Locale.US, POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.PINNACLE, 0.0));
             stringBuilder.append(System.lineSeparator());
         }
         if (ssvOneButton.getSelection() == true) {
-            stringBuilder.append(String.format(POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV1, 0.0));
+            stringBuilder.append(String.format(Locale.US, POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV1, 0.0));
             stringBuilder.append(System.lineSeparator());
         }
         if (ssvTwoButton.getSelection() == true) {
-            stringBuilder.append(String.format(POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV2, 0.0));
+            stringBuilder.append(String.format(Locale.US, POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV2, 0.0));
             stringBuilder.append(System.lineSeparator());
         }
         return stringBuilder.toString();
@@ -158,17 +160,17 @@ public class StandardProcessDialog {
     private String createPowerSourceStartCommand() {
         StringBuilder stringBuilder = new StringBuilder();
         if (pinnacleButton.getSelection() == true) {
-            stringBuilder.append(String.format(POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.PINNACLE,
+            stringBuilder.append(String.format(Locale.US, POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.PINNACLE,
                     Double.valueOf(pinnacleText.getText())));
             stringBuilder.append(System.lineSeparator());
         }
         if (ssvOneButton.getSelection() == true) {
-            stringBuilder.append(String.format(POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV1,
+            stringBuilder.append(String.format(Locale.US, POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV1,
                     Double.valueOf(ssvOneText.getText())));
             stringBuilder.append(System.lineSeparator());
         }
         if (ssvTwoButton.getSelection() == true) {
-            stringBuilder.append(String.format(POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV2,
+            stringBuilder.append(String.format(Locale.US, POWER_SORUCE_COMMAND_FORMAT, PowerSourceId.SSV2,
                     Double.valueOf(ssvTwoText.getText())));
             stringBuilder.append(System.lineSeparator());
         }
@@ -190,7 +192,7 @@ public class StandardProcessDialog {
 
     private String createPressureCommand() {
 
-        return String.format(Commands.SET_PRESSURE + "(%.5f)", Double.valueOf(pressureText.getText()))
+        return String.format(Locale.US, Commands.SET_PRESSURE + "(%.5f)", Double.valueOf(pressureText.getText()))
                 + System.lineSeparator();
     }
 
