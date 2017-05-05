@@ -29,7 +29,7 @@ public class WriteDataTableUtils {
         }
         Statement stm = connection.getStatement();
         String sql2 = "IF NOT EXISTS (select * from " + TableNames.TARGET_CONSUMPTION_TABLE + " where TargetId = '"
-                + targetId + "')\n BEGIN INSERT INTO " + TableNames.TARGET_CONSUMPTION_TABLE + " (id, "
+                + targetId + "')\n BEGIN INSERT INTO " + TableNames.TARGET_CONSUMPTION_TABLE + " (TargetId, "
                 + ColumnNames.TARGET_WORK_DONE + ") VALUES ('" + targetId + "', " + 0 + ") END;  UPDATE "
                 + TableNames.TARGET_CONSUMPTION_TABLE + " SET " + ColumnNames.TARGET_WORK_DONE + " = "
                 + ColumnNames.TARGET_WORK_DONE + " + " + workDone + " WHERE TargetId ='" + targetId + "'";
