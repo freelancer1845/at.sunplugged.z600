@@ -23,7 +23,7 @@ public class TargetPowerLogger implements MachineEventHandler {
 
     private Map<PowerSourceId, ScheduledFuture<?>> powerSourceUpdaterMap = new HashMap<>();
 
-    private Map<PowerSourceId, PowerDataPoint> timePowerData = new HashMap<>();
+    private Map<PowerSourceId, TimePowerDataPoint> timePowerData = new HashMap<>();
 
     private StandardThreadPoolService threadPool;
 
@@ -37,11 +37,9 @@ public class TargetPowerLogger implements MachineEventHandler {
      * This maps the given target to the powersource. If targetId is empty, null
      * or does not exist no logging is done.
      * 
-     * @param targetId
-     *            of the material. Get the TargetId from the dataService via
-     *            getTargetMaterials()
-     * @param powerSourceId
-     *            the material will be mapped to.
+     * @param targetId of the material. Get the TargetId from the dataService
+     *            via getTargetMaterials()
+     * @param powerSourceId the material will be mapped to.
      */
     public void mapTargetToPowersource(String targetId, PowerSourceId powerSourceId) {
         if (targetId == null || targetId.isEmpty() == true) {
@@ -110,43 +108,41 @@ public class TargetPowerLogger implements MachineEventHandler {
         @Override
         public void run() {
             if (timePowerData.containsKey(id) == false) {
-                timePowerData.put(id, new PowerDataPoint(0, System.currentTimeMillis()));
+                timePowerData.put(id, new TimePowerDataPoint(System.currentTimeMillis(), 0));
             }
-            if (powerSourceTargetMap.containsKey(id)) {
-                String targetId = powerSourceTargetMap.get(id);
-                if (targetId == null) {
-                    doStateOff(id);
-                    return;
-                }
+            String targetId = powerSourceTargetMap.get(id);
+            if (targetId == null) {
+                doStateOff(id);
+                return;
+            }
 
-                PowerDataPoint lastPoint = timePowerData.get(id);
+            TimePowerDataPoint lastPoint = timePowerData.get(id);
 
-                long currentTime = System.currentTimeMillis();
-                double currentPower = DataServiceImpl.getMachineStateService().getPowerSourceRegistry()
-                        .getPowerSource(id).getPower();
-                double timePassedInMms = currentTime - lastPoint.getTimePoint();
+            long currentTime = System.currentTimeMillis();
+            double currentPower = DataServiceImpl.getMachineStateService().getPowerSourceRegistry().getPowerSource(id)
+                    .getPower();
+            double timePassedInMms = currentTime - lastPoint.getTimePoint();
 
-                double workDone = (currentPower + lastPoint.getPowerPoint()) / 2 * timePassedInMms / 1000 / 3600;
+            double workDone = (currentPower + lastPoint.getPowerPoint()) / 2 * timePassedInMms / 1000 / 3600;
 
-                try {
-                    addWorkDoneToSqlTable(targetId, workDone);
-                } catch (DataServiceException | SQLException e) {
-                    DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                            "Failed to add workDone data to target consumption table.", e);
-                    doStateOff(id);
-                }
+            try {
+                addWorkDoneToSqlTable(targetId, workDone);
+            } catch (DataServiceException | SQLException e) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                        "Failed to add workDone data to target consumption table.", e);
+                doStateOff(id);
             }
 
         }
 
     }
 
-    private final class PowerDataPoint {
+    private final class TimePowerDataPoint {
         private final long timePoint;
 
         private final double powerPoint;
 
-        public PowerDataPoint(long timePoint, double powerPoint) {
+        public TimePowerDataPoint(long timePoint, double powerPoint) {
             this.timePoint = timePoint;
             this.powerPoint = powerPoint;
         }
