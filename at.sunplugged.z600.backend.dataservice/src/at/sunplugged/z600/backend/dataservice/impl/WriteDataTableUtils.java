@@ -114,6 +114,9 @@ public class WriteDataTableUtils {
         sql += ColumnNames.CONVEYOR_SPEED_RIGHT + " FLOAT, ";
         sql += ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM + " INTEGER, ";
         sql += ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM + " INTEGER, ";
+        sql += ColumnNames.CONVEYOR_POSITION_COMBINED + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_POSITION_LEFT + " FLOAT, ";
+        sql += ColumnNames.CONVEYOR_POSITION_RIGHT + " FLOAT, ";
         sql += ColumnNames.PINNACLE_POWER + " FLOAT, ";
         sql += ColumnNames.PINNACLE_POWER_SETPOINT + " FLOAT, ";
         sql += ColumnNames.PINNACLE_VOLTAGE + " FLOAT, ";
@@ -182,6 +185,9 @@ public class WriteDataTableUtils {
         dataMap.put(ColumnNames.CONVEYOR_SPEED_SETPOINT, conveyor.getSetpointSpeed());
         dataMap.put(ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM, conveyor.getEngineOne().getCurrentMaximumSpeed());
         dataMap.put(ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM, conveyor.getEngineTwo().getCurrentMaximumSpeed());
+        dataMap.put(ColumnNames.CONVEYOR_POSITION_COMBINED, conveyor.getPosition());
+        dataMap.put(ColumnNames.CONVEYOR_POSITION_LEFT, conveyor.getLeftPosition());
+        dataMap.put(ColumnNames.CONVEYOR_POSITION_RIGHT, conveyor.getRightPosition());
 
         return dataMap;
     }

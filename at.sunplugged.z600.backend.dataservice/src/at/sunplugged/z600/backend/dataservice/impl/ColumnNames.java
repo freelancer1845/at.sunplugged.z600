@@ -71,6 +71,15 @@ public class ColumnNames {
     public static final String CONVEYOR_ENGINE_RIGHT_MAXIMUM = "EngineRightMaximum";
 
     /** ID. */
+    public static final String CONVEYOR_POSITION_LEFT = "ConveyorPositionFromLeft";
+
+    /** ID. */
+    public static final String CONVEYOR_POSITION_RIGHT = "ConveyorPositionFromRight";
+
+    /** ID. */
+    public static final String CONVEYOR_POSITION_COMBINED = "ConveyorPositionCombined";
+
+    /** ID. */
     public static final String CONVEYOR_MODE = "ConveyorMode";
 
     /** ID. */
