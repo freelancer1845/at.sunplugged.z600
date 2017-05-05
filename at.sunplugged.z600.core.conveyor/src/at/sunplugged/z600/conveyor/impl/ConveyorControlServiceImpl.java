@@ -1,6 +1,7 @@
 package at.sunplugged.z600.conveyor.impl;
 
 import java.time.LocalTime;
+import java.time.temporal.TemporalUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,12 @@ import at.sunplugged.z600.mbt.api.MbtService;
 
 @Component(immediate = true)
 public class ConveyorControlServiceImpl implements ConveyorControlService {
+
+    private static ConveyorControlServiceImpl instance = null;
+
+    public static ConveyorControlServiceImpl getInstance() {
+        return instance;
+    }
 
     private static BundleContext context;
 
@@ -74,6 +81,7 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
         relativePositionMeasurement = new RelativePositionMeasurement(this);
         machineStateService.registerMachineEventHandler(relativePositionMeasurement);
+        instance = this;
     }
 
     @Deactivate
@@ -119,6 +127,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
                 logService.log(LogService.LOG_INFO, String.format("Estimed time of finish \"%02d:%02d:%02d\"",
                         now.getHour(), now.getMinute(), now.getSecond()));
+                EstimatedFinishTimer.getInstance().activate();
+                EstimatedFinishTimer.getInstance().submitTragetPosition(targetPosition);
                 while (true) {
                     try {
 
@@ -138,6 +148,7 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
                         logService.log(LogService.LOG_DEBUG, "Waiting for distance to be traveled interrupted.");
                     }
                 }
+                EstimatedFinishTimer.getInstance().deactivate();
             }
 
         });
@@ -184,12 +195,6 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
         if (startWithDistanceFuture != null) {
             startWithDistanceFuture.cancel(true);
         }
-    }
-
-    @Override
-    public String getExtimatedFinishTime() {
-
-        return null;
     }
 
     @Override
@@ -344,6 +349,19 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     @Override
     public double getLeftPosition() {
         return relativePositionMeasurement.getLeftPosition();
+    }
+
+    @Override
+    public String getExtimatedFinishTime() {
+        if (EstimatedFinishTimer.getInstance().getNeededTimeInMs() == 0) {
+            return "---";
+        }
+
+        LocalTime now = LocalTime.now();
+        now = now.plusSeconds(TimeUnit.SECONDS.convert(EstimatedFinishTimer.getInstance().getNeededTimeInMs(),
+                TimeUnit.MILLISECONDS));
+
+        return String.format("%02d:%02d:%02d", now.getHour(), now.getMinute(), now.getSecond());
     }
 
 }

@@ -39,8 +39,8 @@ public class MiscInformationFigure extends Figure {
     }
 
     private void createLabels() {
-        gasFLowSccmLabel = new LabeledLabel(this, "Gasflow [sccm]", "0.01416468");
-        estimatedFinishTime = new LabeledLabel(this, "ETC", "12:42:32");
+        gasFLowSccmLabel = new LabeledLabel(this, "Gasflow [sccm]", "0.0");
+        estimatedFinishTime = new LabeledLabel(this, "ETC", "---");
 
         Display.getDefault().timerExec(2000, new Runnable() {
             @Override
@@ -48,7 +48,7 @@ public class MiscInformationFigure extends Figure {
                 gasFLowSccmLabel.setText(String.format("%.3f",
                         MainView.getMachineStateService().getGasFlowControl().getCurrentGasFlowInSccm()));
                 estimatedFinishTime.setText(MainView.getConveyorControlService().getExtimatedFinishTime());
-
+                Display.getDefault().timerExec(1000, this);
             }
         });
 
@@ -86,7 +86,7 @@ public class MiscInformationFigure extends Figure {
         }
 
         public void setText(String text) {
-            this.label.setText(text);
+            this.text.setText(text);
         }
 
     }

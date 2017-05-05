@@ -34,7 +34,7 @@ import at.sunplugged.z600.gui.views.MainView;
 
 public class Viewer implements MachineEventHandler {
 
-    private static final boolean DEBUG_MODE = true;
+    private static final boolean DEBUG_MODE = false;
 
     private final int widthRatio;
 
