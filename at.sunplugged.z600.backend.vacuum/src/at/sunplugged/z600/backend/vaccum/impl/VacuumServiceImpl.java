@@ -64,6 +64,14 @@ public class VacuumServiceImpl implements VacuumService {
             }
             return;
         }
+        if (cryoState == CryoPumpsThreadState.GAS_FLOW_RUNNING
+                && turboState == TurboPumpThreadState.TURBO_PUMP_RUNNING) {
+            if (machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOP
+                    && machineStateService.getGasFlowControl().getState() != GasFlowControl.State.STOPPING) {
+                state = State.PRESSURE_CONTROL_RUNNING;
+            }
+            return;
+        }
         if (cryoState == CryoPumpsThreadState.CANCELED || turboState == TurboPumpThreadState.CANCELED) {
             state = State.FAILED;
             return;

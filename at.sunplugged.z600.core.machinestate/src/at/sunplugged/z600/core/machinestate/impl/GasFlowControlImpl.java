@@ -153,7 +153,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
             this.state = state;
         }
 
-        machineStateService.fireMachineStateEvent(new GasFlowEvent(state));
+        machineStateService.fireMachineStateEvent(new GasFlowEvent(this.state));
     }
 
     private void stopGasflowControl() throws IOException, InterruptedException {
