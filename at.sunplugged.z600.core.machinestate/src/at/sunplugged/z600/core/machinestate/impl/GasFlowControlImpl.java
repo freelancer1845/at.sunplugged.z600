@@ -10,6 +10,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
+import at.sunplugged.z600.common.utils.Conversion;
 import at.sunplugged.z600.core.machinestate.api.GasFlowControl;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.OutletControl.Outlet;
@@ -26,6 +27,8 @@ import at.sunplugged.z600.mbt.api.MbtService;
 public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     private static final int ANALOG_OUTPUT_MAX = 400;
+
+    private static final int ANALOG_INPUT_GAS_FLOW_MAX = 400;
 
     private static final int CONTROL_THREAD_TICKRATE = 2;
 
@@ -279,6 +282,12 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
     @Override
     public double getGasflowDesiredPressure() {
         return desiredPressure;
+    }
+
+    @Override
+    public double getCurrentGasFlowInSccm() {
+        return Conversion.clipConversionIn(machineStateService.getAnalogInputState(AnalogInput.GAS_FLOW), 0,
+                ANALOG_INPUT_GAS_FLOW_MAX);
     }
 
 }

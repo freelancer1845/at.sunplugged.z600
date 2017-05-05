@@ -107,6 +107,7 @@ public class WriteDataTableUtils {
         sql += ColumnNames.PRESSURE_CHAMBER + " FLOAT, ";
         sql += ColumnNames.PRESSURE_CRYO_ONE + " FLOAT, ";
         sql += ColumnNames.PRESSURE_CRYO_TWO + " FLOAT, ";
+        sql += ColumnNames.CURRENT_GAS_FLOW_SCCM + " FLOAT, ";
         sql += ColumnNames.CONVEYOR_MODE + " VARCHAR(256), ";
         sql += ColumnNames.CONVEYOR_SPEED_SETPOINT + " FLOAT, ";
         sql += ColumnNames.CONVEYOR_SPEED_COMBINED + " FLOAT, ";
@@ -143,6 +144,7 @@ public class WriteDataTableUtils {
                 pressureInterface.getCurrentValue(PressureMeasurementSite.CRYO_PUMP_ONE));
         dataMap.put(ColumnNames.PRESSURE_CRYO_TWO,
                 pressureInterface.getCurrentValue(PressureMeasurementSite.CRYO_PUMP_TWO));
+        dataMap.put(ColumnNames.CURRENT_GAS_FLOW_SCCM, machine.getGasFlowControl().getCurrentGasFlowInSccm());
         return dataMap;
     }
 

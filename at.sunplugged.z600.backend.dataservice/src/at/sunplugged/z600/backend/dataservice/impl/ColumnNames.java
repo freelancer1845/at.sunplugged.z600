@@ -17,6 +17,9 @@ public class ColumnNames {
     public static final String PERSSURE_TMP = "PressureTurbopump";
 
     /** ID. */
+    public static final String CURRENT_GAS_FLOW_SCCM = "GasFlowSccm";
+
+    /** ID. */
     public static final String PINNACLE_POWER = "PinnaclePower";
 
     /** ID. */

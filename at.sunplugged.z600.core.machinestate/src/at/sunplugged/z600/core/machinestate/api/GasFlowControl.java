@@ -26,6 +26,8 @@ public interface GasFlowControl {
 
     public double getCurrentGasFlowValue();
 
+    public double getCurrentGasFlowInSccm();
+
     /**
      * Tries to open Outlet 9 and starts the gas flow control. To stop call
      * {@linkplain stopGasFlowControl()}. This is executed asynchronously. A
