@@ -45,6 +45,8 @@ public class ConveyorPositionCorrectionServiceImpl implements ConveyorPositionCo
             public void run() {
 
                 try {
+
+                    mbtService.writeDigOut(DigitalOutput.SUPPLY_CONVEYOR_MEASURMENT.getAddress(), true);
                     tick();
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
