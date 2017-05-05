@@ -79,6 +79,7 @@ import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
+import at.sunplugged.z600.gui.speciallisteners.EmergencyOffListener;
 import at.sunplugged.z600.mbt.api.MbtService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
@@ -558,6 +559,10 @@ public class MainView {
                 }
             }
         });
+        Display.getDefault().timerExec(5000, () -> {
+            btnStartSqlLogging.notifyListeners(SWT.Selection, new Event());
+        });
+
         btnStartSqlLogging.setFont(SWTResourceManager.getFont("Segoe UI", 13, SWT.NORMAL));
         GridData gd_btnStartSqlLogging = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
         gd_btnStartSqlLogging.heightHint = 40;
@@ -583,7 +588,8 @@ public class MainView {
         btnNotAus.setFont(SWTResourceManager.getFont("Segoe UI", 24, SWT.NORMAL));
         btnNotAus.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
         btnNotAus.setText("Not Aus");
-        btnNotAus.setEnabled(false);
+        btnNotAus.setEnabled(true);
+        btnNotAus.addSelectionListener(new EmergencyOffListener(shell));
 
         // TabItem tbtmVacuum = new TabItem(tabFolder, SWT.NONE);
         // tbtmVacuum.setText("Vacuum");
