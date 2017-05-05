@@ -187,6 +187,12 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     }
 
     @Override
+    public String getExtimatedFinishTime() {
+
+        return null;
+    }
+
+    @Override
     public double getCurrentSpeed() {
         return speedLogger.getCurrentSpeed();
     }

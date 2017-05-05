@@ -34,7 +34,7 @@ import at.sunplugged.z600.gui.views.MainView;
 
 public class Viewer implements MachineEventHandler {
 
-    private static final boolean DEBUG_MODE = false;
+    private static final boolean DEBUG_MODE = true;
 
     private final int widthRatio;
 
@@ -49,6 +49,8 @@ public class Viewer implements MachineEventHandler {
     private ChamberFigure chamberFigure;
 
     private ConveyorFigure conveyorFigure;
+
+    private MiscInformationFigure miscInformationFigure;
 
     private Map<String, VacuumConnection> connections = new HashMap<>();
 
@@ -79,6 +81,7 @@ public class Viewer implements MachineEventHandler {
         createChamberFigure();
         createConnections();
         createConveyorFigure();
+        createMiscInformationFigure();
 
         for (String connectionName : connections.keySet()) {
             if (connectionName.equals("2M1-V4")) {
@@ -117,6 +120,7 @@ public class Viewer implements MachineEventHandler {
 
         contents.add(chamberFigure);
         contents.add(conveyorFigure);
+        contents.add(miscInformationFigure);
         eventHandlingFigures.add(chamberFigure);
         eventHandlingFigures.add(conveyorFigure);
 
@@ -436,6 +440,10 @@ public class Viewer implements MachineEventHandler {
         conveyorFigure = new ConveyorFigure(50, 500);
     }
 
+    private void createMiscInformationFigure() {
+        miscInformationFigure = new MiscInformationFigure(380, 440);
+    }
+
     @Override
     public void handleEvent(MachineStateEvent event) {
         if (DEBUG_MODE == true) {
@@ -469,6 +477,7 @@ public class Viewer implements MachineEventHandler {
                         createPressureSiteFigures();
                         createChamberFigure();
                         createConveyorFigure();
+                        createMiscInformationFigure();
 
                         for (String connectionName : connections.keySet()) {
                             contents.add(connections.get(connectionName));
@@ -497,6 +506,7 @@ public class Viewer implements MachineEventHandler {
 
                         contents.add(chamberFigure);
                         contents.add(conveyorFigure);
+                        contents.add(miscInformationFigure);
                         eventHandlingFigures.add(chamberFigure);
                         eventHandlingFigures.add(conveyorFigure);
                     }

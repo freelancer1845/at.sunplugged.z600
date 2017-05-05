@@ -122,4 +122,12 @@ public interface ConveyorControlService {
      */
     public Future<?> calibrate();
 
+    /**
+     * This returns a textual Representation of the estimated Finish time. If
+     * there is nothing running this returns "---"
+     * 
+     * @return
+     */
+    public String getExtimatedFinishTime();
+
 }

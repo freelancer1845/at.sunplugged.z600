@@ -113,16 +113,16 @@ public class SpeedControl implements MachineEventHandler {
     private void handleSpeedChange(ConveyorMachineEvent conveyorEvent) throws EngineException {
         int currentEngineSpeed;
         int newEngineSpeed;
-        if (currentMode == Mode.LEFT_TO_RIGHT) {
-            if (conveyorEvent.getConveyorEventType() == Type.LEFT_SPEED_CHANGED) {
+        if (currentMode == Mode.RIGHT_TO_LEFT) {
+            if (conveyorEvent.getConveyorEventType() == Type.RIGHT_SPEED_CHANGED) {
                 return;
             }
             currentEngineSpeed = engineOne.getCurrentMaximumSpeed();
             newEngineSpeed = calculateNewEngineSpeed(conveyorControlService.getSpeedLogger().getRightSpeed(),
                     currentEngineSpeed);
             engineOne.setMaximumSpeed(newEngineSpeed);
-        } else if (currentMode == Mode.RIGHT_TO_LEFT) {
-            if (conveyorEvent.getConveyorEventType() == Type.RIGHT_SPEED_CHANGED) {
+        } else if (currentMode == Mode.LEFT_TO_RIGHT) {
+            if (conveyorEvent.getConveyorEventType() == Type.LEFT_SPEED_CHANGED) {
                 return;
             }
             currentEngineSpeed = engineTwo.getCurrentMaximumSpeed();
