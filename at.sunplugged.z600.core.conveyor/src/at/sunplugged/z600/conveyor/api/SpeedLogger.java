@@ -36,4 +36,8 @@ public interface SpeedLogger {
      */
     public double getLeftSpeed();
 
+    public double getRightSpeedMean();
+
+    public double getLeftSpeedMean();
+
 }
