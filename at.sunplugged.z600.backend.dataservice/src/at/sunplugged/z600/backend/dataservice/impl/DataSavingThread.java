@@ -43,16 +43,24 @@ public class DataSavingThread extends Thread {
     @Override
     public void run() {
         running = true;
+
+        int exceptionCount = 0;
         String tableName = "Zyklus" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("uuuuMMddHHmm"));
         while (isRunning()) {
             try {
                 WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
                 Thread.sleep(Long
                         .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
+                exceptionCount = 0;
             } catch (Exception e) {
-                DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Unexpected exception in DataSavingThread!",
+                DataServiceImpl.getLogService().log(LogService.LOG_WARNING, "Unexpected exception in DataSavingThread!",
                         e);
-                setRunning(false);
+                exceptionCount++;
+                if (exceptionCount > 5) {
+                    setRunning(false);
+                    DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                            "Stopped Data Saving. Too many exceptions...");
+                }
             }
         }
 

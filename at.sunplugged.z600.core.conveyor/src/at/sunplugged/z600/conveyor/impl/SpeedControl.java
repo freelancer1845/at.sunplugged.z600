@@ -141,10 +141,13 @@ public class SpeedControl implements MachineEventHandler {
         }
         if (Math.abs(currentSpeed - setPointSpeed) > 0.0003) {
             double ratio = setPointSpeed / currentSpeed;
-            if (ratio > 1.05) {
-                return (int) (currentEngineSpeed + 10);
-            } else if (ratio < 0.95) {
-                return (int) (currentEngineSpeed - 10);
+            int change = (int) (ratio * currentEngineSpeed);
+            if (change > 10) {
+                if (ratio > 1.0) {
+                    return (int) (currentEngineSpeed + 10);
+                } else if (ratio < 1.0) {
+                    return (int) (currentEngineSpeed - 10);
+                }
             }
 
             return (int) (currentEngineSpeed * ratio);
