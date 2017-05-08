@@ -352,8 +352,8 @@ public class MainView {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                VacuumService.State state = vacuumService.getState();
-                if (state != VacuumService.State.PRESSURE_CONTROL_RUNNING) {
+                GasFlowControl.State state = machineStateService.getGasFlowControl().getState();
+                if (state == GasFlowControl.State.STOP || state == GasFlowControl.State.STOPPING) {
                     vacuumService.startPressureControl();
                 } else {
                     vacuumService.stopPressureControl();
