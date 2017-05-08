@@ -227,6 +227,7 @@ public class TurboPumpStartThread extends Thread {
     }
 
     private void startTurboPump() throws InterruptedException, TimeoutException, IOException {
+        outletControl.closeOutlet(Outlet.OUTLET_ONE);
         outletControl.openOutlet(Outlet.OUTLET_TWO);
         machineStateService.getWaterControl().setOutletState(WaterOutlet.TURBO_PUMP, true);
         Thread.sleep(500);

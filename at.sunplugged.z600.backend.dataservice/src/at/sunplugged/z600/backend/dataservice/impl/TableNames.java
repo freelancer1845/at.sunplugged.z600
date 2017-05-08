@@ -6,7 +6,7 @@ public class TableNames {
 
     public static final String TARGET_IDS = "TargetID";
 
-    public static final String TARGET_CONSUMPTION_TABLE = "TargetConsumptionTableTest";
+    public static final String TARGET_CONSUMPTION_TABLE = "TargetConsumptionTable";
 
     private TableNames() {
 
