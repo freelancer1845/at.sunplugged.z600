@@ -178,10 +178,11 @@ public class MainView {
             private void handleCloseing() {
                 if (vacuumService.getState() != VacuumService.State.READY) {
                     vacuumService.stopEvacuationHard();
-                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING);
+                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
                     messageBox.setText("Evacuation Error");
                     messageBox.setMessage(
                             "Evacuation not stopped properly!!! Wait at least 5 minutes or know what you are doing!");
+                    messageBox.open();
                 }
             }
 
