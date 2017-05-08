@@ -118,7 +118,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
             speed = LEFT_DISTANCE_PER_HOLE / tickDifference * 1000;
         }
         leftSpeedMeasurements.add(0, speed);
-        if (leftSpeedMeasurements.size() > 5) {
+        if (leftSpeedMeasurements.size() > 2) {
             leftSpeedMeasurements.remove(leftSpeedMeasurements.size() - 1);
         }
         leftSpeedValue = speed;
@@ -134,7 +134,7 @@ public class SpeedLoggerImpl extends Thread implements SpeedLogger {
 
         }
         rightSpeedMeasurements.add(0, speed);
-        if (rightSpeedMeasurements.size() > 5) {
+        if (rightSpeedMeasurements.size() > 2) {
             rightSpeedMeasurements.remove(rightSpeedMeasurements.size() - 1);
         }
         rightSpeedValue = speed;

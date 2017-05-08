@@ -101,7 +101,7 @@ public class VacuumServiceImpl implements VacuumService {
             cryoPumpThread.start();
             state = State.STARTING;
         } else if (state == State.SHUTTING_DOWN) {
-            if (cryoState == CryoPumpsThreadState.INIT_STATE && cryoPumpThread.isAlive()) {
+            if (cryoState == CryoPumpsThreadState.INIT_STATE && cryoPumpThread.isAlive() == false) {
                 cryoPumpThread = new CryoPumpsStartThread();
                 cryoPumpThread.start();
             } else {

@@ -74,6 +74,7 @@ public class CryoPumpsStartThread extends Thread {
                 VacuumServiceImpl.transmitState(state);
                 switch (state) {
                 case INIT_STATE:
+                    waitForCryoSelected();
                     stateSelector();
                     break;
                 case START_PRE_PUMP:
@@ -154,6 +155,13 @@ public class CryoPumpsStartThread extends Thread {
 
         }
 
+    }
+
+    private void waitForCryoSelected() throws InterruptedException {
+        while (VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_ONE) == false
+                && VacuumServiceImpl.getInterlocksMap().get(Interlocks.CRYO_TWO) == false) {
+            Thread.sleep(500);
+        }
     }
 
     private void waitForGasflowToStop() throws InterruptedException {
