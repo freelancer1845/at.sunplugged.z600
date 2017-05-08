@@ -37,9 +37,11 @@ public class TargetPowerLogger implements MachineEventHandler {
      * This maps the given target to the powersource. If targetId is empty, null
      * or does not exist no logging is done.
      * 
-     * @param targetId of the material. Get the TargetId from the dataService
-     *            via getTargetMaterials()
-     * @param powerSourceId the material will be mapped to.
+     * @param targetId
+     *            of the material. Get the TargetId from the dataService via
+     *            getTargetMaterials()
+     * @param powerSourceId
+     *            the material will be mapped to.
      */
     public void mapTargetToPowersource(String targetId, PowerSourceId powerSourceId) {
         if (targetId == null || targetId.isEmpty() == true) {
@@ -124,6 +126,8 @@ public class TargetPowerLogger implements MachineEventHandler {
             double timePassedInMms = currentTime - lastPoint.getTimePoint();
 
             double workDone = (currentPower + lastPoint.getPowerPoint()) / 2 * timePassedInMms / 1000 / 3600;
+
+            timePowerData.put(id, new TimePowerDataPoint(currentTime, currentPower));
 
             try {
                 addWorkDoneToSqlTable(targetId, workDone);
