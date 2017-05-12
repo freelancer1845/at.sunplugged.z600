@@ -441,7 +441,7 @@ public class Viewer implements MachineEventHandler {
     }
 
     private void createMiscInformationFigure() {
-        miscInformationFigure = new MiscInformationFigure(380, 440);
+        miscInformationFigure = new MiscInformationFigure(380, 415);
     }
 
     @Override

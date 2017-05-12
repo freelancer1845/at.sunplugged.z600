@@ -16,11 +16,13 @@ public class MiscInformationFigure extends Figure {
 
     private static int WIDTH = 200;
 
-    private static int HEIGHT = 50;
+    private static int HEIGHT = 75;
 
     private LabeledLabel gasFLowSccmLabel;
 
     private LabeledLabel estimatedFinishTime;
+
+    private LabeledLabel positionControlRunning;
 
     public MiscInformationFigure(int x, int y) {
         this.setBounds(new Rectangle(x, y, WIDTH, HEIGHT));
@@ -41,6 +43,7 @@ public class MiscInformationFigure extends Figure {
     private void createLabels() {
         gasFLowSccmLabel = new LabeledLabel(this, "Gasflow [sccm]", "0.0");
         estimatedFinishTime = new LabeledLabel(this, "ETC", "---");
+        positionControlRunning = new LabeledLabel(this, "PostionControl: ", "OFF");
 
         Display.getDefault().timerExec(2000, new Runnable() {
             @Override
@@ -48,6 +51,13 @@ public class MiscInformationFigure extends Figure {
                 gasFLowSccmLabel.setText(String.format("%.3f",
                         MainView.getMachineStateService().getGasFlowControl().getCurrentGasFlowInSccm()));
                 estimatedFinishTime.setText(MainView.getConveyorControlService().getExtimatedFinishTime());
+
+                if (MainView.getConveyorPositionCorrectionService().isRunning() == true) {
+                    positionControlRunning.setText("ON");
+                } else {
+                    positionControlRunning.setText("OFF");
+                }
+
                 Display.getDefault().timerExec(1000, this);
             }
         });
