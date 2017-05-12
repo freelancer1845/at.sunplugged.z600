@@ -77,6 +77,7 @@ import at.sunplugged.z600.gui.dialogs.StandardProcessDialog;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.factorys.ConveyorGroupFactory;
 import at.sunplugged.z600.gui.factorys.PowerSupplyBasicFactory;
+import at.sunplugged.z600.gui.factorys.SrmGroupFactory;
 import at.sunplugged.z600.gui.factorys.SystemOutputFactory;
 import at.sunplugged.z600.gui.machinediagram.Viewer;
 import at.sunplugged.z600.gui.speciallisteners.EmergencyOffListener;
@@ -137,7 +138,7 @@ public class MainView {
         return logService;
     }
 
-    public SrmCommunicator getSrmCommunicator() {
+    public static SrmCommunicator getSrmCommunicator() {
         return srmCommunicator;
     }
 
@@ -899,6 +900,14 @@ public class MainView {
 
         Composite machineDebugComposite = createMachineDebugViewComposite(tabFolder);
         tbtmMachinedebug.setControl(machineDebugComposite);
+
+        TabItem tbtmSrmDebug = new TabItem(tabFolder, SWT.NONE);
+        tbtmSrmDebug.setText("Srm Debug");
+        Composite srmDebugComposite = new Composite(tabFolder, SWT.NONE);
+
+        srmDebugComposite.setLayout(new GridLayout(1, false));
+        tbtmSrmDebug.setControl(srmDebugComposite);
+        SrmGroupFactory.createGroup(srmDebugComposite);
 
         return shell;
     }
