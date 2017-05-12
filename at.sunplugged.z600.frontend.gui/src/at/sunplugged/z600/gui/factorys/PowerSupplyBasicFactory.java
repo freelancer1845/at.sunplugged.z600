@@ -49,18 +49,23 @@ public class PowerSupplyBasicFactory {
 
         Label lblv = new Label(grpData, SWT.NONE);
         lblv.setText("0.00V");
+        lblv.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblCurrent = new Label(grpData, SWT.NONE);
         lblCurrent.setText("Current:");
+        lblv.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lbla = new Label(grpData, SWT.NONE);
         lbla.setText("0.00A");
+        lbla.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblPower = new Label(grpData, SWT.NONE);
         lblPower.setText("Power:");
+        lblPower.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Label lblkw = new Label(grpData, SWT.NONE);
         lblkw.setText("0.00kW");
+        lblkw.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
         Display.getDefault().timerExec(500, new Runnable() {
 
