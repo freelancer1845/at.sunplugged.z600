@@ -30,7 +30,7 @@ public class GasFlowControlImpl implements GasFlowControl, MachineEventHandler {
 
     private static final int ANALOG_INPUT_GAS_FLOW_MAX = 400;
 
-    private static final int CONTROL_THREAD_TICKRATE = 10;
+    private static final int CONTROL_THREAD_TICKRATE = 5;
 
     private final MachineStateService machineStateService;
 
