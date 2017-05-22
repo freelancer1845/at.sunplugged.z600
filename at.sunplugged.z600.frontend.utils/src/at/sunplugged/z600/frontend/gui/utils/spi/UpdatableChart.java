@@ -2,6 +2,7 @@ package at.sunplugged.z600.frontend.gui.utils.spi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -15,7 +16,6 @@ import org.swtchart.Chart;
 import org.swtchart.IAxis;
 import org.swtchart.IAxisSet;
 import org.swtchart.ILineSeries;
-import org.swtchart.ISeries;
 import org.swtchart.ISeries.SeriesType;
 import org.swtchart.ISeriesSet;
 import org.swtchart.Range;
@@ -42,10 +42,16 @@ public abstract class UpdatableChart {
 
     protected List<Double> xDataList = new ArrayList<>();
 
+    /** Lock preventing race conditions. */
+    private Lock listLock;
+
     /** Array used for transferring data to the chart. */
     private double[] yArray = new double[] { 0 };
 
     private double[] xArray = new double[] { 0 };
+
+    /** Maximum data point saved. */
+    private int maxPoints = 10000;
 
     /** Updater Thread. */
     private Thread updaterThread;
@@ -82,18 +88,27 @@ public abstract class UpdatableChart {
     protected abstract double addNewDataY();
 
     private void addNewData() {
-        xDataList.add(addNewDataX());
-        yDataList.add(addNewDataY());
+        try {
+            listLock.lock();
+            xDataList.add(addNewDataX());
+            yDataList.add(addNewDataY());
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            listLock.unlock();
+        }
     }
 
-    /**
-     * Implement this method if you want to have more than 1000 DataPoints in
-     * one Chart.
-     */
-    protected void removeOldData() {
-        if (yDataList.size() > 10000) {
-            yDataList.remove(0);
-            xDataList.remove(0);
+    private void removeOldData() {
+        if (yDataList.size() > maxPoints) {
+            int difference = yDataList.size() - maxPoints;
+            if (listLock.tryLock() == true) {
+                for (int i = 0; i < difference; i++) {
+                    yDataList.remove(0);
+                    xDataList.remove(0);
+                }
+                listLock.unlock();
+            }
         }
 
     }
@@ -232,14 +247,22 @@ public abstract class UpdatableChart {
     }
 
     private void transferDataToDoubleArray() {
-        yArray = new double[yDataList.size()];
-        for (int i = 0; i < yDataList.size(); i++) {
-            yArray[i] = yDataList.get(i);
+        try {
+            listLock.lock();
+            yArray = new double[yDataList.size()];
+            for (int i = 0; i < yDataList.size(); i++) {
+                yArray[i] = yDataList.get(i);
+            }
+            xArray = new double[xDataList.size()];
+            for (int i = 0; i < xDataList.size(); i++) {
+                xArray[i] = xDataList.get(i);
+            }
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            listLock.unlock();
         }
-        xArray = new double[xDataList.size()];
-        for (int i = 0; i < xDataList.size(); i++) {
-            xArray[i] = xDataList.get(i);
-        }
+
     }
 
     private final class UpdaterRunnable implements Runnable {
@@ -284,6 +307,14 @@ public abstract class UpdatableChart {
 
         }
 
+    }
+
+    public int getMaxPoints() {
+        return maxPoints;
+    }
+
+    public void setMaxPoints(int maxPoints) {
+        this.maxPoints = maxPoints;
     }
 
 }
