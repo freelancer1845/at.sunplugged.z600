@@ -13,11 +13,11 @@ public class RelativePositionMeasurement implements MachineEventHandler {
 
     private final ConveyorControlService conveyorControlService;
 
-    private double rightPosition = 0;
+    private double positionOffset = 0;
 
-    private double leftPosition = 0;
+    private TimeFilteredTriggerCounter leftCounter = new TimeFilteredTriggerCounter();
 
-    private double centerPosition = 0;
+    private TimeFilteredTriggerCounter rightCounter = new TimeFilteredTriggerCounter();
 
     public RelativePositionMeasurement(ConveyorControlService conveyorControlService) {
         this.conveyorControlService = conveyorControlService;
@@ -31,47 +31,51 @@ public class RelativePositionMeasurement implements MachineEventHandler {
     }
 
     private void handleTriggerEvent(MachineStateEvent event) {
-        double tempLeftPosition = leftPosition;
-        double tempRightPosition = rightPosition;
-        if ((boolean) event.getValue() == true) {
-            if (event.getOrigin() == WagoAddresses.DigitalInput.LEFT_SPEED_TRIGGER) {
-                if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
-                    leftPosition += SpeedLogger.LEFT_DISTANCE_PER_HOLE;
-                } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
-                    leftPosition -= SpeedLogger.LEFT_DISTANCE_PER_HOLE;
-                    centerPosition -= SpeedLogger.LEFT_DISTANCE_PER_HOLE;
-                }
-            } else if (event.getOrigin() == WagoAddresses.DigitalInput.RIGHT_SPEED_TRIGGER) {
-                if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
-                    rightPosition += SpeedLogger.RIGHT_DISTANCE_PER_HOLE;
-                    centerPosition += SpeedLogger.RIGHT_DISTANCE_PER_HOLE;
-                } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
-                    rightPosition -= SpeedLogger.RIGHT_DISTANCE_PER_HOLE;
-                }
+
+        int countsLeft = leftCounter.getTriggers();
+        int countsRight = rightCounter.getTriggers();
+
+        if (event.getOrigin() == WagoAddresses.DigitalInput.LEFT_SPEED_TRIGGER) {
+            if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
+                leftCounter.setCountDirectionUp();
+            } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
+                leftCounter.setCountDirectionDown();
             }
+
+            leftCounter.submitTriggerValue((boolean) event.getValue());
+        } else if (event.getOrigin() == WagoAddresses.DigitalInput.RIGHT_SPEED_TRIGGER) {
+            if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT) {
+                rightCounter.setCountDirectionUp();
+            } else if (conveyorControlService.getActiveMode() == Mode.RIGHT_TO_LEFT) {
+                rightCounter.setCountDirectionDown();
+            }
+
+            rightCounter.submitTriggerValue((boolean) event.getValue());
         }
-        if (tempLeftPosition != leftPosition || tempRightPosition != rightPosition) {
+
+        if (countsLeft != leftCounter.getTriggers() || countsRight != rightCounter.getTriggers()) {
             ConveyorControlServiceImpl.getMachineStateService().fireMachineStateEvent(
                     new ConveyorMachineEvent(ConveyorMachineEvent.Type.NEW_DISTANCE, getPosition()));
         }
+
     }
 
     public double getPosition() {
-        return centerPosition;
+        return (getLeftPosition() + getRightPosition()) / 2;
     }
 
     public double getLeftPosition() {
-        return leftPosition;
+        return leftCounter.getTriggers() * SpeedLogger.LEFT_DISTANCE_PER_HOLE + positionOffset;
     }
 
     public double getRightPosition() {
-        return rightPosition;
+        return rightCounter.getTriggers() * SpeedLogger.RIGHT_DISTANCE_PER_HOLE + positionOffset;
     }
 
     public void setPosition(double position) {
-        leftPosition = position;
-        rightPosition = position;
-        centerPosition = position;
+        leftCounter.reset();
+        rightCounter.reset();
+        positionOffset = position;
         ConveyorControlServiceImpl.getMachineStateService()
                 .fireMachineStateEvent(new ConveyorMachineEvent(ConveyorMachineEvent.Type.NEW_DISTANCE, getPosition()));
     }
