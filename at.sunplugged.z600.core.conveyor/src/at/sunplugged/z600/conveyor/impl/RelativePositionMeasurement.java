@@ -4,6 +4,7 @@ import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.SpeedLogger;
+import at.sunplugged.z600.conveyor.speedlogging.SpeedLoggerImpl;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
@@ -52,7 +53,12 @@ public class RelativePositionMeasurement implements MachineEventHandler {
 
             rightCounter.submitTriggerValue((boolean) event.getValue());
         }
-
+        if (countsLeft != leftCounter.getTriggers()) {
+            SpeedLoggerImpl.getInstance().submitTriggerLeft();
+        }
+        if (countsRight != rightCounter.getTriggers()) {
+            SpeedLoggerImpl.getInstance().submitTriggerRight();
+        }
         if (countsLeft != leftCounter.getTriggers() || countsRight != rightCounter.getTriggers()) {
             ConveyorControlServiceImpl.getMachineStateService().fireMachineStateEvent(
                     new ConveyorMachineEvent(ConveyorMachineEvent.Type.NEW_DISTANCE, getPosition()));

@@ -1,7 +1,6 @@
 package at.sunplugged.z600.conveyor.impl;
 
 import java.time.LocalTime;
-import java.time.temporal.TemporalUnit;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -9,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.event.EventAdmin;
@@ -75,18 +73,13 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
             logService.log(LogService.LOG_ERROR, "Couldnt connect engines!!!", e);
         }
 
-        speedLogger = new SpeedLoggerImpl();
+        speedLogger = SpeedLoggerImpl.getInstance();
         speedControl = new SpeedControl(this);
         machineStateService.registerMachineEventHandler(speedControl);
 
         relativePositionMeasurement = new RelativePositionMeasurement(this);
         machineStateService.registerMachineEventHandler(relativePositionMeasurement);
         instance = this;
-    }
-
-    @Deactivate
-    protected void deactivate() {
-        ((SpeedLoggerImpl) speedLogger).stopSpeedLogger();
     }
 
     @Override
