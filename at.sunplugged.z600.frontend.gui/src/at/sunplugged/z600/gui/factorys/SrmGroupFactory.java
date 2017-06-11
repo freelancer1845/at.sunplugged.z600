@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
 import at.sunplugged.z600.frontend.gui.utils.spi.UpdatableChart;
 import at.sunplugged.z600.gui.views.MainView;
 
@@ -71,12 +72,24 @@ public class SrmGroupFactory {
 
                 @Override
                 protected double addNewDataY() {
-                    try {
-                        return MainView.getSrmCommunicator().readChannels().get(channelIndex);
-                    } catch (IOException e) {
-                        MainView.getLogService().log(LogService.LOG_ERROR, "Failed to read data from srm.");
-                        return 0.0;
+                    // try {
+                    if (channelIndex == 0) {
+                        return MainView.getMachineStateService()
+                                .getDigitalInputState(DigitalInput.LEFT_SPEED_TRIGGER) == true ? 1 : 0;
+                    } else if (channelIndex == 1) {
+                        return MainView.getMachineStateService()
+                                .getDigitalInputState(DigitalInput.RIGHT_SPEED_TRIGGER) == true ? 1 : 0;
+                    } else {
+                        return 0;
                     }
+                    // // return
+                    // //
+                    // MainView.getSrmCommunicator().readChannels().get(channelIndex);
+                    // } catch (IOException e) {
+                    // MainView.getLogService().log(LogService.LOG_ERROR,
+                    // "Failed to read data from srm.");
+                    // return 0.0;
+                    // }
                 }
 
             };
