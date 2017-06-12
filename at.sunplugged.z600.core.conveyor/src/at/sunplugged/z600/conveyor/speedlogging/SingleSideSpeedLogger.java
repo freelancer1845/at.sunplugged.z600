@@ -32,14 +32,13 @@ public class SingleSideSpeedLogger {
         speedMeasurements.clear();
     }
 
-    public void trigger() {
+    public void trigger(long triggerTime) {
         if (lastTimeTriggered == Long.MIN_VALUE) {
             lastTimeTriggered = System.nanoTime();
         } else {
-            long now = System.nanoTime();
-            long tickDifference = now - lastTimeTriggered;
+            long tickDifference = triggerTime - lastTimeTriggered;
             addToMeasurementList(tickDifference);
-            lastTimeTriggered = now;
+            lastTimeTriggered = triggerTime;
         }
     }
 

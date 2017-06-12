@@ -26,12 +26,12 @@ public class SpeedLoggerImpl implements SpeedLogger, MachineEventHandler {
         rightLogger.reset();
     }
 
-    public void submitTriggerLeft() {
-        leftLogger.trigger();
+    public void submitTriggerLeft(long triggerTime) {
+        leftLogger.trigger(triggerTime);
     }
 
-    public void submitTriggerRight() {
-        rightLogger.trigger();
+    public void submitTriggerRight(long triggerTime) {
+        rightLogger.trigger(triggerTime);
     }
 
     @Override

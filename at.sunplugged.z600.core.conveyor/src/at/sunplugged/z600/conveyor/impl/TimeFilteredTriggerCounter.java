@@ -16,7 +16,7 @@ public class TimeFilteredTriggerCounter {
         timeWindowInMs = ms;
     }
 
-    private static int timeWindowInMs = 250;
+    private static int timeWindowInMs = 100;
 
     private int triggers = 0;
 
@@ -26,11 +26,11 @@ public class TimeFilteredTriggerCounter {
 
     private boolean countingUp = true;
 
-    public void submitTriggerValue(boolean value) {
+    public void submitTriggerValue(boolean value, long triggerTime) {
         if (value == true) {
-            handleTrue();
+            handleTrue(triggerTime);
         } else {
-            handleFalse();
+            handleFalse(triggerTime);
         }
     }
 
@@ -39,23 +39,23 @@ public class TimeFilteredTriggerCounter {
         timeOfSwitchToFalse = 0;
     }
 
-    private void handleFalse() {
+    private void handleFalse(long triggerTime) {
         if (currentState == true) {
             currentState = false;
-            timeOfSwitchToFalse = System.nanoTime();
+            timeOfSwitchToFalse = triggerTime;
         }
     }
 
-    private void handleTrue() {
+    private void handleTrue(long triggerTime) {
         if (currentState == false) {
-            currentState = true;
-            if (System.nanoTime() - timeWindowInMs * 1000000L > timeOfSwitchToFalse) {
+
+            if (triggerTime - timeWindowInMs * 1000000L > timeOfSwitchToFalse) {
                 if (countingUp == true) {
                     triggers++;
                 } else {
                     triggers--;
                 }
-
+                currentState = true;
             } else {
                 ConveyorControlServiceImpl.getLogService().log(LogService.LOG_DEBUG,
                         "Trigger switched faster than " + timeWindowInMs + " ms. Ignoring event.");

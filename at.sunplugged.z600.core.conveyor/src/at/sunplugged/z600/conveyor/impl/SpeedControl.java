@@ -35,7 +35,7 @@ public class SpeedControl implements MachineEventHandler {
         if (speed <= 0) {
             currentMode = Mode.STOP;
         }
-        TimeFilteredTriggerCounter.setTimeWIndowInMs((int) (SpeedLogger.LEFT_DISTANCE_PER_HOLE / speed * 1000000 / 2));
+        RelativePositionMeasurement.setTimeWindowInMs((int) (SpeedLogger.LEFT_DISTANCE_PER_HOLE / speed * 1000000 / 7));
         setPointSpeed = speed;
     }
 
