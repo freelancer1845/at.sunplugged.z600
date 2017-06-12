@@ -1,18 +1,12 @@
 package at.sunplugged.z600.core.machinestate.api.eventhandling;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class MachineStateEvent {
 
     public enum Type {
-        DIGITAL_OUTPUT_CHANGED,
-        ANALOG_OUTPUT_CHANGED,
-        DIGITAL_INPUT_CHANGED,
-        ANALOG_INPUT_CHANGED,
-        PUMP_STATUS_CHANGED,
-        PRESSURE_CHANGED,
-        POWER_SOURCE_STATE_CHANGED,
-        GAS_FLOW_STATE_CHANGED,
-        CONVEYOR_EVENT,
-        OUTLET_CHANGED;
+        DIGITAL_OUTPUT_CHANGED, ANALOG_OUTPUT_CHANGED, DIGITAL_INPUT_CHANGED, ANALOG_INPUT_CHANGED, PUMP_STATUS_CHANGED, PRESSURE_CHANGED, POWER_SOURCE_STATE_CHANGED, GAS_FLOW_STATE_CHANGED, CONVEYOR_EVENT, OUTLET_CHANGED;
     }
 
     private final Type type;
@@ -21,22 +15,27 @@ public class MachineStateEvent {
 
     private final Object origin;
 
+    private final LocalDateTime dateOfCreation;
+
     public MachineStateEvent(Type type) {
         this.type = type;
         this.origin = null;
         this.value = null;
+        this.dateOfCreation = LocalDateTime.now();
     }
 
     public MachineStateEvent(Type type, Object value) {
         this.type = type;
         this.origin = null;
         this.value = value;
+        this.dateOfCreation = LocalDateTime.now();
     }
 
     public MachineStateEvent(Type type, Object origin, Object value) {
         this.type = type;
         this.origin = origin;
         this.value = value;
+        this.dateOfCreation = LocalDateTime.now();
     }
 
     public Type getType() {
@@ -85,4 +84,8 @@ public class MachineStateEvent {
         return true;
     }
 
+    public String getSigniture() {
+        return String.format("Event Created: \"%s\" Event Origin: \"%s\" Event Value: \"%s\"",
+                dateOfCreation.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), origin.toString(), value.toString());
+    }
 }

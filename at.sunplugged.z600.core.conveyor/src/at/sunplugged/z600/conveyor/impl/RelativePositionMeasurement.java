@@ -3,6 +3,8 @@ package at.sunplugged.z600.conveyor.impl;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.osgi.service.log.LogService;
+
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
@@ -54,8 +56,8 @@ public class RelativePositionMeasurement implements MachineEventHandler {
                             new MachineStateEvent(event.getType(), event.getOrigin(), !(boolean) event.getValue()));
                     try {
                         fastReboundTrigger.get(timeWindowInMs, TimeUnit.MILLISECONDS);
-                        System.out.println(
-                                "Expeceted TimeoutException. Rebound signal in trigger speed measurment detected...");
+                        ConveyorControlServiceImpl.getLogService().log(LogService.LOG_DEBUG,
+                                "Filtered trigger event. Signiture: " + event.getSigniture());
                         return;
                     } catch (InterruptedException | TimeoutException e) {
                         // this is expected

@@ -64,8 +64,6 @@ public class SingleSideSpeedLogger {
         } else {
             speed = side.distancePerHole / tickDifference * 1000000000 * 1000;
         }
-        System.out.println("TickDifference: " + tickDifference);
-        System.out.println("New sSpeed: " + speed);
         speedMeasurements.add(0, speed);
         if (speedMeasurements.size() > 2) {
             speedMeasurements.remove(speedMeasurements.size() - 1);
