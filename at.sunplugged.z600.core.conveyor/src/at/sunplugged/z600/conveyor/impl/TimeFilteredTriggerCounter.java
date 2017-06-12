@@ -75,7 +75,4 @@ public class TimeFilteredTriggerCounter {
         return triggers;
     }
 
-    public void setTimeWindowInMs(int timeWindowInMs) {
-        this.timeWindowInMs = timeWindowInMs;
-    }
 }
