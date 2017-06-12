@@ -113,7 +113,9 @@ public class MbtServiceImpl implements MbtService {
 
     private void disconnect() throws IOException {
         connection.close();
-        logService.log(LogService.LOG_DEBUG, "Disconnected successfully from MBT Controller.");
+        if (logService != null) {
+            logService.log(LogService.LOG_DEBUG, "Disconnected successfully from MBT Controller.");
+        }
     }
 
     @Override
