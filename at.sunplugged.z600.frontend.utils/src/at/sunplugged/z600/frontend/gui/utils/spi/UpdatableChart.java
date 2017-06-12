@@ -3,6 +3,7 @@ package at.sunplugged.z600.frontend.gui.utils.spi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -43,7 +44,7 @@ public abstract class UpdatableChart {
     protected List<Double> xDataList = new ArrayList<>();
 
     /** Lock preventing race conditions. */
-    private Lock listLock;
+    private Lock listLock = new ReentrantLock();
 
     /** Array used for transferring data to the chart. */
     private double[] yArray = new double[] { 0 };

@@ -39,6 +39,7 @@ public class SingleSideSpeedLogger {
             long now = System.nanoTime();
             long tickDifference = now - lastTimeTriggered;
             addToMeasurementList(tickDifference);
+            lastTimeTriggered = now;
         }
     }
 
@@ -62,8 +63,10 @@ public class SingleSideSpeedLogger {
         if (tickDifference < 0) {
             speed = 0;
         } else {
-            speed = side.distancePerHole / tickDifference * 1000;
+            speed = side.distancePerHole / tickDifference * 1000000000 * 1000;
         }
+        System.out.println("TickDifference: " + tickDifference);
+        System.out.println("New sSpeed: " + speed);
         speedMeasurements.add(0, speed);
         if (speedMeasurements.size() > 2) {
             speedMeasurements.remove(speedMeasurements.size() - 1);

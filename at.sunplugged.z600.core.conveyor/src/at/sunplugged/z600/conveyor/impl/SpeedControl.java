@@ -8,6 +8,7 @@ import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent.Type;
 import at.sunplugged.z600.conveyor.api.Engine;
 import at.sunplugged.z600.conveyor.api.EngineException;
+import at.sunplugged.z600.conveyor.api.SpeedLogger;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 
@@ -34,6 +35,7 @@ public class SpeedControl implements MachineEventHandler {
         if (speed <= 0) {
             currentMode = Mode.STOP;
         }
+        TimeFilteredTriggerCounter.setTimeWIndowInMs((int) (SpeedLogger.LEFT_DISTANCE_PER_HOLE / speed * 1000000 / 2));
         setPointSpeed = speed;
     }
 

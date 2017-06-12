@@ -12,7 +12,11 @@ import org.osgi.service.log.LogService;
  */
 public class TimeFilteredTriggerCounter {
 
-    private int timeWindowInMs = 1000;
+    public static void setTimeWIndowInMs(int ms) {
+        timeWindowInMs = ms;
+    }
+
+    private static int timeWindowInMs = 250;
 
     private int triggers = 0;
 
