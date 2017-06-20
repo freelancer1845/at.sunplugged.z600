@@ -137,6 +137,9 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
                                 break;
                             }
                         }
+                        if (Thread.interrupted() == true) {
+                            break;
+                        }
                     } catch (InterruptedException e) {
                         logService.log(LogService.LOG_DEBUG, "Waiting for distance to be traveled interrupted.");
                     }
