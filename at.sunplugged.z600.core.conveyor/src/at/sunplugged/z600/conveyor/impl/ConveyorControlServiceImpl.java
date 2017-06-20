@@ -186,10 +186,12 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     public void stop() {
         speedControl.setMode(Mode.STOP);
         if (startWithTimeFuture != null) {
-            startWithTimeFuture.cancel(true);
+            logService.log(LogService.LOG_DEBUG,
+                    String.format("Interrupted startWithTimeFuture: \"%b\"", startWithTimeFuture.cancel(true)));
         }
         if (startWithDistanceFuture != null) {
-            startWithDistanceFuture.cancel(true);
+            logService.log(LogService.LOG_DEBUG,
+                    String.format("Interrupted startWithDistanceFuture: \"%b\"", startWithDistanceFuture.cancel(true)));
         }
     }
 
