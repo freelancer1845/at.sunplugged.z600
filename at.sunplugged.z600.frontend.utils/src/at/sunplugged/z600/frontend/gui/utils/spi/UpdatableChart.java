@@ -289,7 +289,11 @@ public abstract class UpdatableChart {
                 Display.getDefault().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        updateChart();
+                        try {
+                            updateChart();
+                        } catch (Exception e) {
+                            // Do nohting if that happens
+                        }
                     }
                 });
                 removeOldData();
