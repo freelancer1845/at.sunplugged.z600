@@ -1,7 +1,5 @@
 package at.sunplugged.z600.gui.factorys;
 
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -14,23 +12,25 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
+import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService.Mode;
 import at.sunplugged.z600.conveyor.api.ConveyorMachineEvent;
+import at.sunplugged.z600.conveyor.api.ConveyorMonitor;
+import at.sunplugged.z600.conveyor.api.ConveyorMonitor.StopMode;
+import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
+import at.sunplugged.z600.conveyor.api.Engine;
+import at.sunplugged.z600.conveyor.api.EngineException;
 import at.sunplugged.z600.core.machinestate.api.PowerSource;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
-import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
-import at.sunplugged.z600.conveyor.api.Engine;
-import at.sunplugged.z600.conveyor.api.EngineException;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.dialogs.ValueDialog.Answer;
 import at.sunplugged.z600.gui.views.MainView;
@@ -43,6 +43,8 @@ public final class ConveyorGroupFactory {
     private static ConveyorPositionCorrectionService conveyorPositionService;
 
     private static StandardThreadPoolService threadPool;
+
+    private static ConveyorMonitor conveyorMonitor;
 
     private static Text speedText;
 
@@ -190,11 +192,18 @@ public final class ConveyorGroupFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnRechts.isEnabled() == false) {
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT,
-                            Double.valueOf(distanceDriveText.getText()));
+                    double stopPosition = conveyorService.getPosition()
+                            + Double.valueOf(distanceDriveText.getText()) / 100;
+                    conveyorMonitor.setStopPosition(stopPosition);
+                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT);
                 } else if (btnLinks.isEnabled() == false) {
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT,
-                            Double.valueOf(distanceDriveText.getText()));
+                    double stopPosition = conveyorService.getPosition()
+                            - Double.valueOf(distanceDriveText.getText()) / 100;
+                    conveyorMonitor.setStopPosition(stopPosition);
+                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT);
                 }
             }
         });
@@ -206,11 +215,25 @@ public final class ConveyorGroupFactory {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnRechts.isEnabled() == false) {
-                    conveyorService.start(Mode.LEFT_TO_RIGHT, Double.valueOf(distanceDriveText.getText()),
-                            Long.valueOf(timeDriveText.getText()), TimeUnit.SECONDS);
+                    double stopPosition = conveyorService.getPosition()
+                            + Double.valueOf(distanceDriveText.getText()) / 100;
+                    conveyorMonitor.setStopPosition(stopPosition);
+                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+
+                    double lengthOfCathode = MainView.getSettings().getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
+                    double speed = lengthOfCathode / Long.valueOf(timeDriveText.getText());
+
+                    conveyorService.start(speed, Mode.LEFT_TO_RIGHT);
                 } else if (btnLinks.isEnabled() == false) {
-                    conveyorService.start(Mode.RIGHT_TO_LEFT, Double.valueOf(distanceDriveText.getText()),
-                            Long.valueOf(timeDriveText.getText()), TimeUnit.SECONDS);
+                    double stopPosition = conveyorService.getPosition()
+                            + Double.valueOf(distanceDriveText.getText()) / 100;
+                    conveyorMonitor.setStopPosition(stopPosition);
+                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+
+                    double lengthOfCathode = MainView.getSettings().getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
+                    double speed = lengthOfCathode / Long.valueOf(timeDriveText.getText());
+
+                    conveyorService.start(speed, Mode.RIGHT_TO_LEFT);
                 }
             }
         });
@@ -524,6 +547,17 @@ public final class ConveyorGroupFactory {
     public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService threadPool) {
         if (ConveyorGroupFactory.threadPool == threadPool) {
             ConveyorGroupFactory.threadPool = null;
+        }
+    }
+
+    @Reference(unbind = "unbindConveyorMonitorService")
+    public synchronized void bindConveyorMonitorService(ConveyorMonitor conveyorMonitor) {
+        ConveyorGroupFactory.conveyorMonitor = conveyorMonitor;
+    }
+
+    public synchronized void unbindConveyorMonitorService(ConveyorMonitor conveyorMonitor) {
+        if (ConveyorGroupFactory.conveyorMonitor == conveyorMonitor) {
+            ConveyorGroupFactory.conveyorMonitor = null;
         }
     }
 

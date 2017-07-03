@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" activate="activateMonitor" deactivate="deactivateMonitor" enabled="true" immediate="true" name="at.sunplugged.z600.conveyor.impl.ConveyorMonitorImpl">
+   <service>
+      <provide interface="at.sunplugged.z600.conveyor.api.ConveyorMonitor"/>
+   </service>
+   <reference cardinality="1..1" field="conveyorControlService" interface="at.sunplugged.z600.conveyor.api.ConveyorControlService" name="conveyorControlService" policy="static"/>
+   <reference cardinality="1..1" field="logService" interface="org.osgi.service.log.LogService" name="logService" policy="static"/>
+   <reference cardinality="1..1" field="threadPool" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="threadPool" policy="static"/>
+   <implementation class="at.sunplugged.z600.conveyor.impl.ConveyorMonitorImpl"/>
+</scr:component>

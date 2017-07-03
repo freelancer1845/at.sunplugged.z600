@@ -2,7 +2,6 @@ package at.sunplugged.z600.conveyor.impl;
 
 import java.time.LocalTime;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.osgi.framework.BundleContext;
@@ -15,7 +14,6 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
-import at.sunplugged.z600.common.settings.api.ParameterIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.Engine;
@@ -58,10 +56,6 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
 
     private RelativePositionMeasurement relativePositionMeasurement;
 
-    private Future<?> startWithDistanceFuture = null;
-
-    private ScheduledFuture<?> startWithTimeFuture = null;
-
     @Activate
     protected void activate(BundleContext context) {
         try {
@@ -93,106 +87,8 @@ public class ConveyorControlServiceImpl implements ConveyorControlService {
     }
 
     @Override
-    public void start(double speed, Mode direction, double distance) {
-        if (speedControl.getMode() != Mode.STOP) {
-            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
-            return;
-        }
-        start(speed, direction);
-
-        startWithDistanceFuture = threadPoolService.submit(new Runnable() {
-
-            @Override
-            public void run() {
-                double currentPosition = relativePositionMeasurement.getPosition();
-                double targetPosition = currentPosition;
-                if (direction == Mode.LEFT_TO_RIGHT) {
-                    targetPosition += distance / 100.0;
-                } else if (direction == Mode.RIGHT_TO_LEFT) {
-                    targetPosition -= distance / 100.0;
-                }
-                logService.log(LogService.LOG_INFO,
-                        String.format(
-                                "Started distance travel. CurrentPosition: \"%.4f\" TargetPosition: \"%.4f\" Distance: \"%.4f\" Speed: \"%.4f\"",
-                                currentPosition, targetPosition, distance, speed));
-                LocalTime now = LocalTime.now();
-                now = now.plusSeconds((long) (distance * 10 / speed));
-
-                logService.log(LogService.LOG_INFO, String.format("Estimed time of finish \"%02d:%02d:%02d\"",
-                        now.getHour(), now.getMinute(), now.getSecond()));
-                EstimatedFinishTimer.getInstance().activate();
-                EstimatedFinishTimer.getInstance().submitTragetPosition(targetPosition);
-                while (true) {
-                    try {
-
-                        Thread.sleep(100);
-                        if (direction == Mode.LEFT_TO_RIGHT) {
-                            if (relativePositionMeasurement.getPosition() > targetPosition) {
-                                stop();
-                                break;
-                            }
-                        } else if (direction == Mode.RIGHT_TO_LEFT) {
-                            if (relativePositionMeasurement.getPosition() < targetPosition) {
-                                stop();
-                                break;
-                            }
-                        }
-                        if (Thread.interrupted() == true) {
-                            break;
-                        }
-                    } catch (InterruptedException e) {
-                        logService.log(LogService.LOG_DEBUG, "Waiting for distance to be traveled interrupted.");
-                    }
-                }
-                EstimatedFinishTimer.getInstance().deactivate();
-            }
-
-        });
-
-    }
-
-    @Override
-    public void start(double speed, Mode direction, long time, TimeUnit unit) {
-        if (speedControl.getMode() != Mode.STOP) {
-            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
-            return;
-        }
-        start(speed, direction);
-        logService.log(LogService.LOG_INFO,
-                "Starting time travel. Time to go \"" + time + " " + unit.toString() + "\".");
-        startWithTimeFuture = threadPoolService.timedExecute(new Runnable() {
-
-            @Override
-            public void run() {
-                stop();
-            }
-
-        }, time, unit);
-
-    }
-
-    @Override
-    public void start(Mode direction, double distanceInCm, long timeUnderCathode, TimeUnit unit) {
-        if (speedControl.getMode() != Mode.STOP) {
-            logService.log(LogService.LOG_ERROR, "Conveyor already running!");
-            return;
-        }
-        double lengthOfCathode = settingsService.getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
-        double speed = lengthOfCathode / unit.toSeconds(timeUnderCathode);
-        start(speed, direction, distanceInCm);
-    }
-
-    @Override
     public void stop() {
         speedControl.setMode(Mode.STOP);
-        if (startWithTimeFuture != null) {
-            logService.log(LogService.LOG_DEBUG,
-                    String.format("Interrupted startWithTimeFuture: \"%b\"", startWithTimeFuture.cancel(true)));
-        }
-        if (startWithDistanceFuture != null) {
-            logService.log(LogService.LOG_DEBUG,
-                    String.format("Interrupted startWithDistanceFuture: \"%b\"", startWithDistanceFuture.cancel(true)));
-        }
     }
 
     @Override

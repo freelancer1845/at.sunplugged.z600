@@ -4,7 +4,8 @@ Bundle-Name: Settings
 Bundle-SymbolicName: at.sunplugged.z600.common.settings
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.osgi.services
 Service-Component: OSGI-INF/at.sunplugged.z600.common.settings.impl.SettingsServiceImpl.xml
 Bundle-ActivationPolicy: lazy
 Export-Package: at.sunplugged.z600.common.settings.api
+Import-Package: org.osgi.service.log,
+ org.osgi.framework;version="1.8.0"
