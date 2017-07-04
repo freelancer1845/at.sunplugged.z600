@@ -226,7 +226,7 @@ public final class ConveyorGroupFactory {
                     conveyorService.start(speed, Mode.LEFT_TO_RIGHT);
                 } else if (btnLinks.isEnabled() == false) {
                     double stopPosition = conveyorService.getPosition()
-                            + Double.valueOf(distanceDriveText.getText()) / 100;
+                            - Double.valueOf(distanceDriveText.getText()) / 100;
                     conveyorMonitor.setStopPosition(stopPosition);
                     conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
 

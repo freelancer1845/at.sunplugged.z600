@@ -77,9 +77,10 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
                     case DISTANCE_REACHED:
                         distanceReachedTick();
                         break;
-                    case OFF:
+                    case TIME_REACHED:
                         timeReachedTick();
                         break;
+                    case OFF:
                     default:
                         // Nohting to be done
                         break;
@@ -94,7 +95,7 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
                     runMonitor = false;
                 }
             }
-            logService.log(LogService.LOG_DEBUG, "Monitor Thread finished... restarting it in 5s");
+            logService.log(LogService.LOG_DEBUG, "Monitor Thread finished... restarting it in 10s");
             threadPool.timedExecute(() -> createMonitorThread(), 10, TimeUnit.SECONDS);
         }
 
