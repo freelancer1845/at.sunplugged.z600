@@ -39,4 +39,8 @@ public interface ConveyorMonitor {
 
     public String getFormattedMessage();
 
+    public long getETCinMs();
+
+    public String getFormattedETCMessage();
+
 }

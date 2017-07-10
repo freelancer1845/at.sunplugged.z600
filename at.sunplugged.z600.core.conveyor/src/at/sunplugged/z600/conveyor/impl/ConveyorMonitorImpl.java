@@ -1,7 +1,9 @@
 package at.sunplugged.z600.conveyor.impl;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -183,6 +185,46 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
         default:
             return "Unkown state";
         }
+    }
+
+    @Override
+    public long getETCinMs() {
+
+        ConveyorControlService.Mode conveyorMode = conveyorControlService.getActiveMode();
+        double currentSpeed = conveyorControlService.getCurrentSpeed();
+        double currentPosition = conveyorControlService.getPosition();
+
+        if (mode == StopMode.DISTANCE_REACHED) {
+            double distanceToGo = 0;
+            if (conveyorMode == Mode.LEFT_TO_RIGHT) {
+                distanceToGo = stopPosition - currentPosition;
+            } else if (conveyorMode == Mode.RIGHT_TO_LEFT) {
+                distanceToGo = currentPosition - stopPosition;
+            } else {
+                return 0L;
+            }
+
+            return (long) (distanceToGo / currentSpeed * 1000);
+        } else if (mode == StopMode.TIME_REACHED) {
+            LocalDateTime now = LocalDateTime.now();
+            return (long) stopTime.until(now, ChronoUnit.MILLIS);
+        } else {
+            return 0;
+        }
+
+    }
+
+    @Override
+    public String getFormattedETCMessage() {
+        long etcInMs = getETCinMs();
+        if (etcInMs == 0) {
+            return "---";
+        }
+
+        LocalTime now = LocalTime.now();
+        now = now.plusSeconds(TimeUnit.SECONDS.convert(etcInMs, TimeUnit.MILLISECONDS));
+
+        return String.format("%02d:%02d:%02d", now.getHour(), now.getMinute(), now.getSecond());
     }
 
 }

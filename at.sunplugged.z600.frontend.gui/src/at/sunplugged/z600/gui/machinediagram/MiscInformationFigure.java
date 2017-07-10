@@ -10,6 +10,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import at.sunplugged.z600.conveyor.api.ConveyorMonitor;
+import at.sunplugged.z600.frontend.gui.utils.api.ServiceRegistryAccess;
 import at.sunplugged.z600.gui.views.MainView;
 
 public class MiscInformationFigure extends Figure {
@@ -50,7 +52,8 @@ public class MiscInformationFigure extends Figure {
             public void run() {
                 gasFLowSccmLabel.setText(String.format("%.3f",
                         MainView.getMachineStateService().getGasFlowControl().getCurrentGasFlowInSccm()));
-                estimatedFinishTime.setText(MainView.getConveyorControlService().getExtimatedFinishTime());
+                estimatedFinishTime
+                        .setText(ServiceRegistryAccess.getService(ConveyorMonitor.class).getFormattedETCMessage());
 
                 if (MainView.getConveyorPositionCorrectionService().isRunning() == true) {
                     positionControlRunning.setText("ON");
