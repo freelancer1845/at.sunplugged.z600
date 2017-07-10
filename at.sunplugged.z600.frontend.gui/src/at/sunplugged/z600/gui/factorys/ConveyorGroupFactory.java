@@ -31,6 +31,7 @@ import at.sunplugged.z600.core.machinestate.api.PowerSource;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
+import at.sunplugged.z600.frontend.gui.utils.spi.RangeDoubleModifyListener;
 import at.sunplugged.z600.gui.dialogs.ValueDialog;
 import at.sunplugged.z600.gui.dialogs.ValueDialog.Answer;
 import at.sunplugged.z600.gui.views.MainView;
@@ -149,92 +150,102 @@ public final class ConveyorGroupFactory {
             }
         });
 
-        Text distanceDriveText = new Text(group, SWT.BORDER);
-        distanceDriveText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        distanceDriveText.setText("distance in [cm]...");
-        distanceDriveText.setToolTipText("Distance in [cm]");
-        distanceDriveText.addFocusListener(new FocusListener() {
+        Button btnSetFinalPosition = new Button(group, SWT.NONE);
+        btnSetFinalPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        btnSetFinalPosition.setText("Set stop Position [m]");
+
+        Text finalPositionText = new Text(group, SWT.BORDER);
+        finalPositionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        finalPositionText.setText("Final Position in [cm]...");
+        finalPositionText.setToolTipText("Final Position in [cm]");
+
+        Button btnCalculateSpeedFromTimeUnderCathode = new Button(group, SWT.NONE);
+        btnCalculateSpeedFromTimeUnderCathode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        btnCalculateSpeedFromTimeUnderCathode.setText("Calculate Speed from Time Under Cathode[s]");
+
+        Text timeUnderCathodeText = new Text(group, SWT.BORDER);
+        timeUnderCathodeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        timeUnderCathodeText.setText("time under cathode in [s]...");
+        timeUnderCathodeText.setToolTipText("Time under cathode in [s]");
+
+        finalPositionText.addFocusListener(new FocusListener() {
 
             @Override
             public void focusLost(FocusEvent e) {
+                if (finalPositionText.getText().isEmpty() == true) {
+                    finalPositionText.setText("Final Position in [cm]...");
+                }
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                if (distanceDriveText.getText().equals("distance in [cm]...")) {
-                    distanceDriveText.setText("");
+                if (finalPositionText.getText().equals("Final Position in [cm]...")) {
+                    finalPositionText.setText("");
                 }
             }
         });
 
-        Text timeDriveText = new Text(group, SWT.BORDER);
-        timeDriveText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        timeDriveText.setText("time under cathode in [s]...");
-        timeDriveText.setToolTipText("Time under cathode in [s]");
-        timeDriveText.addFocusListener(new FocusListener() {
+        finalPositionText.addModifyListener(new RangeDoubleModifyListener() {
+            @Override
+            protected void reactToCorrect() {
+                btnSetFinalPosition.setEnabled(true);
+            }
+
+            @Override
+            protected void reactToError() {
+                btnSetFinalPosition.setEnabled(false);
+            }
+        });
+
+        btnSetFinalPosition.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                double value = Double.valueOf(finalPositionText.getText());
+                conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+                conveyorMonitor.setStopPosition(value);
+            }
+        });
+
+        btnCalculateSpeedFromTimeUnderCathode.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                double value = Double.valueOf(timeUnderCathodeText.getText());
+
+                double lengthOfCathode = MainView.getSettings().getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
+                double speed = lengthOfCathode / value;
+
+                speedText.setText(String.format("%.3f", speed));
+                conveyorService.setSetpointSpeed(speed);
+            }
+        });
+
+        timeUnderCathodeText.addFocusListener(new FocusListener() {
 
             @Override
             public void focusLost(FocusEvent e) {
+                if (timeUnderCathodeText.getText().isEmpty() == true) {
+                    timeUnderCathodeText.setText("time under cathode in [s]...");
+                }
+
             }
 
             @Override
             public void focusGained(FocusEvent e) {
-                if (timeDriveText.getText().equals("time under cathode in [s]...")) {
-                    timeDriveText.setText("");
+                if (timeUnderCathodeText.getText().equals("time under cathode in [s]...")) {
+                    timeUnderCathodeText.setText("");
                 }
             }
         });
 
-        Button btnDistanceDrive = new Button(group, SWT.NONE);
-        btnDistanceDrive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        btnDistanceDrive.setText("Drive Distance[cm] Start");
-        btnDistanceDrive.addSelectionListener(new SelectionAdapter() {
+        timeUnderCathodeText.addModifyListener(new RangeDoubleModifyListener() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (btnRechts.isEnabled() == false) {
-                    double stopPosition = conveyorService.getPosition()
-                            + Double.valueOf(distanceDriveText.getText()) / 100;
-                    conveyorMonitor.setStopPosition(stopPosition);
-                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
-
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.LEFT_TO_RIGHT);
-                } else if (btnLinks.isEnabled() == false) {
-                    double stopPosition = conveyorService.getPosition()
-                            - Double.valueOf(distanceDriveText.getText()) / 100;
-                    conveyorMonitor.setStopPosition(stopPosition);
-                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
-                    conveyorService.start(Double.valueOf(speedText.getText()), Mode.RIGHT_TO_LEFT);
-                }
+            protected void reactToCorrect() {
+                btnCalculateSpeedFromTimeUnderCathode.setEnabled(true);
             }
-        });
 
-        Button btnTimeDrive = new Button(group, SWT.NONE);
-        btnTimeDrive.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        btnTimeDrive.setText("Drive time[s] under cathode Start");
-        btnTimeDrive.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (btnRechts.isEnabled() == false) {
-                    double stopPosition = conveyorService.getPosition()
-                            + Double.valueOf(distanceDriveText.getText()) / 100;
-                    conveyorMonitor.setStopPosition(stopPosition);
-                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
-
-                    double lengthOfCathode = MainView.getSettings().getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
-                    double speed = lengthOfCathode / Long.valueOf(timeDriveText.getText());
-
-                    conveyorService.start(speed, Mode.LEFT_TO_RIGHT);
-                } else if (btnLinks.isEnabled() == false) {
-                    double stopPosition = conveyorService.getPosition()
-                            - Double.valueOf(distanceDriveText.getText()) / 100;
-                    conveyorMonitor.setStopPosition(stopPosition);
-                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
-
-                    double lengthOfCathode = MainView.getSettings().getPropertAsDouble(ParameterIds.CATHODE_LENGTH_MM);
-                    double speed = lengthOfCathode / Long.valueOf(timeDriveText.getText());
-
-                    conveyorService.start(speed, Mode.RIGHT_TO_LEFT);
-                }
+            protected void reactToError() {
+                btnCalculateSpeedFromTimeUnderCathode.setEnabled(false);
             }
         });
 

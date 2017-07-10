@@ -34,17 +34,29 @@ public class DoubleRangeModifyListener implements ModifyListener {
             if (value > max) {
                 setFieldRed();
                 text.setToolTipText("Value greater than max allowed " + text);
+                reactToError();
             } else if (value < min) {
                 setFieldRed();
                 text.setToolTipText("Value smaller that min allowed " + text);
+                reactToError();
             } else {
                 setFieldWhite();
                 text.setToolTipText("");
+                reactToCorrect();
             }
         } catch (NumberFormatException e1) {
             setFieldRed();
             text.setToolTipText("Format not allowed");
+            reactToError();
         }
+    }
+
+    protected void reactToError() {
+
+    }
+
+    protected void reactToCorrect() {
+
     }
 
     private void setFieldRed() {
