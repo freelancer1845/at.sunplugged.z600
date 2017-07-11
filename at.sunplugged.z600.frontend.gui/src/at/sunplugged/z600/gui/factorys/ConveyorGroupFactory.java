@@ -402,7 +402,7 @@ public final class ConveyorGroupFactory {
     private static Group createFinalPositionGroup(Group parent) {
 
         Group group = new Group(parent, SWT.NONE);
-        group.setLayout(new GridLayout(3, false));
+        group.setLayout(new GridLayout(2, false));
         group.setText("Stop at Position");
 
         Button btnSetFinalPosition = new Button(group, SWT.NONE);
@@ -410,51 +410,63 @@ public final class ConveyorGroupFactory {
         btnSetFinalPosition.setText("Set stop Position [m]");
         btnSetFinalPosition.setEnabled(false);
 
-        Text finalPositionText = new Text(group, SWT.BORDER);
-        finalPositionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        finalPositionText.setText("Final Position in [cm]...");
-        finalPositionText.setToolTipText("Final Position in [cm]");
-        finalPositionText.setEnabled(false);
+        // Text finalPositionText = new Text(group, SWT.BORDER);
+        // finalPositionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+        // true, false, 1, 1));
+        // finalPositionText.setText("Final Position in [cm]...");
+        // finalPositionText.setToolTipText("Final Position in [cm]");
+        // finalPositionText.setEnabled(false);
 
         Button checkButton = new Button(group, SWT.CHECK);
         checkButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         checkButton.setSelection(false);
 
-        finalPositionText.addFocusListener(new FocusListener() {
+        Label infoLabel = new Label(group, SWT.NONE);
+        infoLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+        updateInfoLabelConveyorMonitor(infoLabel);
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (finalPositionText.getText().isEmpty() == true) {
-                    finalPositionText.setText("Final Position in [cm]...");
-                }
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (finalPositionText.getText().equals("Final Position in [cm]...")) {
-                    finalPositionText.setText("");
-                }
-            }
-        });
-
-        finalPositionText.addModifyListener(new RangeDoubleModifyListener() {
-            @Override
-            protected void reactToCorrect() {
-                btnSetFinalPosition.setEnabled(true);
-            }
-
-            @Override
-            protected void reactToError() {
-                btnSetFinalPosition.setEnabled(false);
-            }
-        });
+        // finalPositionText.addFocusListener(new FocusListener() {
+        //
+        // @Override
+        // public void focusLost(FocusEvent e) {
+        // if (finalPositionText.getText().isEmpty() == true) {
+        // finalPositionText.setText("Final Position in [cm]...");
+        // }
+        // }
+        //
+        // @Override
+        // public void focusGained(FocusEvent e) {
+        // if (finalPositionText.getText().equals("Final Position in [cm]..."))
+        // {
+        // finalPositionText.setText("");
+        // }
+        // }
+        // });
+        //
+        // finalPositionText.addModifyListener(new RangeDoubleModifyListener() {
+        // @Override
+        // protected void reactToCorrect() {
+        // btnSetFinalPosition.setEnabled(true);
+        // }
+        //
+        // @Override
+        // protected void reactToError() {
+        // btnSetFinalPosition.setEnabled(false);
+        // }
+        // });
 
         btnSetFinalPosition.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                double value = Double.valueOf(finalPositionText.getText());
-                conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
-                conveyorMonitor.setStopPosition(value);
+                // double value = Double.valueOf(finalPositionText.getText());
+                ValueDialog valueDialog = new ValueDialog("Choose distance to stop at.",
+                        "Decide at which position the conveyor should stop automatically in [m]", Double.MIN_VALUE,
+                        Double.MAX_VALUE, group.getShell());
+                if (valueDialog.open() == Answer.OK) {
+                    conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+                    conveyorMonitor.setStopPosition(valueDialog.getValue());
+                    updateInfoLabelConveyorMonitor(infoLabel);
+                }
             }
         });
 
@@ -464,15 +476,31 @@ public final class ConveyorGroupFactory {
                 if (checkButton.getSelection() == false) {
                     conveyorMonitor.setStopMode(StopMode.OFF);
                     btnSetFinalPosition.setEnabled(false);
-                    finalPositionText.setEnabled(false);
+                    // finalPositionText.setEnabled(false);
+                    updateInfoLabelConveyorMonitor(infoLabel);
                 } else {
                     btnSetFinalPosition.setEnabled(true);
-                    finalPositionText.setEnabled(true);
+                    // finalPositionText.setEnabled(true);
                 }
             }
         });
 
         return group;
+    }
+
+    private static void updateInfoLabelConveyorMonitor(Label label) {
+        switch (conveyorMonitor.getStopMode()) {
+        case DISTANCE_REACHED:
+            label.setText(String.format("Conveyor will stop at %.2f[m].", conveyorMonitor.getCurrentStopPosition()));
+            break;
+        case OFF:
+            label.setText("Conveyor won't stop automatically.");
+            break;
+        case TIME_REACHED:
+        default:
+            label.setText("ConveyorMonitor is in time reached mode...");
+            break;
+        }
     }
 
     private static Group createEngineGroup(Composite parent, Engine driveEngine, Engine otherEngine, String name,
