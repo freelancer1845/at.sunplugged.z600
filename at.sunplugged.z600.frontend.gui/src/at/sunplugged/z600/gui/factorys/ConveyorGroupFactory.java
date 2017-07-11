@@ -150,14 +150,8 @@ public final class ConveyorGroupFactory {
             }
         });
 
-        Button btnSetFinalPosition = new Button(group, SWT.NONE);
-        btnSetFinalPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        btnSetFinalPosition.setText("Set stop Position [m]");
-
-        Text finalPositionText = new Text(group, SWT.BORDER);
-        finalPositionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        finalPositionText.setText("Final Position in [cm]...");
-        finalPositionText.setToolTipText("Final Position in [cm]");
+        Group finalPositionGroup = createFinalPositionGroup(group);
+        finalPositionGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 
         Button btnCalculateSpeedFromTimeUnderCathode = new Button(group, SWT.NONE);
         btnCalculateSpeedFromTimeUnderCathode.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -167,44 +161,6 @@ public final class ConveyorGroupFactory {
         timeUnderCathodeText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         timeUnderCathodeText.setText("time under cathode in [s]...");
         timeUnderCathodeText.setToolTipText("Time under cathode in [s]");
-
-        finalPositionText.addFocusListener(new FocusListener() {
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (finalPositionText.getText().isEmpty() == true) {
-                    finalPositionText.setText("Final Position in [cm]...");
-                }
-            }
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (finalPositionText.getText().equals("Final Position in [cm]...")) {
-                    finalPositionText.setText("");
-                }
-            }
-        });
-
-        finalPositionText.addModifyListener(new RangeDoubleModifyListener() {
-            @Override
-            protected void reactToCorrect() {
-                btnSetFinalPosition.setEnabled(true);
-            }
-
-            @Override
-            protected void reactToError() {
-                btnSetFinalPosition.setEnabled(false);
-            }
-        });
-
-        btnSetFinalPosition.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                double value = Double.valueOf(finalPositionText.getText());
-                conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
-                conveyorMonitor.setStopPosition(value);
-            }
-        });
 
         btnCalculateSpeedFromTimeUnderCathode.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -352,25 +308,25 @@ public final class ConveyorGroupFactory {
 
         });
 
-        Button btnCenterLeft = new Button(positionGroup, SWT.NONE);
-        btnCenterLeft.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnCenterLeft.setText("Recenter Left");
-        btnCenterLeft.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorPositionService.centerLeft();
-            }
-        });
-
-        Button btnCenterRight = new Button(positionGroup, SWT.NONE);
-        btnCenterRight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        btnCenterRight.setText("Recenter Right");
-        btnCenterRight.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                conveyorPositionService.centerRight();
-            }
-        });
+        /*
+         * TODO : Decide whether these buttons are still necessary
+         * 
+         * Button btnCenterLeft = new Button(positionGroup, SWT.NONE);
+         * btnCenterLeft.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false,
+         * false, 1, 1)); btnCenterLeft.setText("Recenter Left");
+         * btnCenterLeft.addSelectionListener(new SelectionAdapter() {
+         * 
+         * @Override public void widgetSelected(SelectionEvent e) {
+         * conveyorPositionService.centerLeft(); } });
+         * 
+         * Button btnCenterRight = new Button(positionGroup, SWT.NONE);
+         * btnCenterRight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
+         * false, false, 1, 1)); btnCenterRight.setText("Recenter Right");
+         * btnCenterRight.addSelectionListener(new SelectionAdapter() {
+         * 
+         * @Override public void widgetSelected(SelectionEvent e) {
+         * conveyorPositionService.centerRight(); } });
+         */
 
         Group manualGroup = new Group(positionGroup, SWT.NONE);
         manualGroup.setText("Manual Position Control");
@@ -439,6 +395,82 @@ public final class ConveyorGroupFactory {
 
         createEngineGroup(parent, conveyorService.getEngineOne(), conveyorService.getEngineTwo(), "Left Engine", false);
         createEngineGroup(parent, conveyorService.getEngineTwo(), conveyorService.getEngineOne(), "Right Engine", true);
+
+        return group;
+    }
+
+    private static Group createFinalPositionGroup(Group parent) {
+
+        Group group = new Group(parent, SWT.NONE);
+        group.setLayout(new GridLayout(3, false));
+        group.setText("Stop at Position");
+
+        Button btnSetFinalPosition = new Button(group, SWT.NONE);
+        btnSetFinalPosition.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        btnSetFinalPosition.setText("Set stop Position [m]");
+        btnSetFinalPosition.setEnabled(false);
+
+        Text finalPositionText = new Text(group, SWT.BORDER);
+        finalPositionText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        finalPositionText.setText("Final Position in [cm]...");
+        finalPositionText.setToolTipText("Final Position in [cm]");
+        finalPositionText.setEnabled(false);
+
+        Button checkButton = new Button(group, SWT.CHECK);
+        checkButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        checkButton.setSelection(false);
+
+        finalPositionText.addFocusListener(new FocusListener() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (finalPositionText.getText().isEmpty() == true) {
+                    finalPositionText.setText("Final Position in [cm]...");
+                }
+            }
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (finalPositionText.getText().equals("Final Position in [cm]...")) {
+                    finalPositionText.setText("");
+                }
+            }
+        });
+
+        finalPositionText.addModifyListener(new RangeDoubleModifyListener() {
+            @Override
+            protected void reactToCorrect() {
+                btnSetFinalPosition.setEnabled(true);
+            }
+
+            @Override
+            protected void reactToError() {
+                btnSetFinalPosition.setEnabled(false);
+            }
+        });
+
+        btnSetFinalPosition.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                double value = Double.valueOf(finalPositionText.getText());
+                conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
+                conveyorMonitor.setStopPosition(value);
+            }
+        });
+
+        checkButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (checkButton.getSelection() == false) {
+                    conveyorMonitor.setStopMode(StopMode.OFF);
+                    btnSetFinalPosition.setEnabled(false);
+                    finalPositionText.setEnabled(false);
+                } else {
+                    btnSetFinalPosition.setEnabled(true);
+                    finalPositionText.setEnabled(true);
+                }
+            }
+        });
 
         return group;
     }
