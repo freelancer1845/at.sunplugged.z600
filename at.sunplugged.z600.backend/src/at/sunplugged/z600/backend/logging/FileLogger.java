@@ -51,7 +51,7 @@ public class FileLogger implements LogListener {
         if (errorLogged == false) {
             File logFile = new File(sessionFileName);
             if (logFile.exists()) {
-                logFile.delete();
+                // logFile.delete();
             }
         }
     }
