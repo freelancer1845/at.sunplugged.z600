@@ -85,7 +85,13 @@ public class PositionControl {
                 leftTimerForward.stop();
             }
 
-        } else if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT || explicitRight == true) {
+        } else {
+            leftTimerForward.stop();
+            leftTimerBackward.stop();
+            mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
+            mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
+        }
+        if (conveyorControlService.getActiveMode() == Mode.LEFT_TO_RIGHT || explicitRight == true) {
             boolean lightSwitchRightFront = machineStateService
                     .getDigitalInputState(DigitalInput.CONVEYOR_LIGHT_SWITCH_RIGHT_FRONT);
             boolean lightSwitchRightBack = machineStateService
@@ -109,16 +115,12 @@ public class PositionControl {
                 rightTimerForward.stop();
             }
         } else {
-            leftTimerForward.stop();
-            leftTimerBackward.stop();
             rightTimerForward.stop();
-            rightTimerForward.stop();
-
-            mbtService.writeDigOut(DigitalOutput.BELT_LEFT_BACKWARDS_MOV.getAddress(), false);
-            mbtService.writeDigOut(DigitalOutput.BELT_LEFT_FORWARD_MOV.getAddress(), false);
+            rightTimerBackward.stop();
             mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_FORWARD_MOV.getAddress(), false);
             mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
         }
+
     }
 
     public long getRuntimeRight() {

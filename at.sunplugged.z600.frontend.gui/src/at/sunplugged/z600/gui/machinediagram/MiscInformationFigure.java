@@ -7,6 +7,7 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
@@ -25,6 +26,8 @@ public class MiscInformationFigure extends Figure {
     private LabeledLabel estimatedFinishTime;
 
     private LabeledLabel positionControlRunning;
+
+    private LabeledLabel sqlRunning;
 
     public MiscInformationFigure(int x, int y) {
         this.setBounds(new Rectangle(x, y, WIDTH, HEIGHT));
@@ -46,6 +49,7 @@ public class MiscInformationFigure extends Figure {
         gasFLowSccmLabel = new LabeledLabel(this, "Gasflow [sccm]", "0.0");
         estimatedFinishTime = new LabeledLabel(this, "ETC", "---");
         positionControlRunning = new LabeledLabel(this, "PostionControl: ", "OFF");
+        // sqlRunning = new LabeledLabel(this, "SQL", "OFF");
 
         Display.getDefault().timerExec(2000, new Runnable() {
             @Override
@@ -57,8 +61,10 @@ public class MiscInformationFigure extends Figure {
 
                 if (MainView.getConveyorPositionCorrectionService().isRunning() == true) {
                     positionControlRunning.setText("ON");
+                    positionControlRunning.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
                 } else {
                     positionControlRunning.setText("OFF");
+                    positionControlRunning.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_RED));
                 }
 
                 Display.getDefault().timerExec(1000, this);
@@ -100,6 +106,10 @@ public class MiscInformationFigure extends Figure {
 
         public void setText(String text) {
             this.text.setText(text);
+        }
+
+        public void setForegroundColor(Color color) {
+            text.setForegroundColor(color);
         }
 
     }
