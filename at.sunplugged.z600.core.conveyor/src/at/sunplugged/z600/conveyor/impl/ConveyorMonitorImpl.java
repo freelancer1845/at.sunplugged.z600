@@ -133,7 +133,7 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
         }
 
         private void stopConveyor() {
-            logService.log(LogService.LOG_DEBUG, "ConveyorMonitor stopping conveyor...");
+            logService.log(LogService.LOG_INFO, "ConveyorMonitor stopping conveyor...");
             conveyorControlService.stop();
         }
 
@@ -141,14 +141,14 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
 
     @Override
     public void setStopPosition(double position) {
-        logService.log(LogService.LOG_DEBUG, String.format("New Stopposition submitted: %.2f", position));
+        logService.log(LogService.LOG_INFO, String.format("New Stopposition submitted: %.2f", position));
         EstimatedFinishTimer.getInstance().submitTragetPosition(position);
         this.stopPosition = position;
     }
 
     @Override
     public void setStopTime(LocalDateTime stopTime) {
-        logService.log(LogService.LOG_DEBUG,
+        logService.log(LogService.LOG_INFO,
                 String.format("New Stoptime submitted: ", stopTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
         this.stopTime = stopTime;
     }
