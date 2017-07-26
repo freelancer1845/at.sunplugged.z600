@@ -1,6 +1,5 @@
 package at.sunplugged.z600.common.settings.impl;
 
-import java.util.Properties;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;

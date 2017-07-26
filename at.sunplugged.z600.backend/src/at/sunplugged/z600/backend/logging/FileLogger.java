@@ -8,21 +8,23 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.eclipse.equinox.log.ExtendedLogReaderService;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
-
-@Component(immediate = true)
+@Component(immediate = true, scope = ServiceScope.SINGLETON)
 public class FileLogger implements LogListener {
 
     private static final String LOG_FILE_NAME_PREFIX = "log";
@@ -33,7 +35,7 @@ public class FileLogger implements LogListener {
 
     private ExtendedLogReaderService extendedLogReaderService;
 
-    private StandardThreadPoolService threadPool;
+    private ExecutorService executor;
 
     private boolean errorLogged = false;
 
@@ -44,6 +46,11 @@ public class FileLogger implements LogListener {
         this.sessionFileName = LOG_FILE_NAME_PREFIX
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMuuuuHHmmss")) + LOG_FILE_SUFFIX;
 
+    }
+
+    @Activate
+    public void activateLogger() {
+        executor = Executors.newSingleThreadExecutor();
     }
 
     @Deactivate
@@ -82,31 +89,11 @@ public class FileLogger implements LogListener {
         }
     }
 
-    @Reference(unbind = "unbindStandardThreadPoolService")
-    public synchronized void bindStandardThreadPoolService(StandardThreadPoolService threadPool) {
-        this.threadPool = threadPool;
-    }
-
-    public synchronized void unbindStandardThreadPoolService(StandardThreadPoolService threadPool) {
-        if (this.threadPool == threadPool) {
-            this.threadPool = null;
-        }
-    }
-
     @Override
     public void logged(LogEntry entry) {
-        if (threadPool != null) {
-            threadPool.execute(new Runnable() {
-
-                @Override
-                public void run() {
-                    logToFile(entry);
-                }
-            });
-
-        } else {
+        executor.submit(() -> {
             logToFile(entry);
-        }
+        });
     }
 
     private void logToFile(LogEntry entry) {
