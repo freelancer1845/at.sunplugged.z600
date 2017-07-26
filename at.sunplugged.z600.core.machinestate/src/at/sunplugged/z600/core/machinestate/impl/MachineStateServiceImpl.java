@@ -272,7 +272,7 @@ public class MachineStateServiceImpl implements MachineStateService {
                 digitalOutputState = currentState;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logService.log(LogService.LOG_ERROR, "Error while updating DigitalOutput...", e);
         }
 
     }
@@ -305,7 +305,7 @@ public class MachineStateServiceImpl implements MachineStateService {
                 analogOutputState = currentState;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logService.log(LogService.LOG_ERROR, "Error while updating AnalogOutput...", e);
         }
 
     }
@@ -339,7 +339,7 @@ public class MachineStateServiceImpl implements MachineStateService {
                 digitalInputState = currentState;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logService.log(LogService.LOG_ERROR, "Error while updating DigitalInput...", e);
         }
     }
 
@@ -371,7 +371,7 @@ public class MachineStateServiceImpl implements MachineStateService {
                 analogInputState = currentState;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logService.log(LogService.LOG_ERROR, "Error while updating AnalogInput...", e);
         }
     }
 

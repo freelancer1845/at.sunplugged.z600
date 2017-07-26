@@ -45,8 +45,9 @@ public class EstimatedFinishTimer {
         } else if (mode == Mode.RIGHT_TO_LEFT) {
             distanceToGo = currentPosition - targetPosition;
         }
+        System.out.println("DistanceToGO" + distanceToGo);
 
-        return (long) (distanceToGo / currentSpeed * 1000000);
+        return (long) (distanceToGo / currentSpeed * 1000);
     }
 
 }

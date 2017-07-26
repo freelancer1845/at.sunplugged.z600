@@ -142,6 +142,7 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
     @Override
     public void setStopPosition(double position) {
         logService.log(LogService.LOG_DEBUG, String.format("New Stopposition submitted: %.2f", position));
+        EstimatedFinishTimer.getInstance().submitTragetPosition(position);
         this.stopPosition = position;
     }
 
@@ -203,8 +204,7 @@ public class ConveyorMonitorImpl implements ConveyorMonitor {
             } else {
                 return 0L;
             }
-
-            return (long) (distanceToGo / currentSpeed * 1000);
+            return (long) (distanceToGo / currentSpeed * 1000000);
         } else if (mode == StopMode.TIME_REACHED) {
             LocalDateTime now = LocalDateTime.now();
             return (long) stopTime.until(now, ChronoUnit.MILLIS);

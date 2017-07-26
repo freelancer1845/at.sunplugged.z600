@@ -127,7 +127,7 @@ public final class ConveyorGroupFactory {
             public void widgetSelected(SelectionEvent e) {
                 double speed;
                 try {
-                    speed = Double.valueOf(speedText.getText());
+                    speed = Double.valueOf(speedText.getText().replace(",", "."));
                 } catch (NumberFormatException e1) {
                     return;
                 }
