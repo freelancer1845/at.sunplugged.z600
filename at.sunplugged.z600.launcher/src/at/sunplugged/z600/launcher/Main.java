@@ -54,7 +54,7 @@ public class Main implements IApplication {
             } catch (ProgrammShutdownException e) {
                 shell.dispose();
                 return false;
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
                 messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
                 messageBox.setText("Unhandled Loop Exeception");
@@ -76,11 +76,16 @@ public class Main implements IApplication {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
-            } catch (RuntimeException e) {
-                MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
-                messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
-                messageBox.setText("Unhandled Loop Exeception");
-                messageBox.open();
+            } catch (Exception e) {
+                try {
+                    MessageBox messageBox = new MessageBox(shell, SWT.ERROR);
+                    messageBox.setMessage("Unhandled Loop Exception: " + e.getMessage());
+                    messageBox.setText("Unhandled Loop Exeception");
+                    messageBox.open();
+                } catch (Exception e1) {
+                    MainView.getLogService().log(LogService.LOG_ERROR,
+                            "Error while showing Error MessageBox in Gui MainLoop!!", e1);
+                }
                 MainView.getLogService().log(LogService.LOG_ERROR, e.getMessage(), e);
             }
         }
