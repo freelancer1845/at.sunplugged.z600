@@ -460,7 +460,7 @@ public final class ConveyorGroupFactory {
             public void widgetSelected(SelectionEvent e) {
                 // double value = Double.valueOf(finalPositionText.getText());
                 ValueDialog valueDialog = new ValueDialog("Choose distance to stop at.",
-                        "Decide at which position the conveyor should stop automatically in [m]", Double.MIN_VALUE,
+                        "Decide at which position the conveyor should stop automatically in [m]", -Double.MAX_VALUE,
                         Double.MAX_VALUE, group.getShell());
                 if (valueDialog.open() == Answer.OK) {
                     conveyorMonitor.setStopMode(StopMode.DISTANCE_REACHED);
