@@ -209,7 +209,7 @@ public class TurboPumpStartThread extends Thread {
         FuturePressureReachedEvent turboPumpPressureTrigger = new FuturePressureReachedEvent(machineStateService,
                 PressureMeasurementSite.CHAMBER,
                 Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.8);
-        turboPumpPressureTrigger.get(2, TimeUnit.HOURS);
+        turboPumpPressureTrigger.get(3, TimeUnit.HOURS);
     }
 
     private void evacuateTurboPump() throws IOException, InterruptedException, TimeoutException {
@@ -222,7 +222,7 @@ public class TurboPumpStartThread extends Thread {
         FuturePressureReachedEvent turboPumpChamberPressureTrigger = new FuturePressureReachedEvent(machineStateService,
                 PressureMeasurementSite.TURBO_PUMP,
                 Double.valueOf(settings.getProperty(ParameterIds.START_TRIGGER_TURBO_PUMP)) * 0.8);
-        turboPumpChamberPressureTrigger.get(20, TimeUnit.MINUTES);
+        turboPumpChamberPressureTrigger.get(40, TimeUnit.MINUTES);
 
     }
 
@@ -233,7 +233,7 @@ public class TurboPumpStartThread extends Thread {
         Thread.sleep(500);
         Pump turboPump = pumpRegistry.getPump(PumpIds.TURBO_PUMP);
         if (turboPump.getState().equals(PumpState.OFF) || turboPump.getState().equals(PumpState.STOPPING)) {
-            turboPump.startPump().get(5, TimeUnit.MINUTES);
+            turboPump.startPump().get(10, TimeUnit.MINUTES);
         }
     }
 
