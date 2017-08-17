@@ -48,9 +48,9 @@ public class DataSavingThread extends Thread {
         String tableName = "Zyklus" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("uuuuMMddHHmm"));
         while (isRunning()) {
             try {
-                WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
                 Thread.sleep(Long
                         .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
+                WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
                 exceptionCount = 0;
             } catch (Exception e) {
                 DataServiceImpl.getLogService().log(LogService.LOG_WARNING, "Unexpected exception in DataSavingThread!",
