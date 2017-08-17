@@ -43,10 +43,18 @@ public class SingleSideSpeedLogger {
     }
 
     public double getCurrentSpeed() {
-        if (speedMeasurements.size() > 0) {
-            return speedMeasurements.get(speedMeasurements.size() - 1);
-        } else {
+        Double value;
+        synchronized (speedMeasurements) {
+            if (speedMeasurements.size() > 0) {
+                value = speedMeasurements.get(speedMeasurements.size() - 1);
+            } else {
+                value = 0.0;
+            }
+        }
+        if (value == null) {
             return 0;
+        } else {
+            return value;
         }
     }
 
