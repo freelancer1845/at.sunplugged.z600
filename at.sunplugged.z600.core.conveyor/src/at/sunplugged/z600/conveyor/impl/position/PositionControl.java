@@ -103,7 +103,7 @@ public class PositionControl {
             if (lightSwitchRightFront == true && limitSwitchRightFront == false) {
                 rightTimerBackward.start();
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), true);
-            } else if (lightSwitchRightFront == false || limitSwitchRightBack == true) {
+            } else if (lightSwitchRightFront == false || limitSwitchRightFront == true) {
                 mbtService.writeDigOut(DigitalOutput.BELT_RIGHT_BACKWARDS_MOV.getAddress(), false);
                 rightTimerBackward.stop();
             }
