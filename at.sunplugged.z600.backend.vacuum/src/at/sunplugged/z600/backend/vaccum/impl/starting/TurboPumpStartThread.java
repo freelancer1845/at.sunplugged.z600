@@ -193,9 +193,9 @@ public class TurboPumpStartThread extends Thread {
         if (machineStateService.getDigitalInputState(DigitalInput.P_120_MBAR) == false) {
             FutureEvent p120TriggerEvent = new FutureEvent(machineStateService,
                     new MachineStateEvent(Type.DIGITAL_INPUT_CHANGED, DigitalInput.P_120_MBAR, true));
-            p120TriggerEvent.get(10, TimeUnit.SECONDS);
+            p120TriggerEvent.get(5, TimeUnit.MINUTES);
         }
-        prePumpRoots.startPump().get(10, TimeUnit.SECONDS);
+        prePumpRoots.startPump().get(5, TimeUnit.MINUTES);
     }
 
     private void evacuateChamber() throws IOException, InterruptedException, TimeoutException {
