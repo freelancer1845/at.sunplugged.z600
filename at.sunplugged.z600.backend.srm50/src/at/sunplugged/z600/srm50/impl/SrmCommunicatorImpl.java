@@ -89,7 +89,9 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
 
     @Override
     public void disconnect() throws IOException {
-        commPort.close();
+        if (commPort != null) {
+            commPort.close();
+        }
         inputStream = null;
         outputStream = null;
         commPort = null;
