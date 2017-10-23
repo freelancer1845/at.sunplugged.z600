@@ -8,7 +8,7 @@
    <reference bind="bindMachineStateService" cardinality="1..1" interface="at.sunplugged.z600.core.machinestate.api.MachineStateService" name="MachineStateService" policy="static" unbind="unbindMachineStateService"/>
    <reference bind="bindScriptInterpreterService" cardinality="1..1" interface="at.sunplugged.z600.frontend.scriptinterpreter.api.ScriptInterpreterService" name="ScriptInterpreterService" policy="static" unbind="unbindScriptInterpreterService"/>
    <reference bind="bindSettingsService" cardinality="1..1" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="SettingsService" policy="static" unbind="unbindSettingsService"/>
-   <reference bind="bindSrmCommunicator" cardinality="0..1" interface="at.sunplugged.z600.srm50.api.SrmCommunicator" name="SrmCommunicator" policy="static" unbind="unbindSrmCommunicator"/>
+   <reference bind="bindSrmCommunicator" cardinality="1..1" interface="at.sunplugged.z600.srm50.api.SrmCommunicator" name="SrmCommunicator" policy="static" unbind="unbindSrmCommunicator"/>
    <reference bind="bindStandardThreadPoolService" cardinality="1..1" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="StandardThreadPoolService" policy="static" unbind="unbindStandardThreadPoolService"/>
    <reference bind="bindVacuumService" cardinality="1..1" interface="at.sunplugged.z600.backend.vaccum.api.VacuumService" name="VacuumService" policy="static" unbind="unbindVacuumService"/>
    <implementation class="at.sunplugged.z600.gui.views.MainView"/>

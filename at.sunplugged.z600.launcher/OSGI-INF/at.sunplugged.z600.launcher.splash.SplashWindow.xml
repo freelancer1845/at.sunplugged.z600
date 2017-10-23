@@ -4,6 +4,7 @@
 at/sunplugged/z600/sql/connect
 at/sunplugged/z600/core/conveyor/engine/connect
 at/sunplugged/z600/machineStateService/vat/connect
+at/sunplugged/z600/srm/connect
    </property>
    <service>
       <provide interface="org.osgi.service.event.EventHandler"/>

@@ -923,7 +923,7 @@ public class MainView {
         }
     }
 
-    @Reference(unbind = "unbindSrmCommunicator", cardinality = ReferenceCardinality.OPTIONAL)
+    @Reference(unbind = "unbindSrmCommunicator", cardinality = ReferenceCardinality.MANDATORY)
     public synchronized void bindSrmCommunicator(SrmCommunicator srmCommunicator) {
         MainView.srmCommunicator = srmCommunicator;
     }

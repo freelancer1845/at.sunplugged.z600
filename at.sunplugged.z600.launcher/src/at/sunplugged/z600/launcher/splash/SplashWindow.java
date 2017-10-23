@@ -21,13 +21,15 @@ import at.sunplugged.z600.launcher.ProgrammShutdownException;
 import at.sunplugged.z600.launcher.splash.checkgroups.CheckGroup;
 import at.sunplugged.z600.launcher.splash.checkgroups.EngineCheckGroup;
 import at.sunplugged.z600.launcher.splash.checkgroups.MbtCheckGroup;
+import at.sunplugged.z600.launcher.splash.checkgroups.SRMCheckGroup;
 import at.sunplugged.z600.launcher.splash.checkgroups.SqlCheckGroup;
 import at.sunplugged.z600.launcher.splash.checkgroups.VatCheckGroup;
 
 @Component(immediate = true, property = { EventConstants.EVENT_TOPIC + "=" + Events.MBT_CONNECT_EVENT,
         EventConstants.EVENT_TOPIC + "=" + Events.SQL_CONNECT_EVENT,
         EventConstants.EVENT_TOPIC + "=" + Events.ENGINE_CONNECT_EVENT,
-        EventConstants.EVENT_TOPIC + "=" + Events.VAT_CONNECT_EVENT })
+        EventConstants.EVENT_TOPIC + "=" + Events.VAT_CONNECT_EVENT,
+        EventConstants.EVENT_TOPIC + "=" + Events.SRM_CONNECT_EVENT })
 public class SplashWindow implements EventHandler {
 
     private static Shell shell;
@@ -41,6 +43,7 @@ public class SplashWindow implements EventHandler {
     private static CheckGroup sqlCheckGroup = new SqlCheckGroup();
     private static CheckGroup engineCheckGroup = new EngineCheckGroup();
     private static CheckGroup vatCheckGroup = new VatCheckGroup();
+    private static CheckGroup srmCheckGroup = new SRMCheckGroup();
 
     private static Label label_1;
     private static Composite composite;
@@ -75,6 +78,7 @@ public class SplashWindow implements EventHandler {
         sqlCheckGroup.create(information_composite);
         engineCheckGroup.create(information_composite);
         vatCheckGroup.create(information_composite);
+        srmCheckGroup.create(information_composite);
 
         progressBar = new ProgressBar(information_composite, SWT.NONE);
         progressBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
@@ -126,6 +130,7 @@ public class SplashWindow implements EventHandler {
         sqlCheckGroup.update();
         engineCheckGroup.update();
         vatCheckGroup.update();
+        srmCheckGroup.update();
     }
 
     private static void initializeShell() {
@@ -146,6 +151,8 @@ public class SplashWindow implements EventHandler {
             engineCheckGroup.setEvent(event);
         } else if (event.getTopic() == Events.VAT_CONNECT_EVENT) {
             vatCheckGroup.setEvent(event);
+        } else if (event.getTopic() == Events.SRM_CONNECT_EVENT) {
+            srmCheckGroup.setEvent(event);
         }
         if (shell != null && shell.isDisposed() == false) {
             shell.getDisplay().asyncExec(new Runnable() {

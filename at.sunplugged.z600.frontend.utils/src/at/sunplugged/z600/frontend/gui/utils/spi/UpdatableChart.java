@@ -76,6 +76,10 @@ public abstract class UpdatableChart {
         addListeners();
     }
 
+    public void setLayoutData(Object layoutData) {
+        chart.setLayoutData(layoutData);
+    }
+
     /**
      * The Implementation should return the xData. It is called at the same time
      * as addNewDataY();

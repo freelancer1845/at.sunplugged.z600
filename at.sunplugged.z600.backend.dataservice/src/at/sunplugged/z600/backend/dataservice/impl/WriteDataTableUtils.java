@@ -1,10 +1,12 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
@@ -15,6 +17,7 @@ import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement;
 import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeasurementSite;
+import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
 public class WriteDataTableUtils {
 
@@ -96,6 +99,10 @@ public class WriteDataTableUtils {
             dataMap.putAll(getConveyorControlSnapShot(conveyor));
         }
 
+        SrmCommunicator srmCommunicator = DataServiceImpl.getSrmCommunicatorService();
+        if (srmCommunicator != null) {
+            dataMap.putAll(getSrmSnapShot(srmCommunicator));
+        }
         return dataMap;
     }
 
@@ -129,7 +136,9 @@ public class WriteDataTableUtils {
         sql += ColumnNames.SSV_TWO_POWER + " FLOAT, ";
         sql += ColumnNames.SSV_TWO_POWER_SETPOINT + " FLOAT, ";
         sql += ColumnNames.SSV_TWO_VOLTAGE + " FLOAT, ";
-        sql += ColumnNames.SSV_TWO_CURRENT + " FLOAT)";
+        sql += ColumnNames.SSV_TWO_CURRENT + " FLOAT,";
+        sql += ColumnNames.SRM_CHANNEL_2_LEFT + " FLOAT,";
+        sql += ColumnNames.SRM_CHANNEL_3_RIGHT + " FLOAT)";
         stm.executeUpdate(sql);
         stm.close();
 
@@ -192,6 +201,26 @@ public class WriteDataTableUtils {
         dataMap.put(ColumnNames.CONVEYOR_POSITION_RIGHT, conveyor.getRightPosition());
 
         return dataMap;
+    }
+
+    private static Map<String, Object> getSrmSnapShot(SrmCommunicator srm) {
+        Map<String, Object> dataMap = new LinkedHashMap<>();
+        List<Double> list = null;
+        try {
+            list = srm.readChannels();
+        } catch (IOException e) {
+            // do noting... Error is reported via logservice
+        }
+        if (list != null) {
+            dataMap.put(ColumnNames.SRM_CHANNEL_2_LEFT, list.get(1));
+            dataMap.put(ColumnNames.SRM_CHANNEL_3_RIGHT, list.get(2));
+        } else {
+            dataMap.put(ColumnNames.SRM_CHANNEL_2_LEFT, null);
+            dataMap.put(ColumnNames.SRM_CHANNEL_3_RIGHT, null);
+        }
+
+        return dataMap;
+
     }
 
     private WriteDataTableUtils() {

@@ -31,4 +31,11 @@ public class NetworkComIds {
 
     /** XPLAINED Port (belt position). */
     public static final String XPLAINED_COM_PORT = "Xplained_Com_Port";
+
+    /** SRM Port. */
+    public static final String SRM_COM_PORT = "Srm_Com_Port";
+
+    private NetworkComIds() {
+    }
+
 }

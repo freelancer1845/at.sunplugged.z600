@@ -31,6 +31,7 @@ import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceId;
+import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
 /**
  * Standard implementation of the DataService interface. Connection String
@@ -57,6 +58,8 @@ public class DataServiceImpl implements DataService {
     private static ConveyorControlService conveyorService;
 
     private static ConveyorPositionCorrectionService conveyorPositionCorrectionService;
+
+    private static SrmCommunicator srmCommunicatorService;
 
     private static SqlConnection sqlConnection = null;
 
@@ -382,6 +385,21 @@ public class DataServiceImpl implements DataService {
         if (DataServiceImpl.conveyorPositionCorrectionService == conveyorPositionService) {
             DataServiceImpl.conveyorPositionCorrectionService = null;
         }
+    }
+
+    @Reference(unbind = "unbindSrmCommunicatorService")
+    public synchronized void bindSrmCommunicatorService(SrmCommunicator srmCommunicator) {
+        DataServiceImpl.srmCommunicatorService = srmCommunicator;
+    }
+
+    public synchronized void unbindSrmCommunicatorService(SrmCommunicator srmCommunicator) {
+        if (DataServiceImpl.srmCommunicatorService == srmCommunicator) {
+            DataServiceImpl.srmCommunicatorService = null;
+        }
+    }
+
+    public static SrmCommunicator getSrmCommunicatorService() {
+        return srmCommunicatorService;
     }
 
     public static ConveyorPositionCorrectionService getConveyorPositionService() {

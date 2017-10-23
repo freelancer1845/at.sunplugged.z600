@@ -88,6 +88,12 @@ public class ColumnNames {
     /** ID. */
     public static final String TARGET_WORK_DONE = "kWh";
 
+    /** ID. */
+    public static final String SRM_CHANNEL_2_LEFT = "SrmLeftChannel2";
+
+    /** ID. */
+    public static final String SRM_CHANNEL_3_RIGHT = "SrmRightChannel3";
+
     private ColumnNames() {
 
     }

@@ -83,7 +83,7 @@ public class Commands {
     /** Returns the value of the distance sensor in mm. */
     public static final String RDMM = "RDMM";
 
-    /** By append the channel number, this sets that channel to zero. */
+    /** By appending the channel number, this sets that channel to zero. */
     public static final String ZERO_X = "ZERO,";
 
     /**

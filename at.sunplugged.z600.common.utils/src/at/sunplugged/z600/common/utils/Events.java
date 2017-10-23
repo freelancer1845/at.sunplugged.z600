@@ -10,6 +10,8 @@ public class Events {
 
     public static final String VAT_CONNECT_EVENT = "at/sunplugged/z600/machineStateService/vat/connect";
 
+    public static final String SRM_CONNECT_EVENT = "at/sunplugged/z600/srm/connect";
+
     private Events() {
 
     }
