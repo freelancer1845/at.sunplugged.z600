@@ -30,7 +30,7 @@ public class SrmGroupFactory {
     public static Group createGroup(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        group.setText("SRM Debug");
+        group.setText("SRM");
         GridLayout layout = new GridLayout(2, true);
         group.setLayout(layout);
 
