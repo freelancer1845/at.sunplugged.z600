@@ -1,6 +1,5 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -206,11 +205,7 @@ public class WriteDataTableUtils {
     private static Map<String, Object> getSrmSnapShot(SrmCommunicator srm) {
         Map<String, Object> dataMap = new LinkedHashMap<>();
         List<Double> list = null;
-        try {
-            list = srm.getData();
-        } catch (IOException e) {
-            // do noting... Error is reported via logservice
-        }
+        list = srm.getData();
         if (list != null) {
             dataMap.put(ColumnNames.SRM_CHANNEL_2_LEFT, list.get(1));
             dataMap.put(ColumnNames.SRM_CHANNEL_3_RIGHT, list.get(2));

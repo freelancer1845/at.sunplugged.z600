@@ -1,6 +1,5 @@
 package at.sunplugged.z600.srm50.api;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -16,10 +15,8 @@ public interface SrmCommunicator {
      * Returns currently saved data.
      *
      * @return {@linkplain List\<{@linkplain Double}\>} of values.
-     * @throws IOException
-     *             if retrieving failed.
      */
-    public List<Double> getData() throws IOException;
+    public List<Double> getData();
 
     /**
      * Issues a command async.

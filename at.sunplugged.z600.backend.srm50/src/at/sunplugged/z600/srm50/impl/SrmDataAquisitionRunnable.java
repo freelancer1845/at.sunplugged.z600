@@ -68,6 +68,7 @@ public class SrmDataAquisitionRunnable implements Runnable {
     public void run() {
 
         Thread.currentThread().setName("Srm Data Aquisiton Thread");
+        state.add(State.RUNNING);
 
         try {
             long startTime;
@@ -81,16 +82,16 @@ public class SrmDataAquisitionRunnable implements Runnable {
                     } catch (IOException e) {
                         logService.log(LogService.LOG_ERROR, "SrmDataAquisition Failed. Current State: \""
                                 + Arrays.toString(state.toArray()) + "\".", e);
-                        state.remove(State.CONNECTED);
                         state.remove(State.ACQUIERING_DATA);
                         state.remove(State.EXECUTING_COMMANDS);
+                        disconnect();
                     }
                 } else if (state.contains(State.DISCONNECTED)) {
                     reconnectLoop();
                 }
 
                 endTime = System.currentTimeMillis();
-                if (endTime - startTime < 1000) {
+                if ((endTime - startTime) < 1000 && (endTime - startTime) > 0) {
                     Thread.sleep(endTime - startTime);
                 }
 
@@ -144,6 +145,15 @@ public class SrmDataAquisitionRunnable implements Runnable {
 
     }
 
+    private void disconnect() {
+        if (srmPort != null) {
+            srmPort.close();
+            postConnectEvent(false, null);
+        }
+        state.remove(State.CONNECTED);
+        state.add(State.DISCONNECTED);
+    }
+
     private void reconnectLoop() throws InterruptedException {
         commPortName = settings.getProperty(NetworkComIds.SRM_COM_PORT);
         logService.log(LogService.LOG_DEBUG, "Trying to connect to SRM on Port: \"" + commPortName + "\"...");
@@ -164,7 +174,7 @@ public class SrmDataAquisitionRunnable implements Runnable {
 
         Dictionary<String, Object> properties = new Hashtable<>();
         properties.put("success", successful);
-        if (!successful) {
+        if (e != null) {
             properties.put("Error", e);
         }
         eventAdmin.postEvent(new Event(Events.SRM_CONNECT_EVENT, properties));

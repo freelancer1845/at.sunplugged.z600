@@ -55,10 +55,15 @@ public class SrmPortManager {
             throw error;
         }
         try {
+            Thread.sleep(100);
             commPort = commPortIdentifier.open(SrmPortManager.class.getName(), 2000);
+            Thread.sleep(100);
         } catch (PortInUseException e) {
             commPort = null;
-            throw new IOException(e.getMessage() + " - Openen Port failed.");
+            throw new IOException(e.getMessage() + " - Opening Port failed.");
+        } catch (InterruptedException e) {
+            commPort = null;
+            e.printStackTrace();
         }
         if (commPort instanceof SerialPort) {
             SerialPort serialPort = (SerialPort) commPort;

@@ -1,11 +1,11 @@
 package at.sunplugged.z600.srm50.impl;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Future;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
@@ -43,8 +43,13 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
         threadPool.execute(srmDataAquisitionRunnable);
     }
 
+    @Deactivate
+    protected void deactivate() {
+        srmDataAquisitionRunnable.stop();
+    }
+
     @Override
-    public List<Double> getData() throws IOException {
+    public List<Double> getData() {
         return srmDataAquisitionRunnable.getData();
     }
 

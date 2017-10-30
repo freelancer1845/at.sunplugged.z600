@@ -1,6 +1,5 @@
 package at.sunplugged.z600.gui.factorys;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -15,7 +14,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
-import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.frontend.gui.utils.spi.UpdatableChart;
 import at.sunplugged.z600.gui.views.MainView;
@@ -54,18 +52,13 @@ public class SrmGroupFactory {
 
                 @Override
                 protected double addNewDataY() {
-                    try {
-                        List<Double> data = MainView.getSrmCommunicator().getData();
-                        if (data != null) {
-                            return data.get(channelIndex);
-                        } else {
-                            return -1;
-                        }
-
-                    } catch (IOException e) {
-                        MainView.getLogService().log(LogService.LOG_ERROR, "Failed to read data from srm.", e);
-                        return 0.0;
+                    List<Double> data = MainView.getSrmCommunicator().getData();
+                    if (data != null) {
+                        return data.get(channelIndex);
+                    } else {
+                        return -1;
                     }
+
                 }
 
             };

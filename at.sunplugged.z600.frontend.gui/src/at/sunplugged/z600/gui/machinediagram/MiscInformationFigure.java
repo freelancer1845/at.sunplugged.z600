@@ -19,13 +19,15 @@ public class MiscInformationFigure extends Figure {
 
     private static int WIDTH = 200;
 
-    private static int HEIGHT = 75;
+    private static int HEIGHT = 85;
 
     private LabeledLabel gasFLowSccmLabel;
 
     private LabeledLabel estimatedFinishTime;
 
     private LabeledLabel positionControlRunning;
+
+    private LabeledLabel srmConnectionUp;
 
     private LabeledLabel sqlRunning;
 
@@ -49,6 +51,7 @@ public class MiscInformationFigure extends Figure {
         gasFLowSccmLabel = new LabeledLabel(this, "Gasflow [sccm]", "0.0");
         estimatedFinishTime = new LabeledLabel(this, "ETC", "---");
         positionControlRunning = new LabeledLabel(this, "PostionControl: ", "OFF");
+        srmConnectionUp = new LabeledLabel(this, "Srm:", "OFF");
         // sqlRunning = new LabeledLabel(this, "SQL", "OFF");
 
         Display.getDefault().timerExec(2000, new Runnable() {
@@ -65,6 +68,14 @@ public class MiscInformationFigure extends Figure {
                 } else {
                     positionControlRunning.setText("OFF");
                     positionControlRunning.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_RED));
+                }
+
+                if (MainView.getSrmCommunicator().getData() != null) {
+                    srmConnectionUp.setText("ON");
+                    srmConnectionUp.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_GREEN));
+                } else {
+                    srmConnectionUp.setText("OFF");
+                    srmConnectionUp.setForegroundColor(SWTResourceManager.getColor(SWT.COLOR_DARK_RED));
                 }
 
                 Display.getDefault().timerExec(1000, this);

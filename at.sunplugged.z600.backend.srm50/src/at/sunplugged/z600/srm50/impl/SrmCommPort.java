@@ -87,7 +87,7 @@ public class SrmCommPort {
     }
 
     private void checkThread() {
-        if (this.allowedThread == Thread.currentThread()) {
+        if (!this.allowedThread.equals(Thread.currentThread())) {
             throw new IllegalStateException("Illegal Thread Access...");
         }
     }

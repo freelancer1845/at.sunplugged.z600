@@ -24,7 +24,6 @@ import at.sunplugged.z600.core.machinestate.api.PressureMeasurement.PressureMeas
 import at.sunplugged.z600.core.machinestate.api.Pump.PumpState;
 import at.sunplugged.z600.core.machinestate.api.PumpRegistry.PumpIds;
 import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalInput;
-import at.sunplugged.z600.core.machinestate.api.WagoAddresses.DigitalOutput;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineEventHandler;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent;
 import at.sunplugged.z600.core.machinestate.api.eventhandling.MachineStateEvent.Type;
@@ -441,7 +440,7 @@ public class Viewer implements MachineEventHandler {
     }
 
     private void createMiscInformationFigure() {
-        miscInformationFigure = new MiscInformationFigure(380, 415);
+        miscInformationFigure = new MiscInformationFigure(380, 400);
     }
 
     @Override
