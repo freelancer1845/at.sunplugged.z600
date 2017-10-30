@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 
@@ -24,6 +25,18 @@ public class StandardThreadPoolServiceImpl implements StandardThreadPoolService 
     public StandardThreadPoolServiceImpl() {
         executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         scheduledExecutorService = Executors.newScheduledThreadPool(10);
+    }
+
+    @Deactivate
+    protected void deactivate() {
+        try {
+            executorService.awaitTermination(5, TimeUnit.SECONDS);
+            scheduledExecutorService.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        executorService.shutdown();
+        scheduledExecutorService.shutdown();
     }
 
     @Override

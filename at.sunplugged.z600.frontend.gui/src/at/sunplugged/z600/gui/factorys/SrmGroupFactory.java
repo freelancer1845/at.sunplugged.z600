@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -56,7 +55,7 @@ public class SrmGroupFactory {
                 @Override
                 protected double addNewDataY() {
                     try {
-                        List<Double> data = MainView.getSrmCommunicator().readChannels();
+                        List<Double> data = MainView.getSrmCommunicator().getData();
                         if (data != null) {
                             return data.get(channelIndex);
                         } else {
@@ -107,23 +106,6 @@ public class SrmGroupFactory {
             }
         });
 
-        Button buttonReconnect = new Button(group, SWT.PUSH);
-        buttonReconnect.setText("Try to connect");
-        buttonReconnect.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-        buttonReconnect.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                try {
-                    MainView.getSrmCommunicator().connect();
-                } catch (IOException e1) {
-                    MessageDialog.openError(group.getShell(), "Error",
-                            "Failed to connect to srm...\n" + e1.getMessage());
-                    MainView.getLogService().log(LogService.LOG_ERROR, "Failed to reconnect to Srm...", e1);
-                }
-            }
-        });
-        buttonReconnect.setEnabled(true);
-
         return group;
     }
 
@@ -138,12 +120,7 @@ public class SrmGroupFactory {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
-            try {
-                MainView.getSrmCommunicator().issueCommand(Commands.ZERO_X + channel);
-            } catch (IOException e1) {
-                MainView.getLogService().log(LogService.LOG_ERROR, "Failed to set channel to zero \"" + channel + "\"",
-                        e1);
-            }
+            MainView.getSrmCommunicator().issueCommandAsyn(Commands.ZERO_X + channel);
         }
 
     }
@@ -174,12 +151,7 @@ public class SrmGroupFactory {
                     });
             if (dialog.open() == Window.OK) {
                 double value = Double.valueOf(dialog.getValue());
-
-                try {
-                    MainView.getSrmCommunicator().issueCommand(Commands.UCAL_X_Y + channel + "," + value);
-                } catch (IOException e1) {
-                    MainView.getLogService().log(LogService.LOG_ERROR, "Failed to calibrate channel " + channel, e1);
-                }
+                MainView.getSrmCommunicator().issueCommandAsyn(Commands.UCAL_X_Y + channel + "," + value);
             }
 
         }

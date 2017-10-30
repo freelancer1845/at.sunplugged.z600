@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" activate="activate" deactivate="deactivate" immediate="true" name="at.sunplugged.z600.srm50.impl.SrmCommunicatorImpl">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" activate="activate" immediate="true" name="at.sunplugged.z600.srm50.impl.SrmCommunicatorImpl">
    <service>
       <provide interface="at.sunplugged.z600.srm50.api.SrmCommunicator"/>
    </service>
-   <reference bind="setLogService" cardinality="1..1" interface="org.osgi.service.log.LogService" name="LogService" policy="static" unbind="unsetLogService"/>
    <reference cardinality="1..1" field="eventAdmin" interface="org.osgi.service.event.EventAdmin" name="eventAdmin"/>
+   <reference cardinality="1..1" field="logService" interface="org.osgi.service.log.LogService" name="logService"/>
    <reference cardinality="1..1" field="settings" interface="at.sunplugged.z600.common.settings.api.SettingsService" name="settings"/>
    <reference cardinality="1..1" field="threadPool" interface="at.sunplugged.z600.common.execution.api.StandardThreadPoolService" name="threadPool"/>
    <implementation class="at.sunplugged.z600.srm50.impl.SrmCommunicatorImpl"/>

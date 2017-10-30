@@ -207,7 +207,7 @@ public class WriteDataTableUtils {
         Map<String, Object> dataMap = new LinkedHashMap<>();
         List<Double> list = null;
         try {
-            list = srm.readChannels();
+            list = srm.getData();
         } catch (IOException e) {
             // do noting... Error is reported via logservice
         }

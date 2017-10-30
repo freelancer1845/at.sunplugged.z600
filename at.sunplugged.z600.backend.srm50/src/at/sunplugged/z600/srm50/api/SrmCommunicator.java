@@ -1,8 +1,8 @@
 package at.sunplugged.z600.srm50.api;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * This Interface represents a communication point for the SRM-50-3LD SN 105598.
@@ -12,52 +12,25 @@ import java.util.List;
  */
 public interface SrmCommunicator {
 
-    public void reconnect() throws IOException;
-
     /**
-     * Connects to the COM Port specified.
-     * 
-     * @param comPort
-     *            identifier.
-     * @throws IOException
-     *             if connections fails.
-     */
-    public void connect(String comPort) throws IOException;
-
-    /**
-     * Disconnects from the COM Port.
-     * 
-     * @throws IOException
-     *             if there is no connection or the disconnect failed.
-     */
-    public void disconnect() throws IOException;
-
-    /**
-     * Reads out the all channels and returns a List of Doubles.
+     * Returns currently saved data.
      *
      * @return {@linkplain List\<{@linkplain Double}\>} of values.
      * @throws IOException
      *             if retrieving failed.
      */
-    public List<Double> readChannels() throws IOException;
+    public List<Double> getData() throws IOException;
 
     /**
-     * Get Available Ports.
-     * 
-     * @return {@link Enumeration}.
-     */
-    public String[] getPortNames();
-
-    /**
-     * Issues the given command and returns the Answer.
+     * Issues a command async.
      * 
      * @param string
      *            {@linkplain String} the command (A list of commands is
      *            available at
      *            {@linkplain at.sunplugged.z600.srm50.api.Commands}
-     * @return {@linkplain String} answer.
+     * @return {@linkplain Future<String>} future containing the answer when
+     *         command is exectued.
      */
-    public String issueCommand(String string) throws IOException;
+    public Future<String> issueCommandAsyn(String string);
 
-    void connect() throws IOException;
 }
