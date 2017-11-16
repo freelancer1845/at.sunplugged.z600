@@ -7,6 +7,7 @@ import org.osgi.service.log.LogService;
 import at.sunplugged.z600.srm50.api.Commands;
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
+import gnu.io.NRSerialPort;
 import gnu.io.NoSuchPortException;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -17,7 +18,17 @@ public class SrmPortManager {
     public static SrmCommPort getCommPort(String commPort, LogService logService) throws IOException {
         SrmCommPort srmPort = null;
         try {
-            CommPort port = connect(commPort);
+            NRSerialPort port = new NRSerialPort(commPort, 9600);
+            if (port.connect() == false) {
+                throw new IOException("Failed to connect to port: " + commPort);
+            }
+            try {
+                port.getSerialPortInstance().setSerialPortParams(9600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+                        SerialPort.PARITY_NONE);
+            } catch (UnsupportedCommOperationException e) {
+                throw new IOException("Failed to open Port...", e);
+            }
+            // CommPort port = connect(commPort);
             srmPort = SrmCommPort.createCommPort(logService, port);
             testPort(srmPort);
         } catch (IOException e) {

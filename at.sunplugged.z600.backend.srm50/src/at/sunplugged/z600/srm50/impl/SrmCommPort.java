@@ -7,12 +7,15 @@ import java.io.OutputStream;
 import org.osgi.service.log.LogService;
 
 import gnu.io.CommPort;
+import gnu.io.NRSerialPort;
 
 public class SrmCommPort {
 
     private final LogService logService;
 
     private final CommPort commPort;
+
+    private final NRSerialPort nrCommPort;
 
     private final InputStream inputStream;
 
@@ -24,17 +27,33 @@ public class SrmCommPort {
         return new SrmCommPort(logService, commPort);
     }
 
+    public static SrmCommPort createCommPort(LogService logService, NRSerialPort commPort) {
+        return new SrmCommPort(logService, commPort);
+    }
+
     private SrmCommPort(LogService logService, CommPort commPort) throws IOException {
         this.logService = logService;
         this.commPort = commPort;
         this.inputStream = commPort.getInputStream();
         this.outputStream = commPort.getOutputStream();
         this.allowedThread = Thread.currentThread();
+
+        this.nrCommPort = null;
+    }
+
+    private SrmCommPort(LogService logService, NRSerialPort commPort) {
+        this.logService = logService;
+        this.nrCommPort = commPort;
+        this.inputStream = commPort.getInputStream();
+        this.outputStream = commPort.getOutputStream();
+        this.allowedThread = Thread.currentThread();
+
+        this.commPort = null;
     }
 
     public String doCommand(String command, boolean repeatIfFailed) throws IOException {
         checkThread();
-        if (commPort == null) {
+        if (commPort == null && nrCommPort == null) {
             logService.log(LogService.LOG_ERROR, "Command Issued when there was no Port open.");
             throw new IOException("Command Issued when there was no Port open.");
         }
@@ -82,7 +101,9 @@ public class SrmCommPort {
             }
 
             commPort.close();
-
+        }
+        if (nrCommPort != null) {
+            nrCommPort.disconnect();
         }
     }
 

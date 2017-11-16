@@ -10,7 +10,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.srm50.api.SrmCommunicator;
 
@@ -23,8 +22,8 @@ import at.sunplugged.z600.srm50.api.SrmCommunicator;
 @Component(immediate = true)
 public class SrmCommunicatorImpl implements SrmCommunicator {
 
-    @Reference
-    private StandardThreadPoolService threadPool;
+    // @Reference
+    // private StandardThreadPoolService threadPool;
 
     @Reference
     private SettingsService settings;
@@ -40,7 +39,9 @@ public class SrmCommunicatorImpl implements SrmCommunicator {
     @Activate
     protected void activate() {
         srmDataAquisitionRunnable = new SrmDataAquisitionRunnable(logService, settings, eventAdmin);
-        threadPool.execute(srmDataAquisitionRunnable);
+        Thread thread = new Thread(srmDataAquisitionRunnable);
+        thread.start();
+        // threadPool.execute(srmDataAquisitionRunnable);
     }
 
     @Deactivate
