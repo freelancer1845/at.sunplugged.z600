@@ -52,43 +52,51 @@ public class SrmCommPort {
     }
 
     public String doCommand(String command, boolean repeatIfFailed) throws IOException {
-        checkThread();
-        if (commPort == null && nrCommPort == null) {
-            logService.log(LogService.LOG_ERROR, "Command Issued when there was no Port open.");
-            throw new IOException("Command Issued when there was no Port open.");
-        }
-        byte[] commandArray = new String(command + (char) 13).getBytes();
-        outputStream.write(commandArray);
-        String answer = "";
         try {
-            Thread.sleep(250);
-
-            while (inputStream.available() > 0) {
-                answer += (char) inputStream.read();
+            checkThread();
+            if (commPort == null && nrCommPort == null) {
+                logService.log(LogService.LOG_ERROR, "Command Issued when there was no Port open.");
+                throw new IOException("Command Issued when there was no Port open.");
             }
+            byte[] commandArray = new String(command + (char) 13).getBytes();
+            outputStream.write(commandArray);
+            String answer = "";
+            try {
+                Thread.sleep(250);
 
-            if (answer.equals("")) {
-                Thread.sleep(50);
                 while (inputStream.available() > 0) {
                     answer += (char) inputStream.read();
                 }
+
+                if (answer.equals("")) {
+                    Thread.sleep(50);
+                    while (inputStream.available() > 0) {
+                        answer += (char) inputStream.read();
+                    }
+                }
+            } catch (InterruptedException e) {
+                logService.log(LogService.LOG_ERROR, "doCommand Interrupted during waiting for answer.", e);
             }
-        } catch (InterruptedException e) {
-            logService.log(LogService.LOG_ERROR, "doCommand Interrupted during waiting for answer.", e);
+
+            if (!answer.startsWith(command)) {
+                if (repeatIfFailed) {
+                    doCommand(command, false);
+                } else {
+                    throw new IOException("Answer didn't start with command issued, \"" + answer + "");
+                }
+            }
+
+            if (command.equals("READ") == false) {
+                logService.log(LogService.LOG_DEBUG, "Command executed: " + command);
+            }
+            return answer.substring(command.length());
+        } catch (IOException eI) {
+            throw eI;
+        } catch (Exception e) {
+            logService.log(LogService.LOG_ERROR, "Unhandled exception caught while executing command: " + command, e);
+            throw new IOException("Unhandled Exception.", e);
         }
 
-        if (!answer.startsWith(command)) {
-            if (repeatIfFailed) {
-                doCommand(command, false);
-            } else {
-                throw new IOException("Answer didn't start with command issued, \"" + answer + "");
-            }
-        }
-
-        if (command.equals("READ") == false) {
-            logService.log(LogService.LOG_DEBUG, "Command executed: " + command);
-        }
-        return answer.substring(command.length());
     }
 
     public void close() {

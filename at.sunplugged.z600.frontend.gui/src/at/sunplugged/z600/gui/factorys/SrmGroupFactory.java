@@ -54,7 +54,11 @@ public class SrmGroupFactory {
                 protected double addNewDataY() {
                     List<Double> data = MainView.getSrmCommunicator().getData();
                     if (data != null) {
-                        return data.get(channelIndex);
+                        if (data.size() > channelIndex) {
+                            return data.get(channelIndex);
+                        } else {
+                            return -1;
+                        }
                     } else {
                         return -1;
                     }
