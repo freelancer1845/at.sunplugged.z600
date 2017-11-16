@@ -16,6 +16,7 @@ public class Main implements IApplication {
 
     @Override
     public Object start(IApplicationContext context) throws Exception {
+
         context.applicationRunning();
 
         // First check for all services to run
@@ -27,7 +28,6 @@ public class Main implements IApplication {
 
         // Main SWT Loop
         mainWindowLoop();
-
         return EXIT_OK;
     }
 

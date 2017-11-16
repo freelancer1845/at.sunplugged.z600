@@ -15,3 +15,4 @@ Import-Package: at.sunplugged.z600.common.utils,
 Service-Component: OSGI-INF/at.sunplugged.z600.launcher.splash.SplashWindow.xml,
  OSGI-INF/at.sunplugged.z600.launcher.splash.ContinueButtonSelectionListener.xml
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: at.sunplugged.z600.launcher.Activator
