@@ -4,6 +4,10 @@ import at.sunplugged.z600.core.machinestate.api.PowerSourceRegistry.PowerSourceI
 
 public interface DataService {
 
+    public static final String TABLE_NAME = "PROCESS_DATA";
+
+    public static final String SCHEMA = "z600";
+
     public void startUpdate() throws DataServiceException;
 
     public void stopUpdate();

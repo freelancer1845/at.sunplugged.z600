@@ -4,11 +4,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.osgi.service.log.LogService;
 
+import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 
@@ -45,27 +46,66 @@ public class DataSavingThread extends Thread {
         running = true;
 
         int exceptionCount = 0;
-        String tableName = "Zyklus" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("uuuuMMddHHmm"));
-        while (isRunning()) {
-            try {
-                Thread.sleep(Long
-                        .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
-                WriteDataTableUtils.writeDataTable(sqlConnection, tableName);
-                exceptionCount = 0;
-            } catch (Exception e) {
-                DataServiceImpl.getLogService().log(LogService.LOG_WARNING, "Unexpected exception in DataSavingThread!",
-                        e);
-                exceptionCount++;
-                if (exceptionCount > 5) {
+        int sessionId;
+        int dataPoint = 0;
+
+        try {
+            if (SqlUtils.checkIfTableExists(sqlConnection, DataService.TABLE_NAME) == false) {
+                createProcessDataTable();
+                sessionId = 1;
+            } else {
+                sessionId = getSessionId();
+            }
+
+            while (isRunning()) {
+                try {
+                    Thread.sleep(Long.valueOf(
+                            DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
+                    dataPoint++;
+                    WriteDataTableUtils.writeDataTable(sqlConnection, sessionId, dataPoint);
+                    exceptionCount = 0;
+                } catch (InterruptedException it) {
+                    // Proably program closed... finish.
                     setRunning(false);
-                    DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                            "Stopped Data Saving. Too many exceptions...");
+                } catch (Exception e) {
+                    if (DataServiceImpl.getLogService() == null) {
+                        e.printStackTrace();
+                    }
+                    DataServiceImpl.getLogService().log(LogService.LOG_WARNING,
+                            "Unexpected exception in DataSavingThread!", e);
+                    exceptionCount++;
+                    if (exceptionCount > 5) {
+                        setRunning(false);
+                        DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                                "Stopped Data Saving. Too many exceptions...");
+                    }
                 }
             }
-        }
+        } catch (
 
+        SQLException e1) {
+            DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to access Process Table...", e1);
+            setRunning(false);
+        }
         instance = null;
 
+    }
+
+    private void createProcessDataTable() throws SQLException {
+        WriteDataTableUtils.createDataTable(sqlConnection);
+    }
+
+    private int getSessionId() throws SQLException {
+        Statement stmt = sqlConnection.getStatement();
+
+        ResultSet res = stmt.executeQuery("SELECT Session FROM " + DataService.TABLE_NAME);
+
+        List<Integer> sessions = new ArrayList<>();
+        while (res.next()) {
+            sessions.add(res.getInt(1));
+        }
+
+        return sessions.stream().mapToInt(i -> i).max().getAsInt() + 1;
     }
 
     private void listDataInTable(String tableName) throws SQLException {

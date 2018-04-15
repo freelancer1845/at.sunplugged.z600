@@ -31,7 +31,9 @@ public class SqlConnection {
 
     public void open() throws DataServiceException {
         try {
-            DriverManager.registerDriver(new com.microsoft.sqlserver.jdbc.SQLServerDriver());
+            // DriverManager.registerDriver(new
+            // com.microsoft.sqlserver.jdbc.SQLServerDriver());
+            DriverManager.registerDriver(new com.mysql.jdbc.Driver());
             DriverManager.setLoginTimeout(5);
             conn = DriverManager.getConnection(dbUrl, username, password);
         } catch (SQLException e) {

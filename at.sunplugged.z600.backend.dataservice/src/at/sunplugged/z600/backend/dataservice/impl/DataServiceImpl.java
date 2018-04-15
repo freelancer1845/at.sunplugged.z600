@@ -145,7 +145,7 @@ public class DataServiceImpl implements DataService {
     }
 
     private void connectToSqlServer(String address, String username, String password) throws DataServiceException {
-        sqlConnection = new SqlConnection("jdbc:sqlserver://" + address, username, password);
+        sqlConnection = new SqlConnection("jdbc:mysql://" + address, username, password);
         sqlConnection.open();
     }
 
@@ -183,10 +183,8 @@ public class DataServiceImpl implements DataService {
 
     private void saveSingleSetting(String id, String type, String value) {
         try (Statement stm = sqlConnection.getStatement()) {
-            String sql2 = "IF NOT EXISTS (select * from " + TableNames.SETTINGS_TABLE + " where id = '" + id
-                    + "')\n BEGIN INSERT INTO " + TableNames.SETTINGS_TABLE + " (id, type , value) VALUES ('" + id
-                    + "','" + type + "'," + value + ") END;  UPDATE " + TableNames.SETTINGS_TABLE + " SET value = '"
-                    + value + "' WHERE id ='" + id + "'";
+            String sql2 = "INSERT INTO " + TableNames.SETTINGS_TABLE + " (`id`, `type` , `value`) VALUES ('" + id
+                    + "','" + type + "'," + value + ") ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)";
             stm.execute(sql2);
             stm.close();
         } catch (SQLException e) {

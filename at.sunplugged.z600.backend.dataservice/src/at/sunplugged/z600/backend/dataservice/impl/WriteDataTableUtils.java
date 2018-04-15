@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -44,25 +45,26 @@ public class WriteDataTableUtils {
         Statement stm = connection.getStatement();
         String sql = "CREATE TABLE [" + TableNames.TARGET_CONSUMPTION_TABLE + "] (";
         sql += "TargetId VARCHAR(256), ";
-        sql += ColumnNames.TARGET_WORK_DONE + " FLOAT)";
+        sql += ColumnNames.TARGET_WORK_DONE + " double)";
         stm.executeUpdate(sql);
         stm.close();
     }
 
-    public static void writeDataTable(SqlConnection connection, String tableName)
+    public static void writeDataTable(SqlConnection connection, int sessionId, int dataPoint)
             throws DataServiceException, SQLException {
         if (connection.isOpen() == false) {
             throw new DataServiceException("Failed to write DataTable." + "Connection not open!");
         }
 
-        if (SqlUtils.checkIfTableExists(connection, tableName) == false) {
-            createDataTable(connection, tableName);
-        }
         Map<String, Object> dataMap = getDataSnapShot();
-        StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
+        StringBuilder sql = new StringBuilder("INSERT INTO ").append(DataService.TABLE_NAME).append(" (");
         StringBuilder placeholders = new StringBuilder();
 
-        sql.append("Time,");
+        sql.append("Session,");
+        sql.append("DataPoint,");
+        sql.append("`Date`,");
+        placeholders.append("?,");
+        placeholders.append("?,");
         placeholders.append("?,");
         for (Iterator<String> iter = dataMap.keySet().iterator(); iter.hasNext();) {
             sql.append(iter.next());
@@ -73,13 +75,18 @@ public class WriteDataTableUtils {
             }
         }
 
+        if (placeholders.toString().endsWith(",")) {
+            placeholders.deleteCharAt(placeholders.length() - 1);
+        }
         sql.append(") VALUES (").append(placeholders).append(")");
         PreparedStatement statement = connection.getConnection().prepareStatement(sql.toString());
         int i = 1;
-        java.sql.Time sqlDate = new java.sql.Time(new java.util.Date().getTime());
-        statement.setObject(i, sqlDate.toString());
+        java.sql.Timestamp date = new java.sql.Timestamp(new java.util.Date().getTime());
+        statement.setObject(i++, sessionId);
+        statement.setObject(i++, dataPoint);
+        statement.setObject(i++, date);
         for (Object value : dataMap.values()) {
-            statement.setObject(++i, value);
+            statement.setObject(i++, value);
         }
         statement.executeUpdate();
         statement.close();
@@ -105,39 +112,42 @@ public class WriteDataTableUtils {
         return dataMap;
     }
 
-    public static void createDataTable(SqlConnection connection, String tableName) throws SQLException {
+    public static void createDataTable(SqlConnection connection) throws SQLException {
         Statement stm = connection.getStatement();
-        String sql = "CREATE TABLE [" + tableName + "] (";
-        sql += "Time VARCHAR(256), ";
-        sql += ColumnNames.PERSSURE_TMP + " FLOAT, ";
-        sql += ColumnNames.PRESSURE_CHAMBER + " FLOAT, ";
-        sql += ColumnNames.PRESSURE_CRYO_ONE + " FLOAT, ";
-        sql += ColumnNames.PRESSURE_CRYO_TWO + " FLOAT, ";
-        sql += ColumnNames.CURRENT_GAS_FLOW_SCCM + " FLOAT, ";
+        String sql = "CREATE TABLE `PROCESS_DATA` (";
+        sql += "`Session` int(11) NOT NULL, ";
+        sql += "`DataPoint` int(11) NOT NULL, ";
+        sql += "`Date` datetime NOT NULL, ";
+        sql += ColumnNames.PERSSURE_TMP + " double, ";
+        sql += ColumnNames.PRESSURE_CHAMBER + " double, ";
+        sql += ColumnNames.PRESSURE_CRYO_ONE + " double, ";
+        sql += ColumnNames.PRESSURE_CRYO_TWO + " double, ";
+        sql += ColumnNames.CURRENT_GAS_FLOW_SCCM + " double, ";
         sql += ColumnNames.CONVEYOR_MODE + " VARCHAR(256), ";
-        sql += ColumnNames.CONVEYOR_SPEED_SETPOINT + " FLOAT, ";
-        sql += ColumnNames.CONVEYOR_SPEED_COMBINED + " FLOAT, ";
-        sql += ColumnNames.CONVEYOR_SPEED_LEFT + " FLOAT, ";
-        sql += ColumnNames.CONVEYOR_SPEED_RIGHT + " FLOAT, ";
-        sql += ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM + " INTEGER, ";
-        sql += ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM + " INTEGER, ";
-        sql += ColumnNames.CONVEYOR_POSITION_COMBINED + " FLOAT, ";
-        sql += ColumnNames.CONVEYOR_POSITION_LEFT + " FLOAT, ";
-        sql += ColumnNames.CONVEYOR_POSITION_RIGHT + " FLOAT, ";
-        sql += ColumnNames.PINNACLE_POWER + " FLOAT, ";
-        sql += ColumnNames.PINNACLE_POWER_SETPOINT + " FLOAT, ";
-        sql += ColumnNames.PINNACLE_VOLTAGE + " FLOAT, ";
-        sql += ColumnNames.PINNACLE_CURRENT + " FLOAT, ";
-        sql += ColumnNames.SSV_ONE_POWER + " FLOAT, ";
-        sql += ColumnNames.SSV_ONE_POWER_SETPOINT + " FLOAT, ";
-        sql += ColumnNames.SSV_ONE_VOLTAGE + " FLOAT, ";
-        sql += ColumnNames.SSV_ONE_CURRENT + " FLOAT, ";
-        sql += ColumnNames.SSV_TWO_POWER + " FLOAT, ";
-        sql += ColumnNames.SSV_TWO_POWER_SETPOINT + " FLOAT, ";
-        sql += ColumnNames.SSV_TWO_VOLTAGE + " FLOAT, ";
-        sql += ColumnNames.SSV_TWO_CURRENT + " FLOAT,";
-        sql += ColumnNames.SRM_CHANNEL_2_LEFT + " FLOAT,";
-        sql += ColumnNames.SRM_CHANNEL_3_RIGHT + " FLOAT)";
+        sql += ColumnNames.CONVEYOR_SPEED_SETPOINT + " double, ";
+        sql += ColumnNames.CONVEYOR_SPEED_COMBINED + " double, ";
+        sql += ColumnNames.CONVEYOR_SPEED_LEFT + " double, ";
+        sql += ColumnNames.CONVEYOR_SPEED_RIGHT + " double, ";
+        sql += ColumnNames.CONVEYOR_ENGINE_LEFT_MAXIMUM + " int(11), ";
+        sql += ColumnNames.CONVEYOR_ENGINE_RIGHT_MAXIMUM + " int(11), ";
+        sql += ColumnNames.CONVEYOR_POSITION_COMBINED + " double, ";
+        sql += ColumnNames.CONVEYOR_POSITION_LEFT + " double, ";
+        sql += ColumnNames.CONVEYOR_POSITION_RIGHT + " double, ";
+        sql += ColumnNames.PINNACLE_POWER + " double, ";
+        sql += ColumnNames.PINNACLE_POWER_SETPOINT + " double, ";
+        sql += ColumnNames.PINNACLE_VOLTAGE + " double, ";
+        sql += ColumnNames.PINNACLE_CURRENT + " double, ";
+        sql += ColumnNames.SSV_ONE_POWER + " double, ";
+        sql += ColumnNames.SSV_ONE_POWER_SETPOINT + " double, ";
+        sql += ColumnNames.SSV_ONE_VOLTAGE + " double, ";
+        sql += ColumnNames.SSV_ONE_CURRENT + " double, ";
+        sql += ColumnNames.SSV_TWO_POWER + " double, ";
+        sql += ColumnNames.SSV_TWO_POWER_SETPOINT + " double, ";
+        sql += ColumnNames.SSV_TWO_VOLTAGE + " double, ";
+        sql += ColumnNames.SSV_TWO_CURRENT + " double,";
+        sql += ColumnNames.SRM_CHANNEL_2_LEFT + " double,";
+        sql += ColumnNames.SRM_CHANNEL_3_RIGHT + " double,";
+        sql += "PRIMARY KEY (`Session`, `DataPoint`) )";
         stm.executeUpdate(sql);
         stm.close();
 
