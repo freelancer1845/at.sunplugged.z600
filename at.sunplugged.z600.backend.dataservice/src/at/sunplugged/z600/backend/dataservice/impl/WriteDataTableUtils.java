@@ -51,6 +51,7 @@ public class WriteDataTableUtils {
 
     public static void writeDataTable(SqlConnection connection, String tableName)
             throws DataServiceException, SQLException {
+
         if (connection.isOpen() == false) {
             throw new DataServiceException("Failed to write DataTable." + "Connection not open!");
         }

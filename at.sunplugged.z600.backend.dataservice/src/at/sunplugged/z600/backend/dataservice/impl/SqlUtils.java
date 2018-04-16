@@ -1,22 +1,21 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SqlUtils {
 
     public static boolean checkIfTableExists(SqlConnection connection, String tableName) throws SQLException {
-        DatabaseMetaData databaseMetaData = connection.getConnection().getMetaData();
-        ResultSet res = databaseMetaData.getTables(null, null, tableName, new String[] { "TABLE" });
-        boolean returnValue = false;
-        while (res.next()) {
-            if (res.getString("TABLE_NAME").equals(tableName)) {
-                returnValue = true;
+        ResultSet rs = connection.getStatement().executeQuery(
+                "SELECT TABLE_NAME FROM Z600_Datenerfassung.INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'");
+
+        while (rs.next()) {
+
+            if (rs.getString(1).equals(tableName)) {
+                return true;
             }
         }
-        res.close();
-        return returnValue;
+        return false;
     }
 
     private SqlUtils() {
