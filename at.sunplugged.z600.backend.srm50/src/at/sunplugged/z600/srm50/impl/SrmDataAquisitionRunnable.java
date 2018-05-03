@@ -163,9 +163,10 @@ public class SrmDataAquisitionRunnable implements Runnable {
             state.add(State.CONNECTED);
             state.remove(State.DISCONNECTED);
         } catch (IOException e) {
-            logService.log(LogService.LOG_ERROR, "Reconnecting failed. Trying again in 5s");
-            Thread.sleep(5000);
+            logService.log(LogService.LOG_DEBUG, "Reconnecting failed. Trying again in 5s");
             postConnectEvent(false, e);
+            Thread.sleep(5000);
+
         }
 
     }

@@ -19,5 +19,12 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/sqljdbc42.jar,
  lib/mysql-connector-java-5.1.46.jar
-Service-Component: OSGI-INF/at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl.xml
 Export-Package: at.sunplugged.z600.backend.dataservice.api
+Require-Bundle: org.apache.httpcomponents.httpclient;bundle-version="4.5.2",
+ org.apache.httpcomponents.httpcore;bundle-version="4.4.6",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.5.0",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.5.0",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.5.0",
+ com.fasterxml.jackson.jaxrs.jackson-jaxrs-base;bundle-version="2.5.0",
+ com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider;bundle-version="2.5.0"
+Service-Component: OSGI-INF/at.sunplugged.z600.backend.dataservice.impl.DataServiceImpl.xml

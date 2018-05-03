@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="at.sunplugged.600.standard-platform" sequenceNumber="46">
+<?pde version="3.8"?><target name="at.sunplugged.600.standard-platform" sequenceNumber="52">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="com.ibm.icu" version="54.1.1.v201501272100"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20151221205849/repository"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.equinox.sdk.feature.group" version="3.13.0.v20170531-1133"/>
+<unit id="org.eclipse.equinox.sdk.feature.group" version="3.13.4.v20180322-2228"/>
 <unit id="org.eclipse.gef.sdk.feature.group" version="3.11.0.201606061308"/>
 <repository location="http://download.eclipse.org/releases/oxygen/"/>
 </location>
+<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="com.fasterxml.jackson.core.jackson-annotations" version="2.5.0.v201504151636"/>
+<unit id="com.fasterxml.jackson.core.jackson-core" version="2.5.0.v201504151636"/>
+<unit id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-base" version="2.5.0.v201504171603"/>
+<unit id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider" version="2.5.0.v201504171603"/>
+<unit id="com.ibm.icu" version="54.1.1.v201501272100"/>
+<unit id="org.apache.httpcomponents.httpclient" version="4.3.6.v201411290715"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20151221205849/repository"/>
+</location>
 </locations>
 <includeBundles>
+<plugin id="com.fasterxml.jackson.core.jackson-annotations"/>
+<plugin id="com.fasterxml.jackson.core.jackson-core"/>
+<plugin id="com.fasterxml.jackson.core.jackson-databind"/>
+<plugin id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-base"/>
+<plugin id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
 <plugin id="com.ibm.icu" version="54.1.1.v201501272100"/>
 <plugin id="com.ibm.icu.source" version="54.1.1.v201501272100"/>
-<plugin id="org.apache.commons.logging"/>
-<plugin id="org.apache.commons.logging.source"/>
+<plugin id="javax.ws.rs"/>
+<plugin id="org.apache.commons.codec" version="1.9.0.v20170208-1614"/>
+<plugin id="org.apache.commons.logging" version="1.1.1.v201101211721"/>
+<plugin id="org.apache.commons.logging.source" version="1.1.1.v201101211721"/>
 <plugin id="org.apache.felix.gogo.command"/>
 <plugin id="org.apache.felix.gogo.command.source"/>
 <plugin id="org.apache.felix.gogo.runtime"/>
@@ -24,6 +36,10 @@
 <plugin id="org.apache.felix.gogo.shell.source"/>
 <plugin id="org.apache.felix.scr"/>
 <plugin id="org.apache.felix.scr.source"/>
+<plugin id="org.apache.httpcomponents.httpclient" version="4.5.2.v20170210-0925"/>
+<plugin id="org.apache.httpcomponents.httpclient.source" version="4.5.2.v20170210-0925"/>
+<plugin id="org.apache.httpcomponents.httpcore" version="4.4.6.v20170210-0925"/>
+<plugin id="org.apache.httpcomponents.httpcore.source" version="4.4.6.v20170210-0925"/>
 <plugin id="org.eclipse.core.commands"/>
 <plugin id="org.eclipse.core.commands.source"/>
 <plugin id="org.eclipse.core.contenttype"/>
@@ -48,6 +64,7 @@
 <plugin id="org.eclipse.equinox.ds.source"/>
 <plugin id="org.eclipse.equinox.event"/>
 <plugin id="org.eclipse.equinox.event.source"/>
+<plugin id="org.eclipse.equinox.http.jetty"/>
 <plugin id="org.eclipse.equinox.launcher"/>
 <plugin id="org.eclipse.equinox.launcher.source"/>
 <plugin id="org.eclipse.equinox.launcher.win32.win32.x86"/>
@@ -57,6 +74,11 @@
 <plugin id="org.eclipse.equinox.registry.source"/>
 <plugin id="org.eclipse.equinox.util"/>
 <plugin id="org.eclipse.equinox.util.source"/>
+<plugin id="org.eclipse.jetty.continuation"/>
+<plugin id="org.eclipse.jetty.http"/>
+<plugin id="org.eclipse.jetty.io"/>
+<plugin id="org.eclipse.jetty.security"/>
+<plugin id="org.eclipse.jetty.util"/>
 <plugin id="org.eclipse.jface"/>
 <plugin id="org.eclipse.jface.source"/>
 <plugin id="org.eclipse.osgi"/>

@@ -5,6 +5,15 @@ public class ColumnNames {
     /** DATA COLUMN NAMES */
 
     /** ID. */
+    public static final String SESSION = "Session";
+
+    /** ID. */
+    public static final String DATA_POINT = "DataPoint";
+
+    /** ID. */
+    public static final String DATE = "`Date`";
+
+    /** ID. */
     public static final String PRESSURE_CRYO_ONE = "PressureCryoOne";
 
     /** ID. */

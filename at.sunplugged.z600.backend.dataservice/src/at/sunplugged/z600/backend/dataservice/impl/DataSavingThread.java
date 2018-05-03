@@ -1,25 +1,39 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.osgi.service.log.LogService;
 
-import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
+import at.sunplugged.z600.common.settings.api.SettingsService;
 
 public class DataSavingThread extends Thread {
 
     private static DataSavingThread instance = null;
 
-    public static void startInstance(SqlConnection sqlConnection) throws DataServiceException {
+    private static String API_URL;
+
+    private static String API_NEXT_DATAPOINT;
+
+    private static String API_NEW_SESSION;
+
+    public static String API_POST_DATAPOINT;
+
+    private HttpClient client;
+
+    public static void startInstance() throws DataServiceException {
         if (instance == null) {
-            instance = new DataSavingThread(sqlConnection);
+            instance = new DataSavingThread();
+            instance.client = HttpClientBuilder.create().build();
             instance.start();
         } else {
             throw new DataServiceException("There is already a running instance of the DataSavingThread");
@@ -28,101 +42,114 @@ public class DataSavingThread extends Thread {
 
     public static void stopInstance() {
         if (instance != null) {
-            instance.running = false;
+            instance.setRunning(false);
+
         }
     }
 
-    private final SqlConnection sqlConnection;
-
     private volatile boolean running = false;
 
-    private DataSavingThread(SqlConnection sqlConnection) {
+    private DataSavingThread() {
         this.setName("Data Saving Thread");
-        this.sqlConnection = sqlConnection;
+        this.setDaemon(true);
+
+        setUrlSettings();
+
+    }
+
+    private void setUrlSettings() {
+        SettingsService settings = DataServiceImpl.getSettingsServce();
+
+        API_URL = settings.getProperty(NetworkComIds.HTTP_BASE_SERVER_URL) + "sessions/api";
+        API_NEXT_DATAPOINT = API_URL + "/nextdatapoint/";
+        API_NEW_SESSION = API_URL + "/newSession";
+        API_POST_DATAPOINT = API_URL + "/putdatapoint";
     }
 
     @Override
     public void run() {
         running = true;
+        long timestep = Long
+                .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP));
 
         int exceptionCount = 0;
         int sessionId;
-        int dataPoint = 0;
+        int dataPoint;
+
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet sessionGet = new HttpGet(API_NEW_SESSION);
 
         try {
-            if (SqlUtils.checkIfTableExists(sqlConnection, DataService.TABLE_NAME) == false) {
-                createProcessDataTable();
-                sessionId = 1;
-            } else {
-                sessionId = getSessionId();
+
+            if (HttpHelper.checkIfHttpServerIsRunning(client) == false) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to connect to http server.");
+                setRunning(false);
+                return;
             }
+            HttpResponse response = client.execute(sessionGet);
+            BufferedReader bf = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            sessionId = Integer.valueOf(bf.readLine());
+
+            dataPoint = getNextDataPoint(client, sessionId);
 
             while (isRunning()) {
-                try {
-                    Thread.sleep(Long.valueOf(
-                            DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP)));
+                Thread.sleep(timestep);
+
+                if (WriteDataTableUtils.writeHttpDataTable(client, sessionId, dataPoint) == false) {
+                    LogService log = DataServiceImpl.getLogService();
+                    log.log(LogService.LOG_DEBUG, "Recovering from Connecting error to http server. SessionId: "
+                            + sessionId + " - DataPoint: " + dataPoint);
+                    timestep *= 10;
+                    log.log(LogService.LOG_DEBUG, "Reducing logspeed to " + timestep);
+
+                    while (isRunning()) {
+                        log.log(LogService.LOG_DEBUG, "Trying to reconnect to http server.");
+
+                        if (HttpHelper.checkIfHttpServerIsRunning(client)) {
+
+                            log.log(LogService.LOG_INFO, "Reconnected to http server.");
+                            log.log(LogService.LOG_DEBUG, "Setting logspeed to previous value.");
+                            timestep *= 0.1;
+
+                            dataPoint = getNextDataPoint(client, sessionId);
+
+                            log.log(LogService.LOG_DEBUG,
+                                    "Continue logging at session: " + sessionId + " - DataPoint: " + dataPoint);
+                            break;
+                        }
+                        Thread.sleep(timestep);
+                    }
+                } else {
                     dataPoint++;
-                    WriteDataTableUtils.writeDataTable(sqlConnection, sessionId, dataPoint);
-                    exceptionCount = 0;
-                } catch (InterruptedException it) {
-                    // Proably program closed... finish.
-                    setRunning(false);
-                } catch (Exception e) {
-                    if (DataServiceImpl.getLogService() == null) {
-                        e.printStackTrace();
-                    }
-                    DataServiceImpl.getLogService().log(LogService.LOG_WARNING,
-                            "Unexpected exception in DataSavingThread!", e);
-                    exceptionCount++;
-                    if (exceptionCount > 5) {
-                        setRunning(false);
-                        DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                                "Stopped Data Saving. Too many exceptions...");
-                    }
                 }
+
             }
-        } catch (
 
-        SQLException e1) {
-            DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to access Process Table...", e1);
-            setRunning(false);
+        } catch (ClientProtocolException e2) {
+            // TODO Auto-generated catch block
+            e2.printStackTrace();
+        } catch (IOException e2) {
+            // TODO Auto-generated catch block
+            e2.printStackTrace();
+        } catch (NumberFormatException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        instance = null;
+        setRunning(false);
 
     }
 
-    private void createProcessDataTable() throws SQLException {
-        WriteDataTableUtils.createDataTable(sqlConnection);
-    }
+    private int getNextDataPoint(HttpClient client, int sessionId) throws UnsupportedOperationException, IOException {
+        HttpGet dataPointGet = new HttpGet(API_NEXT_DATAPOINT + sessionId);
 
-    private int getSessionId() throws SQLException {
-        Statement stmt = sqlConnection.getStatement();
+        HttpResponse response2 = client.execute(dataPointGet);
 
-        ResultSet res = stmt.executeQuery("SELECT Session FROM " + DataService.TABLE_NAME);
+        BufferedReader bf2 = new BufferedReader(new InputStreamReader(response2.getEntity().getContent()));
 
-        List<Integer> sessions = new ArrayList<>();
-        while (res.next()) {
-            sessions.add(res.getInt(1));
-        }
-
-        return sessions.stream().mapToInt(i -> i).max().getAsInt() + 1;
-    }
-
-    private void listDataInTable(String tableName) throws SQLException {
-        Statement stmt = sqlConnection.getStatement();
-        ResultSet rs = stmt.executeQuery("SELECT * FROM " + tableName);
-        ResultSetMetaData metaData = rs.getMetaData();
-        for (int i = 1; i < metaData.getColumnCount(); i++) {
-            System.out.print(metaData.getColumnName(i) + "---");
-        }
-        System.out.println();
-
-        while (rs.next()) {
-            for (int i = 1; i < metaData.getColumnCount(); i++) {
-                System.out.print(rs.getString(i) + "---");
-            }
-            System.out.println();
-        }
+        return Integer.valueOf(bf2.readLine());
     }
 
     public boolean isRunning() {
@@ -130,6 +157,16 @@ public class DataSavingThread extends Thread {
     }
 
     public void setRunning(boolean running) {
+        if (running == false) {
+            DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "DataService Thread stopped.");
+            try {
+                ((CloseableHttpClient) instance.client).close();
+            } catch (IOException e) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to close http client.", e);
+            }
+            instance = null;
+        }
+
         this.running = running;
     }
 }

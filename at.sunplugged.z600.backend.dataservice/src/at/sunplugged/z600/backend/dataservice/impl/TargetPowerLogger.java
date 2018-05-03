@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.HttpClient;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
@@ -27,9 +28,12 @@ public class TargetPowerLogger implements MachineEventHandler {
 
     private StandardThreadPoolService threadPool;
 
-    private TargetPowerLogger() {
+    private HttpClient client;
+
+    private TargetPowerLogger(HttpClient client) {
         this.threadPool = DataServiceImpl.getStandardThreadPoolService();
         DataServiceImpl.getMachineStateService().registerMachineEventHandler(this);
+        this.client = client;
 
     }
 
@@ -58,10 +62,11 @@ public class TargetPowerLogger implements MachineEventHandler {
         }
     }
 
-    public static TargetPowerLogger getInstance() {
+    public static TargetPowerLogger getInstance(HttpClient client) {
         if (instance == null) {
-            instance = new TargetPowerLogger();
+            instance = new TargetPowerLogger(client);
         }
+        instance.client = client;
         return instance;
     }
 
@@ -129,12 +134,14 @@ public class TargetPowerLogger implements MachineEventHandler {
 
             timePowerData.put(id, new TimePowerDataPoint(currentTime, currentPower));
 
-            try {
-                addWorkDoneToSqlTable(targetId, workDone);
-            } catch (DataServiceException | SQLException e) {
-                DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
-                        "Failed to add workDone data to target consumption table.", e);
-                doStateOff(id);
+            if (HttpHelper.checkIfHttpServerIsRunning(client) == true) {
+                try {
+                    addWorkDone(targetId, workDone);
+                } catch (DataServiceException | SQLException e) {
+                    DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                            "Failed to add workDone data to target consumption table.", e);
+                    doStateOff(id);
+                }
             }
 
         }
@@ -161,8 +168,8 @@ public class TargetPowerLogger implements MachineEventHandler {
 
     }
 
-    private void addWorkDoneToSqlTable(String targetId, double workDone) throws DataServiceException, SQLException {
-        WriteDataTableUtils.addWorkToTargetIdConsumptionTable(DataServiceImpl.getSqlConnection(), targetId, workDone);
+    private void addWorkDone(String targetId, double workDone) throws DataServiceException, SQLException {
+        WriteDataTableUtils.writeTargetConsumptionData(client, targetId, workDone);
     }
 
 }

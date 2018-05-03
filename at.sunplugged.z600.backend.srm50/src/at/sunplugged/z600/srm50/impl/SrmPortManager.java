@@ -32,7 +32,7 @@ public class SrmPortManager {
             srmPort = SrmCommPort.createCommPort(logService, port);
             testPort(srmPort);
         } catch (IOException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to get commpPort: \"" + e.getMessage() + "\"", e);
+            logService.log(LogService.LOG_DEBUG, "Failed to get commpPort: \"" + e.getMessage() + "\"", e);
             if (srmPort != null) {
                 srmPort.close();
             }

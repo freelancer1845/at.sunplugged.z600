@@ -35,6 +35,8 @@ public class NetworkComIds {
     /** SRM Port. */
     public static final String SRM_COM_PORT = "Srm_Com_Port";
 
+    public static final String HTTP_BASE_SERVER_URL = "Http_Base_Server_Url";
+
     private NetworkComIds() {
     }
 

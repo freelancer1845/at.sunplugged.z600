@@ -1,16 +1,14 @@
 package at.sunplugged.z600.backend.dataservice.impl;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -23,10 +21,12 @@ import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataService;
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
+import at.sunplugged.z600.backend.dataservice.impl.model.Z600Setting;
 import at.sunplugged.z600.common.execution.api.StandardThreadPoolService;
 import at.sunplugged.z600.common.settings.api.NetworkComIds;
 import at.sunplugged.z600.common.settings.api.SettingsService;
 import at.sunplugged.z600.common.utils.Events;
+import at.sunplugged.z600.common.utils.LogServiceNOOP;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.conveyor.api.ConveyorPositionCorrectionService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
@@ -63,12 +63,15 @@ public class DataServiceImpl implements DataService {
 
     private static SqlConnection sqlConnection = null;
 
+    private HttpClient client;
+
     public static SqlConnection getSqlConnection() {
         return sqlConnection;
     }
 
     @Activate
     protected synchronized void activate(BundleContext context) {
+        client = HttpClientBuilder.create().build();
         if (threadPool == null) {
             return;
         }
@@ -76,17 +79,14 @@ public class DataServiceImpl implements DataService {
 
             @Override
             public void run() {
-                try {
-                    connectToSqlServer(settings.getProperty(NetworkComIds.SQL_CONNECTION_STRING),
-                            settings.getProperty(NetworkComIds.SQL_USERNAME),
-                            settings.getProperty(NetworkComIds.SQL_PASSWORD));
+
+                if (HttpHelper.checkIfHttpServerIsRunning(client)) {
                     postConnectEvent(true, null);
                     injectSettings();
-                } catch (DataServiceException e) {
-                    logService.log(LogService.LOG_ERROR, "Failed to connect to sql server specified in settings file.",
-                            e);
-                    postConnectEvent(false, e);
+                } else {
+                    postConnectEvent(false, new IOException("Http Server not running."));
                 }
+
             }
 
         });
@@ -94,19 +94,24 @@ public class DataServiceImpl implements DataService {
 
     @Deactivate
     protected synchronized void deactivate() {
-        if (sqlConnection.isOpen() == false) {
-            return;
-        }
+
         try {
-            saveSettings();
-        } catch (SQLException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to save settings to sql database.", e);
+            saveSettings(client);
+            stopUpdate();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to save SQL Settings.");
+        } finally {
+            try {
+                ((CloseableHttpClient) client).close();
+            } catch (IOException e) {
+                logService.log(LogService.LOG_ERROR, "Failed to close http client.");
+            }
         }
     }
 
     @Override
     public void startUpdate() throws DataServiceException {
-        DataSavingThread.startInstance(sqlConnection);
+        DataSavingThread.startInstance();
 
     }
 
@@ -118,165 +123,71 @@ public class DataServiceImpl implements DataService {
     @Override
     public String[] getTargetMaterials() {
         try {
-            if (SqlUtils.checkIfTableExists(sqlConnection, TableNames.TARGET_IDS) == false) {
-                logService.log(LogService.LOG_ERROR,
-                        "TargetID's table not found in sql database. Can't map powersources to targets...");
-                return new String[0];
-            } else {
-                Statement stm = sqlConnection.getStatement();
-                stm.executeQuery("SELECT Name FROM " + TableNames.TARGET_IDS);
-                ResultSet resultSet = stm.getResultSet();
-                List<String> arrayList = new ArrayList<>();
-                while (resultSet.next() == true) {
-                    arrayList.add(resultSet.getString(1));
-                }
-                stm.close();
-                return arrayList.toArray(new String[0]);
-            }
-        } catch (SQLException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to read TargetID's from sql database...", e);
+            return HttpHelper.getTargetMaterials(client);
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to get target materials.", e);
             return new String[0];
         }
     }
 
     @Override
     public void mapTargetToPowersource(PowerSourceId id, String targetName) {
-        TargetPowerLogger.getInstance().mapTargetToPowersource(targetName, id);
-    }
-
-    private void connectToSqlServer(String address, String username, String password) throws DataServiceException {
-        sqlConnection = new SqlConnection("jdbc:mysql://" + address, username, password);
-        sqlConnection.open();
+        TargetPowerLogger.getInstance(client).mapTargetToPowersource(targetName, id);
     }
 
     private void injectSettings() {
+        List<Z600Setting> settingsTable;
         try {
-            Map<String, Object> settingsTable = getSettingsTable();
-            for (String name : settingsTable.keySet()) {
-                logService.log(LogService.LOG_DEBUG, String.format(
-                        "Setting Loaded from SQL --- Name: \"%s\" Value: \"%s\"", name, settingsTable.get(name)));
-            }
-            if (settingsTable.containsKey(SettingIds.BELT_CORRECTION_RUNTIME_LEFT)) {
-                conveyorPositionCorrectionService
-                        .setRuntimeLeft((long) settingsTable.get(SettingIds.BELT_CORRECTION_RUNTIME_LEFT));
-            }
-            if (settingsTable.containsKey(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT)) {
-                conveyorPositionCorrectionService
-                        .setRuntimeRight((long) settingsTable.get(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT));
-            }
-            if (settingsTable.containsKey(SettingIds.BELT_POSITION)) {
-                conveyorService.setPosition((double) settingsTable.get(SettingIds.BELT_POSITION));
-            }
-        } catch (SQLException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to inject settings from sql database.", e);
-        }
-    }
-
-    private void saveSettings() throws SQLException {
-        saveSingleSetting(SettingIds.BELT_POSITION, "Double", String.valueOf(conveyorService.getPosition()));
-        saveSingleSetting(SettingIds.BELT_CORRECTION_RUNTIME_LEFT, "Long",
-                String.valueOf(conveyorPositionCorrectionService.getRuntimeLeft()));
-        saveSingleSetting(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT, "Long",
-                String.valueOf(conveyorPositionCorrectionService.getRuntimeRight()));
-
-    }
-
-    private void saveSingleSetting(String id, String type, String value) {
-        try (Statement stm = sqlConnection.getStatement()) {
-            String sql2 = "INSERT INTO " + TableNames.SETTINGS_TABLE + " (`id`, `type` , `value`) VALUES ('" + id
-                    + "','" + type + "'," + value + ") ON DUPLICATE KEY UPDATE `value`=VALUES(`value`)";
-            stm.execute(sql2);
-            stm.close();
-        } catch (SQLException e) {
-            logService.log(LogService.LOG_ERROR, "Failed to save setting: \"" + id + "\" Value: \"" + value + "\".", e);
-        }
-    }
-
-    private Map<String, Object> getSettingsTable() throws SQLException {
-        if (SqlUtils.checkIfTableExists(sqlConnection, TableNames.SETTINGS_TABLE) == false) {
-            Map<String, Object> emptySettingsTable = createSettingsTable();
-            logService.log(LogService.LOG_DEBUG, "No Settings Table found in Database!");
-            return emptySettingsTable;
-        }
-        Statement stm = sqlConnection.getStatement();
-        stm.executeQuery("SELECT * FROM " + TableNames.SETTINGS_TABLE);
-        ResultSet resultSet = stm.getResultSet();
-        Map<String, Object> returnMap = new HashMap<>();
-        while (resultSet.next() == true) {
-            String id = resultSet.getString("id");
-            switch (resultSet.getString("id")) {
-            case SettingIds.BELT_POSITION:
-                returnMap.put(id, Double.valueOf(resultSet.getString("value")));
-                break;
-            case SettingIds.BELT_CORRECTION_RUNTIME_RIGHT:
-                returnMap.put(id, Long.valueOf(resultSet.getString("value")));
-                break;
-            case SettingIds.BELT_CORRECTION_RUNTIME_LEFT:
-                returnMap.put(id, Long.valueOf(resultSet.getString("value")));
-                break;
-            default:
-                logService.log(LogService.LOG_DEBUG, "Unexpected settings id: \"" + id + "\" Type: \""
-                        + resultSet.getString("type") + "\" Value: \"" + resultSet.getString("value") + "\".");
-                break;
-            }
-
-        }
-        stm.close();
-        return returnMap;
-    }
-
-    private Map<String, Object> createSettingsTable() throws SQLException {
-
-        try {
-            Statement stm = sqlConnection.getStatement();
-            String sql = "CREATE TABLE " + TableNames.SETTINGS_TABLE + " (id VARCHAR(255) not NULL PRIMARY KEY, "
-                    + " type VARCHAR(255) not NULL," + " value VARCHAR(255))";
-            stm.executeUpdate(sql);
-            stm.close();
-        } catch (SQLException e) {
-            logService.log(LogService.LOG_DEBUG, "Failed to create settings table.");
-            throw e;
-        }
-
-        return new HashMap<String, Object>();
-    }
-
-    public void issueStatement(String statement) {
-        if (!sqlConnection.isOpen()) {
-            return;
-        }
-
-        try {
-            Statement statementObject = sqlConnection.getStatement();
-            statementObject.execute(statement);
-            ResultSet resultSet = statementObject.getResultSet();
-            if (resultSet == null) {
-                return;
-            }
-            ResultSetMetaData rsmd = resultSet.getMetaData();
-            if (rsmd == null) {
-                return;
-            }
-            int columnsNumber = rsmd.getColumnCount();
-            while (resultSet.next()) {
-                for (int i = 1; i <= columnsNumber; i++) {
-                    if (i > 1)
-                        System.out.print(",  ");
-                    String columnValue = resultSet.getString(i);
-                    System.out.print(columnValue + " " + rsmd.getColumnName(i));
+            if (HttpHelper.checkIfHttpServerIsRunning(client) == false) {
+                logService.log(LogService.LOG_ERROR, "Http Server not running, can't inject settings.");
+            } else {
+                settingsTable = getSettings(client);
+                for (Z600Setting setting : settingsTable) {
+                    logService.log(LogService.LOG_DEBUG,
+                            String.format("Setting Loaded from SQL --- Name: \"%s\" Value: \"%s\"", setting.getKey(),
+                                    setting.getValue()));
                 }
-                System.out.println("");
+
+                for (Z600Setting setting : settingsTable) {
+                    if (setting.getKey().equals(SettingIds.BELT_CORRECTION_RUNTIME_LEFT)) {
+                        conveyorPositionCorrectionService.setRuntimeLeft(Long.valueOf(setting.getValue()));
+                    } else if (setting.getKey().equals(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT)) {
+                        conveyorPositionCorrectionService.setRuntimeRight(Long.valueOf(setting.getValue()));
+                    } else if (setting.getKey().equals(SettingIds.BELT_POSITION)) {
+                        conveyorService.setPosition(Double.valueOf(setting.getValue()));
+                    }
+                }
             }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            logService.log(LogService.LOG_ERROR, "Failed to Inject settings from Database.");
         }
+    }
+
+    private void saveSettings(HttpClient client) throws IOException {
+
+        logService.log(LogService.LOG_DEBUG, "Saving persistence settings...");
+        List<Z600Setting> settings = new ArrayList<>();
+        settings.add(new Z600Setting(SettingIds.BELT_POSITION, String.valueOf(conveyorService.getPosition())));
+        settings.add(new Z600Setting(SettingIds.BELT_CORRECTION_RUNTIME_LEFT,
+                String.valueOf(conveyorPositionCorrectionService.getRuntimeLeft())));
+        settings.add(new Z600Setting(SettingIds.BELT_CORRECTION_RUNTIME_RIGHT,
+                String.valueOf(conveyorPositionCorrectionService.getRuntimeRight())));
+        HttpHelper.saveSettings(client, settings);
+        logService.log(LogService.LOG_DEBUG, "Saving done.");
+    }
+
+    private List<Z600Setting> getSettings(HttpClient client) throws IOException {
+
+        List<Z600Setting> settings = HttpHelper.getAllSettings(client);
+
+        return settings;
 
     }
 
     private void postConnectEvent(boolean successful, Throwable e) {
         Dictionary<String, Object> properties = new Hashtable<>();
-        properties.put("IP", sqlConnection.getDbUrl());
+        properties.put("IP", settings.getProperty(NetworkComIds.HTTP_BASE_SERVER_URL));
         properties.put("success", successful);
         if (!successful) {
             properties.put("Error", e);
@@ -285,6 +196,9 @@ public class DataServiceImpl implements DataService {
     }
 
     public static LogService getLogService() {
+        if (logService == null) {
+            return new LogServiceNOOP();
+        }
         return DataServiceImpl.logService;
     }
 
