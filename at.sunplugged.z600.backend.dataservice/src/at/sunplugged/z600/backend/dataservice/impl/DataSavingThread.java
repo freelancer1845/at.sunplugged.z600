@@ -138,7 +138,7 @@ public class DataSavingThread extends Thread {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        setRunning(false);
+        running = false;
 
     }
 
@@ -157,10 +157,14 @@ public class DataSavingThread extends Thread {
     }
 
     public void setRunning(boolean running) {
+
         if (running == false) {
+
             DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "DataService Thread stopped.");
             try {
-                ((CloseableHttpClient) instance.client).close();
+                if (instance != null) {
+                    ((CloseableHttpClient) instance.client).close();
+                }
             } catch (IOException e) {
                 DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to close http client.", e);
             }
