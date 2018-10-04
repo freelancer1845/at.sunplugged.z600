@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="at.sunplugged.600.standard-platform" sequenceNumber="52">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="at.sunplugged.600.standard-platform" sequenceNumber="52">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.13.4.v20180322-2228"/>
@@ -23,11 +22,9 @@
 <plugin id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-base"/>
 <plugin id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
 <plugin id="com.ibm.icu" version="54.1.1.v201501272100"/>
-<plugin id="com.ibm.icu.source" version="54.1.1.v201501272100"/>
 <plugin id="javax.ws.rs"/>
 <plugin id="org.apache.commons.codec" version="1.9.0.v20170208-1614"/>
 <plugin id="org.apache.commons.logging" version="1.1.1.v201101211721"/>
-<plugin id="org.apache.commons.logging.source" version="1.1.1.v201101211721"/>
 <plugin id="org.apache.felix.gogo.command"/>
 <plugin id="org.apache.felix.gogo.command.source"/>
 <plugin id="org.apache.felix.gogo.runtime"/>
@@ -37,23 +34,15 @@
 <plugin id="org.apache.felix.scr"/>
 <plugin id="org.apache.felix.scr.source"/>
 <plugin id="org.apache.httpcomponents.httpclient" version="4.5.2.v20170210-0925"/>
-<plugin id="org.apache.httpcomponents.httpclient.source" version="4.5.2.v20170210-0925"/>
 <plugin id="org.apache.httpcomponents.httpcore" version="4.4.6.v20170210-0925"/>
-<plugin id="org.apache.httpcomponents.httpcore.source" version="4.4.6.v20170210-0925"/>
 <plugin id="org.eclipse.core.commands"/>
-<plugin id="org.eclipse.core.commands.source"/>
 <plugin id="org.eclipse.core.contenttype"/>
-<plugin id="org.eclipse.core.contenttype.source"/>
 <plugin id="org.eclipse.core.jobs"/>
-<plugin id="org.eclipse.core.jobs.source"/>
 <plugin id="org.eclipse.core.runtime"/>
-<plugin id="org.eclipse.core.runtime.source"/>
 <plugin id="org.eclipse.draw2d"/>
 <plugin id="org.eclipse.draw2d.source"/>
 <plugin id="org.eclipse.e4.ui.workbench"/>
-<plugin id="org.eclipse.e4.ui.workbench.source"/>
 <plugin id="org.eclipse.emf.ecore"/>
-<plugin id="org.eclipse.emf.ecore.source"/>
 <plugin id="org.eclipse.equinox.app"/>
 <plugin id="org.eclipse.equinox.app.source"/>
 <plugin id="org.eclipse.equinox.common"/>
@@ -80,7 +69,6 @@
 <plugin id="org.eclipse.jetty.security"/>
 <plugin id="org.eclipse.jetty.util"/>
 <plugin id="org.eclipse.jface"/>
-<plugin id="org.eclipse.jface.source"/>
 <plugin id="org.eclipse.osgi"/>
 <plugin id="org.eclipse.osgi.services"/>
 <plugin id="org.eclipse.osgi.services.source"/>
@@ -89,7 +77,6 @@
 <plugin id="org.eclipse.osgi.util.source"/>
 <plugin id="org.eclipse.swt"/>
 <plugin id="org.eclipse.swt.win32.win32.x86"/>
-<plugin id="org.eclipse.swt.win32.win32.x86.source"/>
 </includeBundles>
 <environment>
 <os>win32</os>
