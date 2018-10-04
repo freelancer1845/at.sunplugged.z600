@@ -28,7 +28,7 @@ public class NetworkComDefaultProperties extends Properties {
         this.put(NetworkComIds.VAT_EIGHT_COM_PORT, "COM4");
         this.put(NetworkComIds.XPLAINED_COM_PORT, "COM9");
         this.put(NetworkComIds.SRM_COM_PORT, "COM10");
-        this.put(NetworkComIds.HTTP_BASE_SERVER_URL, "http://localhost:8080/");
+        this.put(NetworkComIds.HTTP_BASE_SERVER_URL, "http://192.168.178.5:10250/");
     }
 
 }
