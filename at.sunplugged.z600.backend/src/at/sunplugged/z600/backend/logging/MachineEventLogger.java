@@ -72,6 +72,9 @@ public class MachineEventLogger implements MachineEventHandler {
 
     @Override
     public void handleEvent(MachineStateEvent event) {
+        if (threadPool == null) {
+            return;
+        }
         threadPool.execute(new Runnable() {
             @Override
             public void run() {
