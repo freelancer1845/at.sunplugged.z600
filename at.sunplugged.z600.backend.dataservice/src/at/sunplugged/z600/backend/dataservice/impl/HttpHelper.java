@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -100,14 +101,15 @@ public class HttpHelper {
 
         ObjectMapper mapper = new ObjectMapper();
         TargetMaterial[] materials = mapper.readValue(response.getEntity().getContent(), TargetMaterial[].class);
-        return (String[]) Arrays.stream(materials).map(mat -> mat.getName()).toArray(String[]::new);
+        return (String[]) Arrays.stream(materials).filter(m -> m.getActive()).map(mat -> mat.getName())
+                .toArray(String[]::new);
     }
 
     public static void addWorkToTarget(HttpClient client, String targetName, Double workToAdd) throws IOException {
         HttpPost post = new HttpPost(getServerUrl() + API_TARGET_MATERIALS_ADD_WORK);
-
-        post.setEntity(new StringEntity(String.format("{\"name\":\"%s\",\"work\":%f}", targetName, workToAdd),
-                ContentType.APPLICATION_JSON));
+        post.setEntity(
+                new StringEntity(String.format(Locale.US, "{\"name\":\"%s\",\"work\":%f}", targetName, workToAdd),
+                        ContentType.APPLICATION_JSON));
 
         HttpResponse response = client.execute(post);
         assertResponseCodeOK(response);
