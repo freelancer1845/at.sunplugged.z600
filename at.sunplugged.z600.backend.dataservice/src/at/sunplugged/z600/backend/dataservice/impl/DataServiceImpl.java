@@ -63,7 +63,7 @@ public class DataServiceImpl implements DataService {
 
     private static SqlConnection sqlConnection = null;
 
-    private HttpClient client;
+    private CloseableHttpClient client;
 
     public static SqlConnection getSqlConnection() {
         return sqlConnection;
@@ -164,7 +164,7 @@ public class DataServiceImpl implements DataService {
         }
     }
 
-    private void saveSettings(HttpClient client) throws IOException {
+    private void saveSettings(CloseableHttpClient client) throws IOException {
 
         logService.log(LogService.LOG_DEBUG, "Saving persistence settings...");
         List<Z600Setting> settings = new ArrayList<>();
@@ -177,7 +177,7 @@ public class DataServiceImpl implements DataService {
         logService.log(LogService.LOG_DEBUG, "Saving done.");
     }
 
-    private List<Z600Setting> getSettings(HttpClient client) throws IOException {
+    private List<Z600Setting> getSettings(CloseableHttpClient client) throws IOException {
 
         List<Z600Setting> settings = HttpHelper.getAllSettings(client);
 

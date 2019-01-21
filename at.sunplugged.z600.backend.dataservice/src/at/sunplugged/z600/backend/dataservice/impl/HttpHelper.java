@@ -13,10 +13,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.osgi.service.log.LogService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,109 +30,130 @@ import at.sunplugged.z600.common.settings.api.NetworkComIds;
 
 public class HttpHelper {
 
-    private static final String API_READY = "/api/ready";
+	private static final String API_READY = "/api/ready";
 
-    private static final String API_SETTINGS_GET_ALL = "/settings/api/getall";
+	private static final String API_SETTINGS_GET_ALL = "/settings/api/getall";
 
-    private static final String API_SETTINGS_SAVE_ALL = "/settings/api/saveall";
+	private static final String API_SETTINGS_SAVE_ALL = "/settings/api/saveall";
 
-    private static final String API_TARGET_MATERIALS_ALL = "/targets/api";
+	private static final String API_TARGET_MATERIALS_ALL = "/targets/api";
 
-    private static final String API_TARGET_MATERIALS_ADD_WORK = "targets/api/addWork";
+	private static final String API_TARGET_MATERIALS_ADD_WORK = "targets/api/addWork";
 
-    public static boolean checkIfHttpServerIsRunning(HttpClient client) {
-        String server_url = getServerUrl();
+	public static boolean checkIfHttpServerIsRunning(CloseableHttpClient client) {
+		String server_url = getServerUrl();
 
-        HttpGet get = new HttpGet(server_url + API_READY);
+		HttpGet get = new HttpGet(server_url + API_READY);
 
-        HttpResponse response;
-        try {
-            response = client.execute(get);
+		CloseableHttpResponse response;
+		try {
+			response = client.execute(get);
+			try {
+				assertResponseCodeOK(response);
 
-            assertResponseCodeOK(response);
+				BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
-            BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+				String value = rd.readLine();
+				return Boolean.valueOf(value);
+			} finally {
+				response.close();
+			}
+		} catch (IOException e) {
+			// Expected behavior if http server is not reachable
+			return false;
+		}
+	}
 
-            String value = rd.readLine();
-            return Boolean.valueOf(value);
+	public static List<Z600Setting> getAllSettings(CloseableHttpClient client)
+			throws ClientProtocolException, IOException {
+		HttpGet get = new HttpGet(getServerUrl() + API_SETTINGS_GET_ALL);
+		CloseableHttpResponse response;
+		response = client.execute(get);
+		try {
+			assertResponseCodeOK(response);
+			ObjectMapper mapper = new ObjectMapper();
+			Z600Setting[] settingsArray = mapper.readValue(response.getEntity().getContent(), Z600Setting[].class);
+			List<Z600Setting> settingsList = new ArrayList<>(Arrays.asList(settingsArray));
+			return settingsList;
+		} finally {
+			response.close();
+		}
 
-        } catch (IOException e) {
-            // Expected behavior if http server is not reachable
-            return false;
-        }
-    }
+	}
 
-    public static List<Z600Setting> getAllSettings(HttpClient client) throws ClientProtocolException, IOException {
+	public static void saveSettings(CloseableHttpClient client, List<Z600Setting> settingsToSave) throws IOException {
+		HttpPost put = new HttpPost(getServerUrl() + API_SETTINGS_SAVE_ALL);
 
-        HttpGet get = new HttpGet(getServerUrl() + API_SETTINGS_GET_ALL);
-        HttpResponse response;
-        response = client.execute(get);
-        assertResponseCodeOK(response);
-        ObjectMapper mapper = new ObjectMapper();
-        Z600Setting[] settingsArray = mapper.readValue(response.getEntity().getContent(), Z600Setting[].class);
-        List<Z600Setting> settingsList = new ArrayList<>(Arrays.asList(settingsArray));
-        return settingsList;
-    }
+		ObjectMapper mapper = new ObjectMapper();
 
-    public static void saveSettings(HttpClient client, List<Z600Setting> settingsToSave) throws IOException {
-        HttpPost put = new HttpPost(getServerUrl() + API_SETTINGS_SAVE_ALL);
+		try {
+			String strValue = mapper.writeValueAsString(settingsToSave);
 
-        ObjectMapper mapper = new ObjectMapper();
+			try {
+				put.setEntity(new StringEntity(strValue, ContentType.APPLICATION_JSON));
+				CloseableHttpResponse response = client.execute(put);
+				try {
+					assertResponseCodeOK(response);
+				} finally {
+					response.close();
+				}
 
-        try {
-            String strValue = mapper.writeValueAsString(settingsToSave);
+			} catch (UnsupportedEncodingException e) {
+				DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Ecnoding Error.", e);
+			}
 
-            try {
-                put.setEntity(new StringEntity(strValue, ContentType.APPLICATION_JSON));
+		} catch (JsonProcessingException e) {
+			DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Json Parse Error", e);
+		}
+	}
 
-                assertResponseCodeOK(client.execute(put));
+	public static String[] getTargetMaterials(CloseableHttpClient client) throws IOException {
+		HttpGet get = new HttpGet(getServerUrl() + API_TARGET_MATERIALS_ALL);
+		CloseableHttpResponse response = client.execute(get);
+		try {
+			assertResponseCodeOK(response);
 
-            } catch (UnsupportedEncodingException e) {
-                DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Ecnoding Error.", e);
-            }
+			ObjectMapper mapper = new ObjectMapper();
+			TargetMaterial[] materials = mapper.readValue(response.getEntity().getContent(), TargetMaterial[].class);
+			return (String[]) Arrays.stream(materials).filter(m -> m.getActive()).map(mat -> mat.getName())
+					.toArray(String[]::new);
+		} finally {
+			response.close();
+		}
 
-        } catch (JsonProcessingException e) {
-            DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Json Parse Error", e);
-        }
-    }
+	}
 
-    public static String[] getTargetMaterials(HttpClient client) throws IOException {
-        HttpGet get = new HttpGet(getServerUrl() + API_TARGET_MATERIALS_ALL);
-        HttpResponse response = client.execute(get);
-        assertResponseCodeOK(response);
+	public static void addWorkToTarget(CloseableHttpClient client, String targetName, Double workToAdd)
+			throws IOException {
+		HttpPost post = new HttpPost(getServerUrl() + API_TARGET_MATERIALS_ADD_WORK);
+		post.setEntity(
+				new StringEntity(String.format(Locale.US, "{\"name\":\"%s\",\"work\":%f}", targetName, workToAdd),
+						ContentType.APPLICATION_JSON));
 
-        ObjectMapper mapper = new ObjectMapper();
-        TargetMaterial[] materials = mapper.readValue(response.getEntity().getContent(), TargetMaterial[].class);
-        return (String[]) Arrays.stream(materials).filter(m -> m.getActive()).map(mat -> mat.getName())
-                .toArray(String[]::new);
-    }
+		CloseableHttpResponse response = client.execute(post);
+		try {
+			assertResponseCodeOK(response);
+		} finally {
+			response.close();
+		}
 
-    public static void addWorkToTarget(HttpClient client, String targetName, Double workToAdd) throws IOException {
-        HttpPost post = new HttpPost(getServerUrl() + API_TARGET_MATERIALS_ADD_WORK);
-        post.setEntity(
-                new StringEntity(String.format(Locale.US, "{\"name\":\"%s\",\"work\":%f}", targetName, workToAdd),
-                        ContentType.APPLICATION_JSON));
+	}
 
-        HttpResponse response = client.execute(post);
-        assertResponseCodeOK(response);
+	private static String getServerUrl() {
+		return DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.HTTP_BASE_SERVER_URL);
+	}
 
-    }
+	private static void assertResponseCodeOK(HttpResponse response) {
+		if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 
-    private static String getServerUrl() {
-        return DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.HTTP_BASE_SERVER_URL);
-    }
+			LogService log = DataServiceImpl.getLogService();
 
-    private static void assertResponseCodeOK(HttpResponse response) {
-        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-
-            LogService log = DataServiceImpl.getLogService();
-
-            if (log != null) {
-                log.log(LogService.LOG_WARNING,
-                        "Http Resonpse code not ok. Code: " + response.getStatusLine().getStatusCode());
-            } else {
-                System.err.println("Http Resonpse code not ok. Code: " + response.getStatusLine().getStatusCode());
-            }
-        }
-    }
+			if (log != null) {
+				log.log(LogService.LOG_WARNING,
+						"Http Resonpse code not ok. Code: " + response.getStatusLine().getStatusCode());
+			} else {
+				System.err.println("Http Resonpse code not ok. Code: " + response.getStatusLine().getStatusCode());
+			}
+		}
+	}
 }

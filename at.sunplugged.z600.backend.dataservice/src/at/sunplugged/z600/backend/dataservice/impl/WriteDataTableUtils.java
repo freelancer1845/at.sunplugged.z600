@@ -5,10 +5,11 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.osgi.service.log.LogService;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -32,7 +33,7 @@ public class WriteDataTableUtils {
 
     }
 
-    public static boolean writeTargetConsumptionData(HttpClient client, String targetName, Double workToAdd) {
+    public static boolean writeTargetConsumptionData(CloseableHttpClient client, String targetName, Double workToAdd) {
         try {
             HttpHelper.addWorkToTarget(client, targetName, workToAdd);
         } catch (IOException e) {
@@ -42,7 +43,7 @@ public class WriteDataTableUtils {
         return true;
     }
 
-    public static boolean writeHttpDataTable(HttpClient client, int sessionId, int dataPoint) {
+    public static boolean writeHttpDataTable(CloseableHttpClient client, int sessionId, int dataPoint) {
 
         LogService log = DataServiceImpl.getLogService();
 
@@ -63,7 +64,8 @@ public class WriteDataTableUtils {
             String jsonWrite = mapper.writeValueAsString(point);
             dataPut.setEntity(new StringEntity(jsonWrite, ContentType.APPLICATION_JSON));
             try {
-                client.execute(dataPut);
+                CloseableHttpResponse response = client.execute(dataPut);
+                response.close();
             } catch (IOException e) {
                 log.log(LogService.LOG_ERROR, "IO Exception while sending datapoint.", e);
                 return false;

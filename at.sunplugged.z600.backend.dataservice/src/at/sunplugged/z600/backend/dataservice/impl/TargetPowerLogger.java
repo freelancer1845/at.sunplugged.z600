@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.osgi.service.log.LogService;
 
 import at.sunplugged.z600.backend.dataservice.api.DataServiceException;
@@ -28,9 +29,9 @@ public class TargetPowerLogger implements MachineEventHandler {
 
     private StandardThreadPoolService threadPool;
 
-    private HttpClient client;
+    private CloseableHttpClient client;
 
-    private TargetPowerLogger(HttpClient client) {
+    private TargetPowerLogger(CloseableHttpClient client) {
         this.threadPool = DataServiceImpl.getStandardThreadPoolService();
         DataServiceImpl.getMachineStateService().registerMachineEventHandler(this);
         this.client = client;
@@ -62,7 +63,7 @@ public class TargetPowerLogger implements MachineEventHandler {
         }
     }
 
-    public static TargetPowerLogger getInstance(HttpClient client) {
+    public static TargetPowerLogger getInstance(CloseableHttpClient client) {
         if (instance == null) {
             instance = new TargetPowerLogger(client);
         }
