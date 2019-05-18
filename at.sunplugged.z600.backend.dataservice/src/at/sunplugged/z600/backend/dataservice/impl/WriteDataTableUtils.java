@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import at.sunplugged.z600.backend.dataservice.impl.model.DataPoint;
-import at.sunplugged.z600.backend.dataservice.impl.model.DataPoint.SessionPK;
 import at.sunplugged.z600.conveyor.api.ConveyorControlService;
 import at.sunplugged.z600.core.machinestate.api.MachineStateService;
 import at.sunplugged.z600.core.machinestate.api.PowerSource;
@@ -48,15 +47,12 @@ public class WriteDataTableUtils {
         LogService log = DataServiceImpl.getLogService();
 
         DataPoint point = new DataPoint();
-        SessionPK pk = new DataPoint.SessionPK();
-        pk.setSessionId((long) sessionId);
-        pk.setDataPoint((long) dataPoint);
-        point.setSessionPK(pk);
+        point.setDataPoint((long) dataPoint);
         point.setTime(LocalDateTime.now());
 
         fillDataPoint(point);
 
-        HttpPut dataPut = new HttpPut(DataSavingThread.API_POST_DATAPOINT);
+        HttpPut dataPut = new HttpPut(DataSavingThread.API_POST_DATAPOINT + "/" + sessionId);
 
         ObjectMapper mapper = new ObjectMapper();
         try {

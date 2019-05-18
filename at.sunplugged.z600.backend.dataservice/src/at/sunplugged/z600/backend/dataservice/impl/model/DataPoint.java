@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class DataPoint {
 
-    private SessionPK sessionPK;
+    private Long dataPoint;
 
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime time;
@@ -70,43 +70,14 @@ public class DataPoint {
 
     private Double srmChannelThreeRight;
 
-    public static class SessionPK implements Serializable {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = -8491720672704257250L;
-
-        protected Long sessionId;
-
-        protected Long dataPoint;
-
-        public Long getSessionId() {
-            return sessionId;
-        }
-
-        public void setSessionId(Long sessionId) {
-            this.sessionId = sessionId;
-        }
-
-        public Long getDataPoint() {
-            return dataPoint;
-        }
-
-        public void setDataPoint(Long dataPoint) {
-            this.dataPoint = dataPoint;
-        }
-
-    }
-
-    public SessionPK getSessionPK() {
-        return sessionPK;
-    }
-
-    public void setSessionPK(SessionPK sessionPK) {
-        this.sessionPK = sessionPK;
-    }
-
+    public Long getDataPoint() {
+		return dataPoint;
+	}
+    
+    public void setDataPoint(Long dataPoint) {
+		this.dataPoint = dataPoint;
+	}
+    
     public LocalDateTime getTime() {
         return time;
     }
