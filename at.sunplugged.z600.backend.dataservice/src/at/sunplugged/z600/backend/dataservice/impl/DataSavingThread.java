@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -19,191 +18,190 @@ import at.sunplugged.z600.common.settings.api.SettingsService;
 
 public class DataSavingThread extends Thread {
 
-	private static DataSavingThread instance = null;
+    private static DataSavingThread instance = null;
 
-	private static String API_URL;
+    private static String API_URL;
 
-	private static String API_NEXT_DATAPOINT;
+    private static String API_NEXT_DATAPOINT;
 
-	private static String API_NEW_SESSION;
+    private static String API_NEW_SESSION;
 
-	public static String API_POST_DATAPOINT;
+    public static String API_POST_DATAPOINT;
 
-	private HttpClient client;
+    private HttpClient client;
 
-	public static void startInstance() throws DataServiceException {
-		if (instance == null) {
-			instance = new DataSavingThread();
-			instance.client = HttpClientBuilder.create().build();
-			instance.start();
-		} else {
-			throw new DataServiceException("There is already a running instance of the DataSavingThread");
-		}
-	}
+    public static void startInstance() throws DataServiceException {
+        if (instance == null) {
+            instance = new DataSavingThread();
+            instance.client = HttpClientBuilder.create().build();
+            instance.start();
+        } else {
+            throw new DataServiceException("There is already a running instance of the DataSavingThread");
+        }
+    }
 
-	public static void stopInstance() {
-		if (instance != null) {
-			instance.setRunning(false);
+    public static void stopInstance() {
+        if (instance != null) {
+            instance.setRunning(false);
 
-		}
-	}
+        }
+    }
 
-	private volatile boolean running = false;
+    private volatile boolean running = false;
 
-	private DataSavingThread() {
-		this.setName("Data Saving Thread");
-		this.setDaemon(true);
+    private DataSavingThread() {
+        this.setName("Data Saving Thread");
+        this.setDaemon(true);
 
-		setUrlSettings();
+        setUrlSettings();
 
-	}
+    }
 
-	private void setUrlSettings() {
-		SettingsService settings = DataServiceImpl.getSettingsServce();
+    private void setUrlSettings() {
+        SettingsService settings = DataServiceImpl.getSettingsServce();
 
-		API_URL = settings.getProperty(NetworkComIds.HTTP_BASE_SERVER_URL) + "sessions/api";
-		API_NEXT_DATAPOINT = API_URL + "/nextdatapoint/";
-		API_NEW_SESSION = API_URL + "/newSession";
-		API_POST_DATAPOINT = API_URL + "/putdatapoint";
-	}
+        API_URL = settings.getProperty(NetworkComIds.HTTP_BASE_SERVER_URL) + "sessions/api";
+        API_NEXT_DATAPOINT = API_URL + "/nextdatapoint/";
+        API_NEW_SESSION = API_URL + "/newSession";
+        API_POST_DATAPOINT = API_URL + "/putdatapoint";
+    }
 
-	@Override
-	public void run() {
-		boolean restart = true;
-		
-		while(restart) {
-			restart = false;
-			running = true;
-			long timestep = Long
-					.valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP));
+    @Override
+    public void run() {
+        boolean restart = true;
 
-			int exceptionCount = 0;
-			int sessionId;
-			int dataPoint;
+        while (restart) {
+            restart = false;
+            running = true;
+            long timestep = Long
+                    .valueOf(DataServiceImpl.getSettingsServce().getProperty(NetworkComIds.SQL_UPDATE_TIME_STEP));
 
-			CloseableHttpClient client = HttpClientBuilder.create().build();
-			HttpGet sessionGet = new HttpGet(API_NEW_SESSION);
+            int exceptionCount = 0;
+            int sessionId;
+            int dataPoint;
 
-			try {
+            CloseableHttpClient client = HttpClientBuilder.create().build();
+            HttpGet sessionGet = new HttpGet(API_NEW_SESSION);
 
-				if (HttpHelper.checkIfHttpServerIsRunning(client) == false) {
-					DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to connect to http server.");
-					setRunning(false);
-					return;
-				}
-				CloseableHttpResponse response = client.execute(sessionGet);
-				try {
-					BufferedReader bf = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-					sessionId = Integer.valueOf(bf.readLine());
-				} finally {
-					response.close();
-				}
+            try {
 
-				dataPoint = getNextDataPoint(client, sessionId);
+                if (HttpHelper.checkIfHttpServerIsRunning(client) == false) {
+                    DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to connect to http server.");
+                    setRunning(false);
+                    return;
+                }
+                CloseableHttpResponse response = client.execute(sessionGet);
+                try {
+                    BufferedReader bf = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                    sessionId = Integer.valueOf(bf.readLine());
+                } finally {
+                    response.close();
+                }
 
-				while (isRunning()) {
-					Thread.sleep(timestep);
+                dataPoint = getNextDataPoint(client, sessionId);
 
-					if (WriteDataTableUtils.writeHttpDataTable(client, sessionId, dataPoint) == false) {
-						LogService log = DataServiceImpl.getLogService();
-						log.log(LogService.LOG_DEBUG, "Recovering from Connecting error to http server. SessionId: "
-								+ sessionId + " - DataPoint: " + dataPoint);
-						timestep *= 10;
-						log.log(LogService.LOG_DEBUG, "Reducing logspeed to " + timestep);
+                while (isRunning()) {
+                    Thread.sleep(timestep);
 
-						while (isRunning()) {
-							log.log(LogService.LOG_DEBUG, "Trying to reconnect to http server.");
+                    if (WriteDataTableUtils.writeHttpDataTable(client, sessionId, dataPoint) == false) {
+                        LogService log = DataServiceImpl.getLogService();
+                        log.log(LogService.LOG_DEBUG, "Recovering from Connecting error to http server. SessionId: "
+                                + sessionId + " - DataPoint: " + dataPoint);
+                        timestep *= 10;
+                        log.log(LogService.LOG_DEBUG, "Reducing logspeed to " + timestep);
 
-							if (HttpHelper.checkIfHttpServerIsRunning(client)) {
+                        while (isRunning()) {
+                            log.log(LogService.LOG_DEBUG, "Trying to reconnect to http server.");
 
-								log.log(LogService.LOG_INFO, "Reconnected to http server.");
-								log.log(LogService.LOG_DEBUG, "Setting logspeed to previous value.");
-								timestep *= 0.1;
+                            if (HttpHelper.checkIfHttpServerIsRunning(client)) {
 
-								dataPoint = getNextDataPoint(client, sessionId);
+                                log.log(LogService.LOG_INFO, "Reconnected to http server.");
+                                log.log(LogService.LOG_DEBUG, "Setting logspeed to previous value.");
+                                timestep *= 0.1;
 
-								log.log(LogService.LOG_DEBUG,
-										"Continue logging at session: " + sessionId + " - DataPoint: " + dataPoint);
-								break;
-							}
-							Thread.sleep(timestep);
-						}
-					} else {
-						dataPoint++;
-					}
+                                dataPoint = getNextDataPoint(client, sessionId);
 
-				}
+                                log.log(LogService.LOG_DEBUG,
+                                        "Continue logging at session: " + sessionId + " - DataPoint: " + dataPoint);
+                                break;
+                            }
+                            Thread.sleep(timestep);
+                        }
+                    } else {
+                        dataPoint++;
+                    }
 
-			} catch (ClientProtocolException e2) {
-				DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
-						"DataSavingThread failed because of IO. Restarting!", e2);
-				restart = restartDataSavingThread();
-			} catch (IOException e2) {
-				DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
-						"DataSavingThread failed because of IO. Restarting in 5s...", e2);
-				restart = restartDataSavingThread();
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			running = false;	
-		}
-		
+                }
 
-	}
+            } catch (ClientProtocolException e2) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                        "DataSavingThread failed because of IO. Restarting!", e2);
+                restart = restartDataSavingThread();
+            } catch (IOException e2) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR,
+                        "DataSavingThread failed because of IO. Restarting in 5s...", e2);
+                restart = restartDataSavingThread();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            running = false;
+        }
 
-	private boolean restartDataSavingThread() {
-		if (running == true) {
-			try {
-				DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "Restarting DatasavingThread in 5s...");
-				Thread.sleep(5000);
-				DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "Datasavingthread restarted!");
-				return true;
-			} catch (InterruptedException e) {
-				DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Restarting of DataSavingThread interrupted!",
-						e);
-				return false;
-			}
-		}
-		return false;
+    }
 
-	}
+    private boolean restartDataSavingThread() {
+        if (running == true) {
+            try {
+                DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "Restarting DatasavingThread in 5s...");
+                Thread.sleep(5000);
+                DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "Datasavingthread restarted!");
+                return true;
+            } catch (InterruptedException e) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Restarting of DataSavingThread interrupted!",
+                        e);
+                return false;
+            }
+        }
+        return false;
 
-	private int getNextDataPoint(CloseableHttpClient client, int sessionId)
-			throws UnsupportedOperationException, IOException {
-		HttpGet dataPointGet = new HttpGet(API_NEXT_DATAPOINT + sessionId);
+    }
 
-		CloseableHttpResponse response2 = client.execute(dataPointGet);
-		try {
-			BufferedReader bf2 = new BufferedReader(new InputStreamReader(response2.getEntity().getContent()));
+    private int getNextDataPoint(CloseableHttpClient client, int sessionId)
+            throws UnsupportedOperationException, IOException {
+        HttpGet dataPointGet = new HttpGet(API_NEXT_DATAPOINT + sessionId);
 
-			return Integer.valueOf(bf2.readLine());
-		} finally {
-			response2.close();
-		}
+        CloseableHttpResponse response2 = client.execute(dataPointGet);
+        try {
+            BufferedReader bf2 = new BufferedReader(new InputStreamReader(response2.getEntity().getContent()));
 
-	}
+            return Integer.valueOf(bf2.readLine());
+        } finally {
+            response2.close();
+        }
 
-	public boolean isRunning() {
-		return running;
-	}
+    }
 
-	public void setRunning(boolean running) {
+    public boolean isRunning() {
+        return running;
+    }
 
-		if (running == false) {
+    public void setRunning(boolean running) {
 
-			DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "DataService Thread stopped.");
-			try {
-				if (instance != null) {
-					((CloseableHttpClient) instance.client).close();
-				}
-			} catch (IOException e) {
-				DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to close http client.", e);
-			}
-			instance = null;
-		}
+        if (running == false) {
 
-		this.running = running;
-	}
+            DataServiceImpl.getLogService().log(LogService.LOG_DEBUG, "DataService Thread stopped.");
+            try {
+                if (instance != null) {
+                    ((CloseableHttpClient) instance.client).close();
+                }
+            } catch (IOException e) {
+                DataServiceImpl.getLogService().log(LogService.LOG_ERROR, "Failed to close http client.", e);
+            }
+            instance = null;
+        }
+
+        this.running = running;
+    }
 }

@@ -51,7 +51,6 @@ public class WriteDataTableUtils {
         point.setTime(LocalDateTime.now());
 
         fillDataPoint(point);
-
         HttpPut dataPut = new HttpPut(DataSavingThread.API_POST_DATAPOINT + "/" + sessionId);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -107,8 +106,8 @@ public class WriteDataTableUtils {
             point.setSrmChannelTwoLeft(list.get(1));
             point.setSrmChannelThreeRight(list.get(2));
         } else {
-            point.setSrmChannelThreeRight(null);
-            point.setSrmChannelTwoLeft(null);
+            point.setSrmChannelThreeRight(-1.0);
+            point.setSrmChannelTwoLeft(-1.0);
         }
 
     }
